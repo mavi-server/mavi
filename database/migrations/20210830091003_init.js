@@ -1,5 +1,5 @@
-import generateTables from '../utils/generate-tables'
-import seedsIndex from '../seeds'
+import generateTables from '../utils/generate-tables.js'
+import seedsIndex from '../seeds/index.js'
 let Tables = generateTables
 const Seeds = seedsIndex
 const tables = Object.keys(Tables)

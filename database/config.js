@@ -1,7 +1,8 @@
 // database config
+import dotenv from 'dotenv'
+dotenv.config({ path: '../.env' }) // required for cli to work (db:<command>)
 
-import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' })
+console.log(process.env.DEV_DB_NAME)
 
 export default {
   development: {

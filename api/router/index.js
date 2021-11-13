@@ -1,13 +1,15 @@
 import express from 'express'
-import routes from './config'
-import hydrateRoutes from './utils/hydrate-routes'
+import routes from './config.js'
+import hydrateRoutes from './utils/hydrate-routes.js'
 
 const router = express.Router()
 const config = hydrateRoutes(routes)
 
-import authorization from '../middlewares/authorization'
-import interceptor from '../middlewares/interceptor'
-import isOwner from '../middlewares/is-owner'
+// check this: https://vitejs.dev/guide/features.html#glob-import
+
+import authorization from '../middlewares/authorization.js'
+import interceptor from '../middlewares/interceptor.js'
+import isOwner from '../middlewares/is-owner.js'
 
 const middlewares = {
   'authorization': authorization,
@@ -15,8 +17,8 @@ const middlewares = {
   'is-owner': isOwner,
 }
 
-import detectLanguage from '../utils/detect-language'
-import sanitize from '../utils/sanitize'
+import detectLanguage from '../utils/detect-language.js'
+import sanitize from '../utils/sanitize.js'
 
 const utils = {
   'detect-language': detectLanguage,

@@ -1,4 +1,4 @@
-import models from '../models'
+import models from '../models/index.js'
 const Tables = {}
 
 Object.keys(models).forEach(tableName => {
