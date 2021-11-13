@@ -1,0 +1,52 @@
+{
+  "name": "server-generator",
+  "version": "0.1.0",
+  "description": "Create an advanced server with only configuring one JSON file!",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview",
+    "db:up": "knex migrate:up --knexfile database/config.js",
+    "db:down": "knex migrate:down --knexfile database/config.js",
+    "db:seed": "knex seed:run --knexfile database/config.js",
+    "db:res": "npm run db:down && npm run db:up && npm run db:seed"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-emre-yalcin/server-generator.git"
+  },
+  "keywords": [
+    "api",
+    "server",
+    "create",
+    "server",
+    "auto",
+    "server",
+    "generator"
+  ],
+  "author": "M. Emre Yalcin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/m-emre-yalcin/server-generator/issues"
+  },
+  "homepage": "https://github.com/m-emre-yalcin/server-generator#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "formidable": "^2.0.1",
+    "ipx": "^0.9.1",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^0.95.14",
+    "languagedetect": "^2.0.0",
+    "pg": "^8.7.1",
+    "response-time": "^2.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.2",
+    "vite": "^2.6.14"
+  }
+}
