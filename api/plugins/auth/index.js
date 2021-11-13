@@ -1,9 +1,9 @@
 import express from 'express'
 const router = express.Router()
 
-import login from './login'
-import logout from './logout'
-import register from './register'
+import login from './login.js'
+import logout from './logout.js'
+import register from './register.js'
 
 router.post('/login', login)
 router.post('/logout', logout)

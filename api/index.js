@@ -3,15 +3,15 @@ import responseTime from 'response-time';
 import cors from 'cors'
 import cookieParser from 'cookie-parser';
 
-import routes from './router'
-import auth from './plugins/auth'
+import routes from './router/index'
+import auth from './plugins/auth/index.js'
 
 const app = express()
-import controllers from './router/controllers';
-import db from '../database/knex'
+import controllers from './router/controllers.js';
+import db from '../database/knex.js'
 // import ipx from '../ipx'
 
-import config from './config'
+import config from './config/index.js'
 
 const initializer = (req, res, next) => {
   req.app.db = db
@@ -33,4 +33,4 @@ app.use('/api', timer, routes)
 app.use('/api/auth', timer, auth)
 // app.use('/ipx', timer, ipx)
 
-export default app
+export const api = app

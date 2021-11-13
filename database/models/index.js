@@ -1,11 +1,11 @@
-import users from './users';
-import uploads from './uploads';
-import tags from './tags';
-import categories from './categories';
-import posts from './posts';
-import threads from './threads';
-import bookmarks from './bookmarks';
-import followers from './followers';
+import users from './users.js';
+import uploads from './uploads.js';
+import tags from './tags.js';
+import categories from './categories.js';
+import posts from './posts.js';
+import threads from './threads.js';
+import bookmarks from './bookmarks.js';
+import followers from './followers.js';
 
 const models = { // order is important for fk's
   users,

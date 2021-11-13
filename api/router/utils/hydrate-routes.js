@@ -1,5 +1,5 @@
-import populate from '../config-sub'
-import models from '../../../database/models'
+import populate from '../config-sub.js'
+import models from '../../../database/models/index.js'
 
 export default (routes) => {
   Promise.all(Object.keys(routes).map(async function (from) {
