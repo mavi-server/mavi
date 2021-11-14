@@ -1,5 +1,5 @@
-# server-generator
-Create an advanced server with only configuring one JSON file!
+# Blue Server
+Create an abstracted and extendible server from one JSON file!
 
 `Important`: This package needs too much way to go. Not recommended to use in production. I have plans to make this plugin more user friendly later, also i'm open to pull requests.
 
