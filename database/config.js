@@ -1,17 +1,15 @@
 // database config
-import dotenv from 'dotenv'
-dotenv.config({ path: '../.env' }) // required for cli to work (db:<command>)
-
-console.log(process.env.DEV_DB_NAME)
+// import dotenv from 'dotenv'
+// dotenv.config({ path: '../.env' }) // required for cli to work (db:<command>)
 
 export default {
   development: {
     client: 'pg',
-    version: process.env.DEV_DB_VERSION || 1,
+    version: import.meta.env.DB_VERSION || 1,
     connection: {
-      database: process.env.DEV_DB_NAME,
-      user: process.env.DEV_DB_USER,
-      password: process.env.DEV_DB_PASS
+      database: import.meta.env.DB_NAME,
+      user: import.meta.env.DB_USER,
+      password: import.meta.env.DB_PASS
     },
     pool: {
       min: 2,
@@ -29,11 +27,11 @@ export default {
 
   production: {
     client: 'pg',
-    version: process.env.PRO_DB_VERSION || 1,
+    version: import.meta.env.DB_VERSION || 1,
     connection: {
-      database: process.env.PRO_DB_NAME,
-      user: process.env.PRO_DB_USER,
-      password: process.env.PRO_DB_PASS
+      database: import.meta.env.DB_NAME,
+      user: import.meta.env.DB_USER,
+      password: import.meta.env.DB_PASS
     },
     pool: {
       min: 2,

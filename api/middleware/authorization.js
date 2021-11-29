@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-const config = process.env;
+const config = import.meta.env;
 
 const authorization = (req, res, next) => {
   const token = req.cookies.token || req.headers["x-access-token"] || req.body.token || req.query.token

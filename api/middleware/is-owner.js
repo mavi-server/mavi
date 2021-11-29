@@ -2,7 +2,7 @@
 // only works with 'user column' with an id
 // works with: find, findOne, update, delete
 import jwt from 'jsonwebtoken'
-const config = process.env;
+const config = import.meta.env;
 
 const verifyTokenAndSetOwner = (req, res, next) => {
   const token = req.cookies.token || req.headers["x-access-token"] || req.body.token || req.query.token

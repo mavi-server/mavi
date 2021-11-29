@@ -10,7 +10,7 @@ const interceptor = async (req, res, next) => {
     req.user = null
     return next()
   }
-  return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async function (err, decoded) {
+  return jwt.verify(token, import.meta.env.ACCESS_TOKEN_SECRET, async function (err, decoded) {
     if (err) {
       // if token is not verified
       console.error(err.message, "refreshing token")
@@ -46,13 +46,13 @@ const refreshToken = async (req, res, next) => {
 
   try {
     // verify the refresh token
-    jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET)
+    jwt.verify(refresh, import.meta.env.REFRESH_TOKEN_SECRET)
 
     // crucial
     delete user.refresh
 
     // new token
-    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE })
+    const token = jwt.sign(user, import.meta.env.ACCESS_TOKEN_SECRET, { expiresIn: import.meta.env.ACCESS_TOKEN_LIFE })
 
     // assign user to the request object
     req.user = user
@@ -67,7 +67,7 @@ const refreshToken = async (req, res, next) => {
     res.cookie('token', token, {
       maxAge: 86400 * 7 * 1000, // 7 days
       httpOnly: true, // http only, prevents JavaScript cookie access
-      secure: process.env.NODE_ENV === 'production' // cookie must be sent over https / ssl
+      secure: import.meta.env.MODE === 'production' // cookie must be sent over https / ssl
     })
 
     return next()

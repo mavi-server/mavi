@@ -1,4 +1,4 @@
-import queryPopulateRelations from '../services/knex-populate.js'
+import queryPopulateRelations from '../service/knex-populate.js'
 import formidable from 'formidable'
 
 export default (req, res) => {

@@ -1,8 +1,8 @@
 # Blue Server
+
 Create an abstracted and extendible server from one JSON file!
 
 `Important`: This package needs too much way to go. Not recommended to use in production. I have plans to make this plugin more user friendly later, also i'm open to pull requests.
-
 
 ## Example
 
@@ -33,20 +33,20 @@ export default {
       path: '/posts/:id',
       method: 'put',
       controller: 'update',
-      middlewares: ['is-owner'],
+      middleware: ['is-owner'],
       populate: ['bookmark', 'user', 'category', 'thumbnail', 'responseCount', 'tags'],
     },
     {
       path: '/posts/:id',
       method: 'delete',
       controller: 'delete',
-      middlewares: ['is-owner'],
+      middleware: ['is-owner'],
     },
     {
       path: '/posts',
       method: 'post',
       controller: 'create',
-      middlewares: ['authorization'],
+      middleware: ['authorization'],
       utils: ['detect-language'],
       populate: ['bookmark', 'user', 'category', 'thumbnail'],
     },
@@ -57,10 +57,9 @@ export default {
 
 the JSON file will become:
 
-- *[GET]* /posts -> get posts from `posts` table. public to everyone.
-- *[GET]* /posts/count -> get count from `posts` table. public to everyone.
-- *[GET]* /posts/:id -> get one result from `posts` table. public to everyone.
-- *[PUT]* /posts/:id -> update one entry from `posts` table. only owner can update.
-- *[DELETE]* /posts/:id -> delete one entry from `posts` table. only owner can delete.
-- *[POST]* /posts -> create one entry from `posts` table. only authorized users can create.
-
+- _[GET]_ /posts -> get posts from `posts` table. public to everyone.
+- _[GET]_ /posts/count -> get count from `posts` table. public to everyone.
+- _[GET]_ /posts/:id -> get one result from `posts` table. public to everyone.
+- _[PUT]_ /posts/:id -> update one entry from `posts` table. only owner can update.
+- _[DELETE]_ /posts/:id -> delete one entry from `posts` table. only owner can delete.
+- _[POST]_ /posts -> create one entry from `posts` table. only authorized users can create.

@@ -42,8 +42,8 @@ export default async (req, res) => {
     }
 
     // Create token
-    const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE || "2h" })
-    const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_EXPIRE || "30d" })
+    const token = jwt.sign(payload, import.meta.env.ACCESS_TOKEN_SECRET, { expiresIn: import.meta.env.ACCESS_TOKEN_LIFE || "2h" })
+    const refresh = jwt.sign(payload, import.meta.env.REFRESH_TOKEN_SECRET, { expiresIn: import.meta.env.REFRESH_EXPIRE || "30d" })
 
     // save user token
     user.token = token

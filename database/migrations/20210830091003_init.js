@@ -30,7 +30,6 @@ exports.down = function (knex) {
   }))
 }
 
-
 exports.seed = function (knex) {
   const seeds = Object.keys(Seeds)
   const sqlString = seeds.reduce((string, table) => {
