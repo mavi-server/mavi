@@ -1,35 +1,18 @@
 {
-  "name": "server-generator",
-  "version": "0.1.0",
-  "description": "Create an advanced server with only configuring one JSON file!",
-  "main": "index.js",
+  "name": "example1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "blue.server.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/m-emre-yalcin/server-generator.git"
-  },
-  "keywords": [
-    "api",
-    "server",
-    "create",
-    "server",
-    "auto",
-    "server",
-    "generator"
-  ],
   "author": {
     "name": "M. Emre Yalcin",
     "email": "emrreyalcin@gmail.com"
   },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/m-emre-yalcin/server-generator/issues"
-  },
-  "homepage": "https://github.com/m-emre-yalcin/server-generator#readme",
+  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",

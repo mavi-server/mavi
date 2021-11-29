@@ -30,14 +30,14 @@ export default async (req, res) => {
       }
 
       // Renew tokens
-      const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE || "2h" })
-      const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_EXPIRE || "30d" })
+      const token = jwt.sign(payload, import.meta.env.ACCESS_TOKEN_SECRET, { expiresIn: import.meta.env.ACCESS_TOKEN_LIFE || "2h" })
+      const refresh = jwt.sign(payload, import.meta.env.REFRESH_TOKEN_SECRET, { expiresIn: import.meta.env.REFRESH_EXPIRE || "30d" })
 
       // set token cookie
       res.cookie('token', token, {
         maxAge: 86400 * 7 * 1000, // 7 days
         httpOnly: true, // http only, prevents JavaScript cookie access
-        secure: process.env.NODE_ENV === 'production' // cookie must be sent over https / ssl
+        secure: import.meta.env.MODE === 'production' // cookie must be sent over https / ssl
       })
 
       // save new tokens for security

@@ -1,1 +1,1 @@
-# views for high performance queries
+# Views for more advanced queries

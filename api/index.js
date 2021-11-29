@@ -1,36 +1,46 @@
 import express from 'express'
-import responseTime from 'response-time';
+import responseTime from 'response-time'
 import cors from 'cors'
-import cookieParser from 'cookie-parser';
+import knex from 'knex'
+import cookieParser from 'cookie-parser'
 
-import routes from './router/index'
-import auth from './plugins/auth/index.js'
-
-const app = express()
-import controllers from './router/controllers.js';
-import db from '../database/knex.js'
+import { createRouter } from './router/index'
+import auth from './plugin/auth/index.js'
 // import ipx from '../ipx'
+import controllers from './router/controllers.js'
 
-import config from './config/index.js'
+import defaultServerConfigs from './config/index.js'
 
-const initializer = (req, res, next) => {
-  req.app.db = db
-  req.app.controllers = controllers
-  next()
+
+const serverInitializer = (config) => {
+  const mode = import.meta.env.MODE || 'development'
+  const databaseConfig = mode === 'production' ? config.database.production : config.database.development
+
+  const app = express()
+  const db = knex(databaseConfig)
+  const routes = createRouter(config)
+  const configs = { ...defaultServerConfigs, ...config }
+
+  const appInitializer = (req, res, next) => {
+    req.app.db = db
+    req.app.controllers = controllers
+    next()
+  }
+  const timer = responseTime((req, res, time) => {
+    console.log(`[${req.method}] ${req.url} \x1b[33m${time.toFixed(0)}ms`);
+  })
+
+  app.use(cors(configs.cors))
+  app.use(express.json())
+  app.use(cookieParser())
+  app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+  app.use(appInitializer)
+
+
+  app.use('/api', timer, routes)
+  app.use('/api/auth', timer, auth)
+  // app.use('/ipx', timer, ipx)
+
+  return app
 }
-const timer = responseTime((req, res, time) => {
-  console.log(`[${req.method}] ${req.url} \x1b[33m${time.toFixed(0)}ms`);
-})
-
-app.use(cors(config.cors))
-app.use(express.json())
-app.use(cookieParser());
-app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
-app.use(initializer)
-
-
-app.use('/api', timer, routes)
-app.use('/api/auth', timer, auth)
-// app.use('/ipx', timer, ipx)
-
-export const api = app
+export const createServer = serverInitializer

@@ -1,7 +1,7 @@
 import knex from 'knex'
 import config from './config.js'
 
-const mode = process.env.NODE_ENV || 'development'
+const mode = import.meta.env.MODE || 'development'
 const cfg = mode === 'production' ? config.production : config.development
 
 const db = knex(cfg)

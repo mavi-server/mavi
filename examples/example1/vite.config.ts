@@ -9,8 +9,8 @@ export default defineConfig({
   plugins: [
     ...VitePluginNode({
       adapter: 'express', // currently this plugin support 'express', 'nest', 'koa' and 'fastify' out of box
-      appPath: './blue.server.js',
-      exportName: 'server', // same as the name of the exported object
+      appPath: '../../api/index.js',
+      exportName: 'api',
       tsCompiler: 'esbuild',
     }),
   ],
@@ -22,11 +22,11 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1024 * 1024 * 2, // 2MB
-    lib: {
-      entry: path.resolve(__dirname, './blue.server.js'),
-      name: 'lib',
-      fileName: (format) => `api.${format}.js`,
-    },
+    // lib: {
+    //   entry: path.resolve(__dirname, '../../api/index.js'),
+    //   name: 'lib',
+    //   fileName: (format) => `api.${format}.js`,
+    // },
     rollupOptions: {
       external: [],
     }
