@@ -1,4 +1,5 @@
 import express from 'express'
+import routerControllers from './controllers.js'
 import hydrateRoutes from './utils/hydrate-routes.js'
 
 // check this: https://vitejs.dev/guide/features.html#glob-import
@@ -94,3 +95,4 @@ const routerInitializer = ({ routes, define }) => {
 }
 
 export const createRouter = routerInitializer
+export const controllers = routerControllers

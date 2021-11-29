@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { VitePluginNode } from 'vite-plugin-node'
+// import { VitePluginNode } from 'vite-plugin-node'
 import path from 'path'
 
 export default defineConfig({
@@ -7,12 +7,12 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [
-    ...VitePluginNode({
-      adapter: 'express', // currently this plugin support 'express', 'nest', 'koa' and 'fastify' out of box
-      appPath: './blue.server.js',
-      exportName: 'server', // same as the name of the exported object
-      tsCompiler: 'esbuild',
-    }),
+    // ...VitePluginNode({
+    //   adapter: 'express', // currently this plugin support 'express', 'nest', 'koa' and 'fastify' out of box
+    //   appPath: './blue.server.js',
+    //   exportName: 'server', // same as the name of the exported object
+    //   tsCompiler: 'esbuild',
+    // }),
   ],
   resolve: {
     alias: [{
@@ -22,11 +22,11 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1024 * 1024 * 2, // 2MB
-    lib: {
-      entry: path.resolve(__dirname, './blue.server.js'),
-      name: 'lib',
-      fileName: (format) => `api.${format}.js`,
-    },
+    // lib: {
+    //   entry: path.resolve(__dirname, './blue.server.js'),
+    //   name: 'lib',
+    //   fileName: (format) => `api.${format}.js`,
+    // },
     rollupOptions: {
       external: [],
     }

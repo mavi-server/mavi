@@ -1,23 +1,19 @@
 import express from 'express'
-import responseTime from 'response-time'
-import cors from 'cors'
 import knex from 'knex'
+import cors from 'cors'
+import responseTime from 'response-time'
 import cookieParser from 'cookie-parser'
 
-import { createRouter } from './router/index'
+import { createRouter, controllers } from './router/index'
 import auth from './plugin/auth/index.js'
 // import ipx from '../ipx'
-import controllers from './router/controllers.js'
 
 import defaultServerConfigs from './config/index.js'
 
 
 const serverInitializer = (config) => {
-  const mode = import.meta.env.MODE || 'development'
-  const databaseConfig = mode === 'production' ? config.database.production : config.database.development
-
   const app = express()
-  const db = knex(databaseConfig)
+  const db = knex(config.database)
   const routes = createRouter(config)
   const configs = { ...defaultServerConfigs, ...config }
 
@@ -43,4 +39,5 @@ const serverInitializer = (config) => {
 
   return app
 }
+
 export const createServer = serverInitializer

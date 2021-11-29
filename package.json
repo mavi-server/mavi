@@ -2,7 +2,7 @@
   "name": "server-generator",
   "version": "0.1.0",
   "description": "Create an advanced server with only configuring one JSON file!",
-  "main": "index.js",
+  "main": "/api/index.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -34,7 +34,6 @@
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
-    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "formidable": "^2.0.1",
     "ipx": "^0.9.1",

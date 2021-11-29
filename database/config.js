@@ -1,7 +1,4 @@
 // database config
-// import dotenv from 'dotenv'
-// dotenv.config({ path: '../.env' }) // required for cli to work (db:<command>)
-
 export default {
   development: {
     client: 'pg',
