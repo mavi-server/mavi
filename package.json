@@ -1,5 +1,5 @@
 {
-  "name": "blueserver",
+  "name": "blueserver-api",
   "version": "0.1.0",
   "description": "Create an abstracted and extendible server from one JSON file!",
   "scripts": {
@@ -8,9 +8,6 @@
     "serve": "vite preview"
   },
   "type": "module",
-  "files": [
-    "dist"
-  ],
   "main": "./api/index.js",
   "repository": {
     "type": "git",
