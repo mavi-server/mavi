@@ -1,6 +1,6 @@
 // examples/basic-setup/index.js
 import { createServer } from 'vite'
-import { api } from './dist/blueserver.es.js'
+import { api } from '../../api/index.js'
 
 const main = async () => {
   // blue server config

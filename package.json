@@ -11,14 +11,7 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/blueserver.umd.js",
-  "module": "./dist/blueserver.es.js",
-  "exports": {
-    ".": {
-      "import": "./dist/blueserver.es.js",
-      "require": "./dist/blueserver.umd.js"
-    }
-  },
+  "main": "./api/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m-emre-yalcin/blue-server.git"
