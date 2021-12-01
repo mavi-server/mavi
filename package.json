@@ -1,6 +1,6 @@
 {
   "name": "blueserver-api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create an abstracted and extendible server from one JSON file!",
   "scripts": {
     "dev": "vite",
