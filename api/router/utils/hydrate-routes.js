@@ -1,5 +1,5 @@
 // import populate from '../config-sub.js'
-import models from '../../../database/models/index'
+import models from '../../../database/models/index.js'
 export default (routes, define) => {
   const hydrate = (routes, define) => {
     Promise.all(Object.keys(routes).map(async function (from) {

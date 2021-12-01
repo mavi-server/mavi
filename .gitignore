@@ -4,6 +4,6 @@ dist
 dist-ssr
 *.local
 .env
-# .env.*
+.env.*
 
 # remove later

@@ -4,18 +4,28 @@ import cors from 'cors'
 import responseTime from 'response-time'
 import cookieParser from 'cookie-parser'
 
-import { createRouter, controllers } from './router/index'
+import { createRouter, controllers } from './router/index.js'
 import auth from './plugin/auth/index.js'
 // import ipx from '../ipx'
 
 import defaultServerConfigs from './config/index.js'
 
 
-const serverInitializer = (config) => {
-  const app = express()
-  const db = knex(config.database)
-  const routes = createRouter(config)
+const Initializer = (config) => {
+  if (!config || typeof config !== 'object') {
+    throw new Error('Please provide a config as json object')
+  }
+
+  // assign default configs
   const configs = { ...defaultServerConfigs, ...config }
+
+  if (!configs.database) {
+    throw new Error('Please provide a database connection')
+  }
+
+  const app = express()
+  const db = knex(configs.database)
+  const routes = createRouter(configs)
 
   const appInitializer = (req, res, next) => {
     req.app.db = db
@@ -40,4 +50,5 @@ const serverInitializer = (config) => {
   return app
 }
 
-export const createServer = serverInitializer
+export const api = Initializer // works with outer configs
+export const devServer = Initializer(defaultServerConfigs)

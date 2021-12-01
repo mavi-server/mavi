@@ -1,16 +1,27 @@
 {
-  "name": "server-generator",
+  "name": "blueserver",
   "version": "0.1.0",
-  "description": "Create an advanced server with only configuring one JSON file!",
-  "main": "/api/index.js",
+  "description": "Create an abstracted and extendible server from one JSON file!",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc --noEmit && vite build",
     "serve": "vite preview"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/blueserver.umd.js",
+  "module": "./dist/blueserver.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/blueserver.es.js",
+      "require": "./dist/blueserver.umd.js"
+    }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/m-emre-yalcin/server-generator.git"
+    "url": "git+https://github.com/m-emre-yalcin/blue-server.git"
   },
   "keywords": [
     "api",
@@ -27,9 +38,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/m-emre-yalcin/server-generator/issues"
+    "url": "https://github.com/m-emre-yalcin/blue-server/issues"
   },
-  "homepage": "https://github.com/m-emre-yalcin/server-generator#readme",
+  "homepage": "https://github.com/m-emre-yalcin/blue-server#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
