@@ -1,5 +1,5 @@
 // sanitize incoming data
-export default (data, { schema }) => {
+module.exports = (data, { schema }) => {
   if (data) {
     const sanitized = {}
 

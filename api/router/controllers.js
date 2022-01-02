@@ -1,13 +1,26 @@
-import queryPopulateRelations from '../service/knex-populate.js'
-import formidable from 'formidable'
+const queryPopulateRelations = require('../services/knex-populate')
+const views = require('../../database/views')
+const formidable = require('formidable')
 
-export default (req, res) => {
+// Optional. Can be commented out if not needed.
+// Will be move into ./api/config/index.js
+const firebase = require('firebase')
+require("firebase/firestore");
+firebase.initializeApp({
+  apiKey: process.env.apiKey,
+  authDomain: process.env.authDomain,
+  projectId: process.env.projectId
+})
+const firestore = firebase.firestore()
+
+
+module.exports = (req, res) => {
   const model = req.config.model // data table name
-  const queryBuilder = req.app.db(model)
-  const { populate, columns, /*exclude*/ /*schema*/ } = req.config
+  const { populate, columns, view /*exclude*/ /*schema*/ } = req.config
   const { query } = req // request query
+  let queryBuilder = req.app.db(model)
 
-  // api config - queries can be defined inside of the config.js
+  // router config - queries can be defined inside of the ./api/router/config.js
   // this will overwrite existing query properties
   if (req.config.query && typeof req.config.query === 'object') {
     Object.keys(req.config.query).forEach(key => {
@@ -16,8 +29,8 @@ export default (req, res) => {
     })
   }
 
-  // api config - exclude option can be defined inside of the config.js
-  // this will overwrite existing exclude properties
+  // router config - exclude option can be defined inside of the ./api/router/config.js
+  // this will overwrite the existing exclude properties
   if (query.exclude) {
     const excludeColumns = query.exclude.split(':')
     columns.forEach((col, i) => {
@@ -64,7 +77,7 @@ export default (req, res) => {
         case 'whereIn':
         case 'whereNotIn':
           // &where=id-lg:2
-          // &where=id:1:2:3:4
+          // &where=id:1
           // &whereIn=id:1:2:3:4
           // &whereNotIn=id:6:7
           // seperator => '_' or '-'
@@ -98,6 +111,9 @@ export default (req, res) => {
               case 'sme':
                 operator = '<='
                 break;
+              default:
+                operator = '='
+                break;
             }
 
             query[key] = key.includes('In') ?
@@ -109,9 +125,37 @@ export default (req, res) => {
     // console.log(query)
   }
 
+  if (view) { // if view is defined
+    if (!req.params.id) return res.status(500).send('controller.js: parameter id is required')
+    try {
+      req.params.id = Number(req.params.id)
+    } catch (err) {
+      return res.status(500).send('controller.js: parameter id should be a number')
+    }
+
+    queryBuilder = req.app.db
+
+    const selectRaw = `(${views[view](req.app.db, req.params.id).toString()}) as ${view}`
+    queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
+
+    // console.log(queryBuilder.toString());
+  }
+
+  const handleControllerError = (err) => {
+    const { status, /*message,*/ detail, code } = err
+
+    res.error = {
+      status: status || 500,
+      message: code,
+      detail,
+      code
+    }
+    // console.log("err.response:", err)
+  }
+
   return {
     find: async (populateIt = true) => {
-      queryBuilder.select(columns)
+      if (!view) queryBuilder.select(columns)
 
       if (query.sort) {
         queryBuilder.orderBy(query.sort.column, query.sort.type)
@@ -155,10 +199,10 @@ export default (req, res) => {
       // console.log(query)
 
 
-      let data = await queryBuilder.catch(err => res.status(500).send(err.message))
+      let data = await queryBuilder.catch(handleControllerError)
       // populate options
-      if (populateIt && data.length && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(err => res.status(500).send(err.message))
+      if (populateIt && data && data.length && populate && Array.isArray(populate)) {
+        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
       res.data = data
 
@@ -180,25 +224,28 @@ export default (req, res) => {
         else queryBuilder.where(...query.where)
       }
 
-      let [data] = await queryBuilder.count('id').catch(err => res.status(500).send(err.message))
+      let [data] = await queryBuilder.count('*').catch(handleControllerError)
       res.data = data.count = Number(data.count)
 
       return data.count || 0
     },
-    findOne: async function (params, populateIt = true) {
+    findOne: async function (populateIt = true) {
       const where = {}
-      const { id, name, username } = params
+      let { id, name, username } = req.params
 
       if (id) where.id = id
-      else if (name) where.name = name
+      else if (name) {
+        name = name.replace(/%20|%|\+|\s|-/g, ' ')
+        where.name = name
+      }
       else if (username) where.username = username
       if (req.owner) where.user = req.owner.id
 
       queryBuilder.first(columns).where(where)
-      let data = await queryBuilder.catch(err => res.status(500).send(err.message))
+      let data = await queryBuilder.catch(handleControllerError)
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(err => res.status(500).send(err.message))
+        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
       if (Array.isArray(data)) data = data[0] || null
       res.data = data
@@ -208,14 +255,19 @@ export default (req, res) => {
       return data
     },
     create: async function (body, populateIt = true) {
-      let data = await queryBuilder.insert(body).returning(columns).catch(err => res.status(500).send(err.message))
+      let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError)
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(err => res.status(500).send(err.message))
+        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
 
       if (Array.isArray(data)) data = data[0] || null
       res.data = data
+
+      try {
+        // realtime communication and recovery collection
+        firestore.collection(model).doc(String(data.id)).set(data)
+      } catch (err) { console.error('firebase - adding recovery collection is failed') }
 
       return data
     },
@@ -230,12 +282,19 @@ export default (req, res) => {
         }
       }
 
-      let data = await queryBuilder.update(body).where(where).returning(columns).catch(err => res.status(500).send(err.message))
+      let data = await queryBuilder.update(body).where(where).returning(columns).catch(handleControllerError)
 
       if (!data && req.owner) return res.status(400).send("You don't have permission for this")
 
       if (Array.isArray(data)) data = data[0] || null
       res.data = data
+
+      try {
+        const id = where.id || where.user
+
+        // realtime communication and recovery collection
+        firestore.collection(model).doc(String(id)).update(data)
+      } catch (err) { console.error('firebase - updating recovery collection is failed') }
 
       return data
     },
@@ -244,17 +303,22 @@ export default (req, res) => {
       if (id) where.id = id
       if (req.owner) where.user = req.owner.id
 
-      let [data] = await queryBuilder.del().where(where).returning(columns).catch(err => res.status(500).send(err.message))
+      let [data] = await queryBuilder.del().where(where).returning(columns).catch(handleControllerError)
       if (!data && req.owner) return res.status(400).send("You don't have permission for this")
 
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(err => res.status(500).send(err.message))
+        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
 
 
       if (Array.isArray(data)) data = data[0] || null
       res.data = data
+
+      try {
+        // realtime communication and recovery collection
+        firestore.collection(model).doc(String(data.id)).delete()
+      } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
 
       return data
     },
@@ -273,7 +337,12 @@ export default (req, res) => {
           // register uploaded file
           if (file) {
             data.url = `/uploads/${folder}/` + file.name
-            const [result] = await queryBuilder.insert(data).returning(columns).catch(err => res.status(500).send(err.message))
+            const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
+
+            try {
+              // realtime communication and recovery collection
+              firestore.collection('uploads').doc(result.id).set(result)
+            } catch (err) { console.error('firebase - recovering collection is failed') }
 
             return res.status(200).json(result)
           } else {
@@ -287,6 +356,6 @@ export default (req, res) => {
         return res.status(500).send('upload controller: please define `folder` parameter')
       }
 
-    }
+    },
   }
 }

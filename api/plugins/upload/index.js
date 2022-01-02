@@ -1,6 +1,6 @@
-import formidable from 'formidable'
+const formidable = require('formidable')
 
-export default (req, res) => {
+module.exports = (req, res) => {
   if (req.params.folder) {
     const form = new formidable.IncomingForm()
 
@@ -12,7 +12,7 @@ export default (req, res) => {
     form.on('file', function (name, file) {
       console.log('file uploaded ', file.path)
       try {
-        res.end(import.meta.env.ORIGIN_URL + `/static/${req.params.folder}/` + file.name)
+        res.end(process.env.CLIENT_URL + `/static/${req.params.folder}/` + file.name)
       } catch (err) {
         console.error('upload error:', err.message)
       }

@@ -1,10 +1,10 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
-export default async (req, res) => {
+module.exports = async (req, res) => {
   req.accepts('application/json')
 
-  // Our register logic starts here
+  // Register logic starts here
   try {
     // Get user input
     const { fullname, username, email, password } = req.body;
@@ -42,18 +42,18 @@ export default async (req, res) => {
     }
 
     // Create token
-    const token = jwt.sign(payload, import.meta.env.ACCESS_TOKEN_SECRET, { expiresIn: import.meta.env.ACCESS_TOKEN_LIFE || "2h" })
-    const refresh = jwt.sign(payload, import.meta.env.REFRESH_TOKEN_SECRET, { expiresIn: import.meta.env.REFRESH_EXPIRE || "30d" })
+    const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE || "2h" })
+    const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_EXPIRE || "30d" })
 
     // save user token
     user.token = token
     user.refresh = refresh
-    await req.app.db('users').update({ token, refresh })
+    await req.app.db('users').update({ token, refresh }).where({ id: user.id })
 
     // return new user
     return res.status(201).json(payload);
   } catch (err) {
     console.log(err);
   }
-  // Our register logic ends here
+  // Register logic ends here
 }

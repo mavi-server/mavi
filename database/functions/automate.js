@@ -1,7 +1,5 @@
-import generateTables from '../utils/generate-tables.js'
-import seedsIndex from '../seeds/index.js'
-let Tables = generateTables
-const Seeds = seedsIndex
+let Tables = require('../utils/generate-tables.js')
+const Seeds = require('../seeds/index')
 const tables = Object.keys(Tables)
 
 exports.up = async function (knex) {
@@ -29,6 +27,7 @@ exports.down = function (knex) {
     return true
   }))
 }
+
 
 exports.seed = function (knex) {
   const seeds = Object.keys(Seeds)

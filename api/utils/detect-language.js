@@ -1,10 +1,10 @@
 // detect content language
 // only supported for "content" column
 
-import LanguageDetect from "languagedetect"
+const LanguageDetect = require("languagedetect")
 const lngDetector = new LanguageDetect();
 
-export default (data, { schema }) => {
+module.exports = (data, { schema }) => {
   if (data) {
     if (schema.find(c => c === 'content') && data.content != null) {
       // get part of the content for better performance

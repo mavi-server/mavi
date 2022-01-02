@@ -1,16 +1,13 @@
-// protects user data
-// only works with 'user column' with an id
-// works with: find, findOne, update, delete
-import jwt from 'jsonwebtoken'
-const config = import.meta.env;
+// Protects the user entity from being accessed by other users.
+// Only works with 'user' column with an id
+// Works with: find, findOne, update, delete controllers
+const jwt = require('jsonwebtoken')
 
 const verifyTokenAndSetOwner = (req, res, next) => {
-  const token = req.cookies.token || req.headers["x-access-token"] || req.body.token || req.query.token
-
-  if (!token) {
+  if (!req.token) {
     return res.status(403).send("A token is required for authentication")
   }
-  return jwt.verify(token, config.ACCESS_TOKEN_SECRET, async function (err, decoded) {
+  return jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, async function (err, decoded) {
     if (err) {
       // if token is not verified
       return res.status(401).send("Unauthorized");
@@ -25,4 +22,4 @@ const verifyTokenAndSetOwner = (req, res, next) => {
 
 }
 
-export default verifyTokenAndSetOwner;
+module.exports = verifyTokenAndSetOwner;

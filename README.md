@@ -6,6 +6,8 @@ This module aims to lift repetitive works that you have made every time building
 
 `Important`: The package is still in development. I do not recommend to use in production. I have plans to make this module more user friendly and I am open to collaborations and contributions.
 
+**I will improve this Readme file when the program is mostly standardized.**
+
 ## Example
 
 The file below will create the entire server. You need to connect your database first then you can add some routes.

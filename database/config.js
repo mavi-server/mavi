@@ -1,12 +1,14 @@
-// database config
-export default {
+// Database Config
+require('dotenv').config({ path: '../../.env' }) // required for npm migrate scripts
+
+module.exports = {
   development: {
     client: 'pg',
-    version: import.meta.env.DB_VERSION || 1,
+    version: 0.2,
     connection: {
-      database: import.meta.env.DB_NAME,
-      user: import.meta.env.DB_USER,
-      password: import.meta.env.DB_PASS
+      database: process.env.DEV_DB_NAME,
+      user: process.env.DEV_DB_USER,
+      password: process.env.DEV_DB_PASS
     },
     pool: {
       min: 2,
@@ -15,20 +17,22 @@ export default {
     migrations: {
       directory: './migrations',
       // schemaName: 'public',
-      tableName: 'knex_migrations'
+      tableName: 'knex_migrations',
+      stub: 'migration.stub.js',
+      // disableMigrationsListValidation: true,
     },
     seeds: {
-      directory: './migrations'
+      directory: './migrations',
     }
   },
 
   production: {
     client: 'pg',
-    version: import.meta.env.DB_VERSION || 1,
+    version: 0.2,
     connection: {
-      database: import.meta.env.DB_NAME,
-      user: import.meta.env.DB_USER,
-      password: import.meta.env.DB_PASS
+      database: process.env.PRO_DB_NAME,
+      user: process.env.PRO_DB_USER,
+      password: process.env.PRO_DB_PASS
     },
     pool: {
       min: 2,
@@ -37,10 +41,12 @@ export default {
     migrations: {
       directory: './migrations',
       // schemaName: 'public',
-      tableName: 'knex_migrations'
+      tableName: 'knex_migrations',
+      stub: 'migration.stub.js',
+      // disableMigrationsListValidation: true,
     },
     seeds: {
-      directory: './migrations'
+      directory: './migrations',
     }
   }
 };

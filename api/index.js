@@ -1,54 +1,44 @@
-import express from 'express'
-import knex from 'knex'
-import cors from 'cors'
-import responseTime from 'response-time'
-import cookieParser from 'cookie-parser'
+// Main api file
 
-import { createRouter, controllers } from './router/index.js'
-import auth from './plugin/auth/index.js'
-// import ipx from '../ipx'
+const express = require('express')
+const path = require('path')
+const responseTime = require('response-time')
+const cors = require('cors')
+const cookieParser = require('cookie-parser')
+const app = express()
 
-import defaultServerConfigs from './config/index.js'
+require('dotenv').config({ path: path.join(process.cwd(), '.env') })
 
+const routes = require('./router')
+const knex = require('../database/knex')
+const controllers = require('./router/controllers')
+const auth = require('./plugins/auth')
+const ipx = require('../ipx/index')
 
-const Initializer = (config) => {
-  if (!config || typeof config !== 'object') {
-    throw new Error('Please provide a config as json object')
-  }
+const config = require('./config')
 
-  // assign default configs
-  const configs = { ...defaultServerConfigs, ...config }
-
-  if (!configs.database) {
-    throw new Error('Please provide a database connection')
-  }
-
-  const app = express()
-  const db = knex(configs.database)
-  const routes = createRouter(configs)
-
-  const appInitializer = (req, res, next) => {
-    req.app.db = db
-    req.app.controllers = controllers
-    next()
-  }
-  const timer = responseTime((req, res, time) => {
-    console.log(`[${req.method}] ${req.url} \x1b[33m${time.toFixed(0)}ms`);
-  })
-
-  app.use(cors(configs.cors))
-  app.use(express.json())
-  app.use(cookieParser())
-  app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
-  app.use(appInitializer)
-
-
-  app.use('/api', timer, routes)
-  app.use('/api/auth', timer, auth)
-  // app.use('/ipx', timer, ipx)
-
-  return app
+const initializer = (req, res, next) => {
+  req.app.db = knex
+  req.app.controllers = controllers
+  next()
 }
+const timer = responseTime((req, res, time) => {
+  console.log(`[${req.method}] ${req.url} \x1b[33m${time.toFixed(0)}ms`);
+})
 
-export const api = Initializer // works with outer configs
-export const devServer = Initializer(defaultServerConfigs)
+app.use(cors(config.cors))
+app.use(express.json())
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+app.use(initializer)
+
+
+app.use('/api', timer, routes)
+app.use('/api/auth', timer, auth)
+app.use('/ipx', timer, ipx)
+
+// app.listen(process.env.SERVER_PORT, () => {
+//   console.log(`[${process.env.SERVER_PORT}] Server is running`)
+// })
+
+module.exports = app
