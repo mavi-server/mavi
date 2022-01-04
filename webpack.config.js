@@ -4,7 +4,7 @@ const path = require('path')
 module.exports = {
   name: "server",
   target: "node",
-  mode: 'development',
+  mode: 'production',
   entry: './api/index',
   output: {
     filename: 'index.js',

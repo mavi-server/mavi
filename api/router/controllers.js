@@ -1,5 +1,5 @@
 const queryPopulateRelations = require('../services/knex-populate')
-const views = require('../../database/views')
+// const views = require('../../database/views')
 // const formidable = require('formidable')
 
 /*
@@ -17,6 +17,7 @@ const firestore = firebase.firestore()
 
 
 module.exports = (req, res) => {
+  const $config = req.app.$config
   const model = req.config.model // data table name
   const { populate, columns, view /*exclude*/ /*schema*/ } = req.config
   const { query } = req // request query
@@ -128,7 +129,7 @@ module.exports = (req, res) => {
   }
 
   // view feature needs improvements
-  if (view) { // if view is defined
+  if (view && $config.define && $config.define.views) { // if view is defined
     if (!req.params.id) return res.status(500).send('controller.js: parameter id is required')
     try {
       req.params.id = Number(req.params.id)
@@ -138,7 +139,7 @@ module.exports = (req, res) => {
 
     queryBuilder = req.app.db
 
-    const selectRaw = `(${views[view](req.app.db, req.params.id).toString()}) as ${view}`
+    const selectRaw = `(${$config.define.views[view](req.app.db, req.params.id).toString()}) as ${view}`
     queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
 
     // console.log(queryBuilder.toString());

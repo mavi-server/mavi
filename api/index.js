@@ -62,6 +62,7 @@ const timer = responseTime((req, res, time) => {
   console.log(`\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.url}\x1b[0m ${time.toFixed(0)}ms`);
 })
 const initializer = (config) => (req, res, next) => {
+  req.app.$config = config
   req.app.db = database(config)
   req.app.controllers = controllers
   next()
