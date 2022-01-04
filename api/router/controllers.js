@@ -1,9 +1,10 @@
 const queryPopulateRelations = require('../services/knex-populate')
 const views = require('../../database/views')
-const formidable = require('formidable')
+// const formidable = require('formidable')
 
-// Optional. Can be commented out if not needed.
-// Will be move into ./api/config/index.js
+/*
+// Disabled now. Will optional and be moved into ./api/config/index.js
+
 const firebase = require('firebase')
 require("firebase/firestore");
 firebase.initializeApp({
@@ -12,6 +13,7 @@ firebase.initializeApp({
   projectId: process.env.projectId
 })
 const firestore = firebase.firestore()
+*/
 
 
 module.exports = (req, res) => {
@@ -21,7 +23,7 @@ module.exports = (req, res) => {
   let queryBuilder = req.app.db(model)
 
   // router config - queries can be defined inside of the ./api/router/config.js
-  // this will overwrite existing query properties
+  // this will overwrite the existing query properties
   if (req.config.query && typeof req.config.query === 'object') {
     Object.keys(req.config.query).forEach(key => {
       // console.log("req query:", query[key])
@@ -125,6 +127,7 @@ module.exports = (req, res) => {
     // console.log(query)
   }
 
+  // view feature needs improvements
   if (view) { // if view is defined
     if (!req.params.id) return res.status(500).send('controller.js: parameter id is required')
     try {
@@ -264,10 +267,10 @@ module.exports = (req, res) => {
       if (Array.isArray(data)) data = data[0] || null
       res.data = data
 
-      try {
-        // realtime communication and recovery collection
-        firestore.collection(model).doc(String(data.id)).set(data)
-      } catch (err) { console.error('firebase - adding recovery collection is failed') }
+      // try {
+      //   // realtime communication and recovery collection
+      //   firestore.collection(model).doc(String(data.id)).set(data)
+      // } catch (err) { console.error('firebase - adding recovery collection is failed') }
 
       return data
     },
@@ -289,12 +292,12 @@ module.exports = (req, res) => {
       if (Array.isArray(data)) data = data[0] || null
       res.data = data
 
-      try {
-        const id = where.id || where.user
+      // try {
+      //   const id = where.id || where.user
 
-        // realtime communication and recovery collection
-        firestore.collection(model).doc(String(id)).update(data)
-      } catch (err) { console.error('firebase - updating recovery collection is failed') }
+      //   // realtime communication and recovery collection
+      //   firestore.collection(model).doc(String(id)).update(data)
+      // } catch (err) { console.error('firebase - updating recovery collection is failed') }
 
       return data
     },
@@ -315,47 +318,47 @@ module.exports = (req, res) => {
       if (Array.isArray(data)) data = data[0] || null
       res.data = data
 
-      try {
-        // realtime communication and recovery collection
-        firestore.collection(model).doc(String(data.id)).delete()
-      } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
+      // try {
+      //   // realtime communication and recovery collection
+      //   firestore.collection(model).doc(String(data.id)).delete()
+      // } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
 
       return data
     },
-    upload: function (folder, data) {
-      if (folder) {
-        // access form data files
-        const form = new formidable.IncomingForm()
-        form.parse(req)
-        // start processing
-        form.on('fileBegin', function (name, file) {
-          file.path = process.cwd() + `/static/uploads/${folder}/` + file.name
-        })
+    // upload: function (folder, data) {
+    //   if (folder) {
+    //     // access form data files
+    //     const form = new formidable.IncomingForm()
+    //     form.parse(req)
+    //     // start processing
+    //     form.on('fileBegin', function (name, file) {
+    //       file.path = process.cwd() + `/static/uploads/${folder}/` + file.name
+    //     })
 
-        // obtain file
-        form.on('file', async function (name, file) {
-          // register uploaded file
-          if (file) {
-            data.url = `/uploads/${folder}/` + file.name
-            const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
+    //     // obtain file
+    //     form.on('file', async function (name, file) {
+    //       // register uploaded file
+    //       if (file) {
+    //         data.url = `/uploads/${folder}/` + file.name
+    //         const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
 
-            try {
-              // realtime communication and recovery collection
-              firestore.collection('uploads').doc(result.id).set(result)
-            } catch (err) { console.error('firebase - recovering collection is failed') }
+    //         // try {
+    //         //   // realtime communication and recovery collection
+    //         //   firestore.collection('uploads').doc(result.id).set(result)
+    //         // } catch (err) { console.error('firebase - recovering collection is failed') }
 
-            return res.status(200).json(result)
-          } else {
-            console.error('upload controller: `file` not defined')
-            return res.status(500).send('upload controller: `file` not defined')
-          }
-        })
-      }
-      else {
-        console.error('upload controller: please define `folder` parameter')
-        return res.status(500).send('upload controller: please define `folder` parameter')
-      }
+    //         return res.status(200).json(result)
+    //       } else {
+    //         console.error('upload controller: `file` not defined')
+    //         return res.status(500).send('upload controller: `file` not defined')
+    //       }
+    //     })
+    //   }
+    //   else {
+    //     console.error('upload controller: please define `folder` parameter')
+    //     return res.status(500).send('upload controller: please define `folder` parameter')
+    //   }
 
-    },
+    // },
   }
 }

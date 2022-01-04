@@ -10,5 +10,4 @@ const ipx = createIPX({
   alias: {}, // base alias
   sharp: {}, // sharp options
 })
-
 module.exports = createIPXMiddleware(ipx)

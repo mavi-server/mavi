@@ -1,5 +1,5 @@
 // Database Config
-require('dotenv').config({ path: '../../.env' }) // required for npm migrate scripts
+require('dotenv').config({ path: `../.env` }) // required for npm migrate scripts
 
 module.exports = {
   development: {

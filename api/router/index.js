@@ -1,8 +1,8 @@
+// Generate router from the given routes
 const express = require('express')
-const router = express.Router()
-const routes = require('./config')
 const hydrateRoutes = require('./utils/hydrate-routes')
-const config = hydrateRoutes(routes)
+const $router = express.Router()
+// const $routes = require('./config')
 
 // Define default middlewares
 const middlewares = {
@@ -17,61 +17,94 @@ const utils = {
   'sanitize': require('../utils/sanitize'),
 }
 
-// Initialize the Router
-Object.keys(config).forEach(model => {
-  const routes = config[model]
+const setMiddlewares = fn => {
+  if (typeof fn === 'function') return fn()
+  else if (typeof fn === 'string') return middlewares[fn]
+  else throw new Error('Please define blue-server middlewares')
+}
 
-  Promise.all(routes.map(async config => {
-    if (config.method && !['get', 'post', 'put', 'delete'].includes(config.method)) { res.status(500).send('Invalid request method') }
+const createRouter = ({ routes, define }) => {
+  const $routes = hydrateRoutes({ routes, define }) // global routes
 
-    return await router[config.method](config.path, ...config.middlewares.map(fn => middlewares[fn]), async (req, res) => {
-      // controller settings
-      config.model = model
-      req.config = config
+  // set defined middlewares
+  if (define && define.middlewares) {
+    for (const key in define.middlewares) {
+      middlewares[key] = define.middlewares[key]
+    }
+  }
+  // set defined utils
+  if (define && define.utils) {
+    for (const key in define.utils) {
+      utils[key] = define.utils[key]
+    }
+  }
 
-      // set utils
-      await Promise.all(config.utils.map(function (fn) {
-        if (utils[fn]) {
-          req.body = utils[fn](req.body, config)
-        } else console.error('utils function not found:', fn)
-        return req.body
-      }))
+  for (const model in $routes) {
+    const routes = $routes[model] // local routes
+    if (!routes) throw new Error(`Please define blue-server routes for ${model}`)
 
-
-      // params & datas
-      const data = req.body
-      const { id, folder } = req.params
-
-      // methods
-      switch (config.controller) {
-        case 'find':
-        case 'count':
-        case 'findOne':
-          await req.app.controllers(req, res)[config.controller]()
-          break;
-        case 'create':
-          await req.app.controllers(req, res)[config.controller](data)
-          break;
-        case 'delete':
-          await req.app.controllers(req, res)[config.controller](id)
-          break;
-        case 'update':
-          await req.app.controllers(req, res)[config.controller](id, data)
-          break;
-        case 'upload':
-          return await req.app.controllers(req, res)[config.controller](folder, data)
-        default:
-          res.send(500)
-          break;
+    // Use route configs to generate router
+    for (const config of routes) {
+      if (config.method && !['get', 'post', 'put', 'delete'].includes(config.method)) {
+        res.error = {
+          status: 500,
+          message: 'Invalid request method'
+        }
       }
 
-      if (res.error) {
-        return res.status(res.error.status).send(res.error)
-      }
+      // Generate router
+      $router[config.method](config.path, ...config.middlewares.map(setMiddlewares), async (req, res) => {
+        // controller settings
+        req.config = config
+        req.config.model = model
 
-      return res.status(200).json(res.data)
-    })
-  }))
-})
+        // set utils
+        await Promise.all(config.utils.map(function (fn) {
+          if (utils[fn]) {
+            req.body = utils[fn](req.body, config)
+          } else console.error('utils function not found:', fn)
+          return req.body
+        }))
 
-module.exports = router
+
+        // params & datas
+        const data = req.body
+        const { id, folder } = req.params
+
+        // methods
+        switch (config.controller) {
+          case 'find':
+          case 'count':
+          case 'findOne':
+            await req.app.controllers(req, res)[config.controller]()
+            break;
+          case 'create':
+            await req.app.controllers(req, res)[config.controller](data)
+            break;
+          case 'delete':
+            await req.app.controllers(req, res)[config.controller](id)
+            break;
+          case 'update':
+            await req.app.controllers(req, res)[config.controller](id, data)
+            break;
+          case 'upload':
+            return await req.app.controllers(req, res)[config.controller](folder, data)
+          default:
+            res.send(500)
+            break;
+        }
+
+        if (res.error) {
+          return res.status(res.error.status).send(res.error)
+        }
+
+        return res.status(200).json(res.data)
+      })
+    }
+  }
+
+  // Router is ready
+  return $router
+}
+
+module.exports = createRouter

@@ -229,24 +229,4 @@ module.exports = {
   //     middlewares: ['is-owner']
   //   },
   // ],
-  // uploads: [
-  //   {
-  //     path: '/uploads/:id',
-  //     method: 'get',
-  //     controller: 'findOne',
-  //     middlewares: ['is-owner']
-  //   },
-  //   {
-  //     path: '/uploads/:folder',
-  //     method: 'post',
-  //     controller: 'upload',
-  //     middlewares: ['authorization']
-  //   },
-  //   {
-  //     path: '/uploads/:id',
-  //     method: 'put',
-  //     controller: 'update',
-  //     middlewares: ['is-owner']
-  //   },
-  // ],
 }

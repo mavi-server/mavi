@@ -1,11 +1,11 @@
 {
   "name": "blueserver-api",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Create an abstracted and extendible server from one JSON file!",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "serve": "vite preview",
+    "dev": "nodemon ./api/index --dev",
+    "start": "nodemon ./api/index --dev",
+    "build": "webpack --config webpack.config.js",
     "db:up": "knex migrate:up --knexfile database/config.js",
     "db:down": "knex migrate:down --knexfile database/config.js",
     "db:make": "knex migrate:make db --knexfile database/config.js",
@@ -15,35 +15,27 @@
     "db:seed": "knex seed:run --knexfile database/config.js",
     "db:res": "npm run db:down && npm run db:up && npm run db:seed"
   },
-  "type": "module",
-  "main": "./api/index.js",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m-emre-yalcin/blue-server.git"
   },
-  "keywords": [
-    "api",
-    "server",
-    "create",
-    "server",
-    "auto",
-    "server",
-    "generator"
-  ],
   "author": {
     "name": "M. Emre Yalcin",
     "email": "emrreyalcin@gmail.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/m-emre-yalcin/blue-issues"
+    "url": "https://github.com/m-emre-yalcin/blue-server/issues"
   },
-  "homepage": "https://github.com/m-emre-yalcin/blue-server#readme",
+  "homepage": "https://github.com/m-emre-yalcin/blue-server",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "firebase": "^9.6.1",
     "formidable": "^2.0.1",
     "ipx": "^0.9.1",
     "jsonwebtoken": "^8.5.1",
@@ -55,7 +47,16 @@
   "devDependencies": {
     "@types/node": "^16.11.7",
     "typescript": "^4.3.2",
-    "vite": "^2.6.14",
-    "vite-plugin-node": "^0.0.14"
-  }
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1"
+  },
+  "keywords": [
+    "api",
+    "server",
+    "create",
+    "server",
+    "auto",
+    "server",
+    "generator"
+  ]
 }
