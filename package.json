@@ -1,5 +1,5 @@
 {
-  "name": "blueserver-api",
+  "name": "blue-server-api",
   "version": "0.2.1",
   "description": "Create an abstracted and extendible server from one JSON file!",
   "scripts": {
@@ -15,7 +15,9 @@
     "db:seed": "knex seed:run --knexfile database/config.js",
     "db:res": "npm run db:down && npm run db:up && npm run db:seed"
   },
-  "private": true,
+  "files": [
+    "dist/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m-emre-yalcin/blue-server.git"
