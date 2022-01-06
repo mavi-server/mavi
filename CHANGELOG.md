@@ -12,4 +12,13 @@
 
 # 0.2.1
 
--
+- general improvements
+
+# 0.3.0
+
+- webpack 5 configs for server bundle
+- powered-by option
+- some refactoring
+- api options now working (except plugins)
+- more improvement
+- still not ready for production

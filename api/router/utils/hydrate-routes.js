@@ -2,11 +2,12 @@
 // const models = require('../../../database/models')
 
 module.exports = ({ routes, define }) => {
-  if (!define.models) throw new Error('define.models is required')
+  if (!define.models) define.models = {}
 
   const hydrateRoutes = () => {
     for (const from in routes) {
       for (let route of routes[from]) {
+        let isPlugin = false
         /** set configurations just for entry route (not for sub routes) **/
 
         // global middleware (order sensitive)
@@ -15,13 +16,17 @@ module.exports = ({ routes, define }) => {
 
         // global utils (order sensitive)
         if (!route.utils) route.utils = []
+        
+        // some controllers might be a function (plugin controllers)
+        if(typeof route.controller === 'function') isPlugin = true // treated as a plugin
+
         // if route controller uses req.body, sanitize as default
-        if (route.controller.match(/create|update/gi)) route.utils.splice(0, 0, 'sanitize')
+        if (!isPlugin && route.controller.match(/create|update/gi)) route.utils.splice(0, 0, 'sanitize')
 
-        if (!define.models[from]) throw new Error('the blue-server model is not defined!')
-
+        
         // schema columns
-        route.schema = Object.keys(define.models[from])
+        if (define.models[from]) route.schema = Object.keys(define.models[from])
+        else if(!isPlugin) throw new Error('the blue-server model is not defined!')
 
         // all the columns are neccessarry for query building
         // ensure all populated routes has columns too!

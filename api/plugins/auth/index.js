@@ -1,13 +1,23 @@
-const express = require('express')
-const router = express.Router()
+const auth = {
+  login: require('./login'),
+  logout: require('./logout'),
+  register: require('./register'),
+}
 
-const login = require('./login')
-const logout = require('./logout')
-const register = require('./register')
-
-router.post('/login', login)
-router.post('/logout', logout)
-router.post('/register', register)
-
-
-module.exports = router
+module.exports = [
+  {
+    path: '/login',
+    method: 'post',
+    controller: auth.login,
+  },
+  {
+    path: '/logout',
+    method: 'post',
+    controller: auth.logout,
+  },
+  {
+    path: '/register',
+    method: 'post',
+    controller: auth.register,
+  },
+]

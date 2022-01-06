@@ -129,7 +129,7 @@ module.exports = (req, res) => {
   }
 
   // view feature needs improvements
-  if (view && $config.define && $config.define.views) { // if view is defined
+  if (view && $config.api.define && $config.api.define.views) { // if view is defined
     if (!req.params.id) return res.status(500).send('controller.js: parameter id is required')
     try {
       req.params.id = Number(req.params.id)
@@ -139,7 +139,7 @@ module.exports = (req, res) => {
 
     queryBuilder = req.app.db
 
-    const selectRaw = `(${$config.define.views[view](req.app.db, req.params.id).toString()}) as ${view}`
+    const selectRaw = `(${$config.api.define.views[view](req.app.db, req.params.id).toString()}) as ${view}`
     queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
 
     // console.log(queryBuilder.toString());
@@ -326,40 +326,39 @@ module.exports = (req, res) => {
 
       return data
     },
-    // upload: function (folder, data) {
-    //   if (folder) {
-    //     // access form data files
-    //     const form = new formidable.IncomingForm()
-    //     form.parse(req)
-    //     // start processing
-    //     form.on('fileBegin', function (name, file) {
-    //       file.path = process.cwd() + `/static/uploads/${folder}/` + file.name
-    //     })
+    upload: function (folder, data) {
+      if (folder) {
+        // access form data files
+        const form = new formidable.IncomingForm()
+        form.parse(req)
+        // start processing
+        form.on('fileBegin', function (name, file) {
+          file.path = process.cwd() + `/static/uploads/${folder}/` + file.name
+        })
 
-    //     // obtain file
-    //     form.on('file', async function (name, file) {
-    //       // register uploaded file
-    //       if (file) {
-    //         data.url = `/uploads/${folder}/` + file.name
-    //         const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
+        // obtain file
+        form.on('file', async function (name, file) {
+          // register uploaded file
+          if (file) {
+            data.url = `/uploads/${folder}/` + file.name
+            const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
 
-    //         // try {
-    //         //   // realtime communication and recovery collection
-    //         //   firestore.collection('uploads').doc(result.id).set(result)
-    //         // } catch (err) { console.error('firebase - recovering collection is failed') }
+            // try {
+            //   // realtime communication and recovery collection
+            //   firestore.collection('uploads').doc(result.id).set(result)
+            // } catch (err) { console.error('firebase - recovering collection is failed') }
 
-    //         return res.status(200).json(result)
-    //       } else {
-    //         console.error('upload controller: `file` not defined')
-    //         return res.status(500).send('upload controller: `file` not defined')
-    //       }
-    //     })
-    //   }
-    //   else {
-    //     console.error('upload controller: please define `folder` parameter')
-    //     return res.status(500).send('upload controller: please define `folder` parameter')
-    //   }
-
-    // },
+            return res.status(200).json(result)
+          } else {
+            console.error('upload controller: `file` not defined')
+            return res.status(500).send('upload controller: `file` not defined')
+          }
+        })
+      }
+      else {
+        console.error('upload controller: please define `folder` parameter')
+        return res.status(500).send('upload controller: please define `folder` parameter')
+      }
+    },
   }
 }

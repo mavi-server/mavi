@@ -24,6 +24,9 @@ const setMiddlewares = fn => {
 }
 
 const createRouter = ({ routes, define }) => {
+  if(!routes) throw new Error('Please define blue-server routes')
+  else if(!define) throw new Error('Please define blue-server define')
+
   const $routes = hydrateRoutes({ routes, define }) // global routes
 
   // set defined middlewares
@@ -58,7 +61,7 @@ const createRouter = ({ routes, define }) => {
         req.config = config
         req.config.model = model
 
-        // set utils
+        // execute utils
         await Promise.all(config.utils.map(function (fn) {
           if (utils[fn]) {
             req.body = utils[fn](req.body, config)
@@ -70,6 +73,10 @@ const createRouter = ({ routes, define }) => {
         // params & datas
         const data = req.body
         const { id, folder } = req.params
+
+        if(typeof config.controller === 'function') {
+          return config.controller(req, res)
+        }
 
         // methods
         switch (config.controller) {
