@@ -18,9 +18,10 @@ const router = require('./router')
 const controllers = require('./router/controllers')
 const plugins = require('./plugins')
 
-const createServer = async object =>{
+const createServer = async object => {
   const config = await validateConfig(object).catch(err => err)
-  const PORT = config.port || process.env.SERVER_PORT || 3000
+  const HOST = config.host || 'http://localhost'
+  const PORT = config.port || 3000
 
   app.use(express.json())
   app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
@@ -30,7 +31,7 @@ const createServer = async object =>{
   app.use('/api', timer, router(config.api)) // Default plugin is api
   app.use(`/api/auth`, timer, router(plugins.auth)) // Default plugin for auth
 
-  // Set plugins / hydrate plugins
+  // Set plugins/hydrate plugins
   // if (config.api.plugins) {
   //   // additional routes
   //   for (const name in config.api.plugins) {
@@ -40,10 +41,10 @@ const createServer = async object =>{
   //         routes: { [name]: plugins[name] },
   //         define: config.api.define
   //       }
-        
+
   //       app.use(`/${name}/`, timer, router(pluginConfig))
   //     }
-      
+
   //     // custom plugins
   //     else {
   //       console.error(`Plugin ${name} not found`)
@@ -51,9 +52,10 @@ const createServer = async object =>{
   //     }
   //   }
   // }
-  
-  app.listen(PORT, () => {
-    console.log(`[${PORT}] Server is running`)
+
+
+  app.listen(PORT, HOST, () => {
+    console.log(`[${HOST}:${PORT}] Server is running`)
   })
 
   return app
