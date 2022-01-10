@@ -20,7 +20,7 @@ const plugins = require('./plugins')
 
 const createServer = async object => {
   const config = await validateConfig(object).catch(err => err)
-  const HOST = config.host || 'http://localhost'
+  const HOST = config.host || 'localhost'
   const PORT = config.port || 3000
 
   app.use(express.json())
