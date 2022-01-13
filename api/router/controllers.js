@@ -87,12 +87,6 @@ module.exports = (req, res) => {
           if (typeof query[key] === 'string') {
             let operator = '='
             const [column, condition] = query[key].split(':')[0].split(/-|_/)
-            let values
-            if (key.includes('In')) {
-              values = query[key].split(':').map(n => Number(n)).slice(1)
-            } else {
-              values = query[key].split(':').slice(1)[0]
-            }
 
             switch (condition) {
               case 'not':
@@ -119,8 +113,14 @@ module.exports = (req, res) => {
                 break;
             }
 
-            query[key] = key.includes('In') ?
-              [column, values] : [column, operator, values]
+
+            if (key.includes('In')) {
+              const values = query[key].split(':').map(n => Number(n)).slice(1)
+              query[key] = [column, values]
+            } else {
+              const values = query[key].split(':').slice(1)[0]
+              query[key] = [column, operator, values]
+            }
           }
           break;
       }

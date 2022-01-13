@@ -21,10 +21,21 @@ module.exports = function (config) {
     // assign default api configs if not provided
     for (const key in $config.api) {
       switch (key) {
+        case 'base':
+          if (config["base"]) {
+            // append / from the beggining
+            if (config["base"][0] != '/') config["base"] = `/${config["base"]}`
+            // remove / from the end
+            if (config["base"][config["base"].length - 1] == '/') config["base"] = config["base"].slice(0, -1)
+          }
+          break
         case 'static':
           // include default static path by default
           // *default static path includes a welcome screen
-          if (config.api["static"]) config.api["static"] = $config.api["static"].concat(config.api["static"])
+          if (config.api["static"]) {
+            config.api["static"] = $config.api["static"].concat(config.api["static"])
+            break
+          }
         default:
           // assign default api configs if not provided
           if (!config.api[key]) config.api[key] = $config.api[key]
