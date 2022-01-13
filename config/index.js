@@ -1,17 +1,20 @@
-// # Server Settings
+const path = require('path')
+const pkg = require('../package.json')
 
+// # Server Settings
 module.exports = {
+  poweredBy: `${pkg.name} v${pkg.version}`,
+  host: 'localhost', // nodejs instance
   port: 3000,
-  origin: 'http://localhost:3000',
   // https://www.npmjs.com/package/cors
   cors: {
     methods: ['POST', 'GET', 'DELETE', 'PUT'],
     allowedHeaders: ['x-access-token', 'x-refresh-token', 'token'],
-    // exposedHeaders: ['x-access-token','x-refresh-token','token']
   },
   // https://knexjs.org/#Installation-client
   database: require('../database/config'),
   api: {
+    base: '/api', // api base url
     routes: {
       posts: [
         {
@@ -24,6 +27,21 @@ module.exports = {
         },
       ]
     },
+    static: [
+      {
+        base: '/', // virtual path
+        fullpath: path.join(__dirname, '../public'), // physical path
+        options: {
+          dotfiles: 'ignore',
+          etag: false,
+          extensions: ['html', 'htm', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'ico', 'svg', 'eot', 'ttf', 'woff', 'woff2', 'otf'],
+          maxAge: '1d',
+          setHeaders: function (res, path, stat) {
+            res.set('x-timestamp', Date.now())
+          }
+        }
+      }
+    ],
     define: {
       models: {
         posts: {

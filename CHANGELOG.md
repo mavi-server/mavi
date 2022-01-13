@@ -22,3 +22,9 @@
 - api options now working (except plugins)
 - more improvement
 - still not ready for production
+
+# 0.3.9
+
+- api base path can be configured
+- the configuration object can be externally passed
+- multiple static paths and folders can be configured

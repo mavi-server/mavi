@@ -8,3 +8,4 @@ dist-ssr
 .env.production
 
 # remove later
+features.md
