@@ -22,7 +22,7 @@
 */
 
 // These configs belong to one of my projects. You can get a concrete idea from the usage.
-// Be sure that, the columns are defined in your database.
+// Be sure of that, the columns should be defined on your database.
 module.exports = {
   // posts: [
   //   {

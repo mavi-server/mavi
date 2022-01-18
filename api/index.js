@@ -10,7 +10,7 @@ require('dotenv').config({ path: path.resolve('.env') })
 
 // Functionality
 const database = require('../database')
-const router = require('./router')
+const createRouter = require('./router')
 const controllers = require('./router/controllers')
 const plugins = require('./plugins')
 
@@ -30,8 +30,8 @@ const createServer = async (object) => {
   app.use(cookieParser())
   app.use(cors(config.cors))
   app.use(initializer(config)) // Set req.app properties
-  app.use(`${config.api.base}`, timer, router(config.api)) // Default plugin is api
-  app.use(`${config.api.base}/auth`, timer, router(plugins.auth)) // Default plugin for auth
+  app.use(`${config.api.base}`, timer, createRouter(config.api)) // Default plugin is api
+  app.use(`${config.api.base}/auth`, timer, createRouter(plugins.auth)) // Default plugin for auth
 
   // Set static folders
   for (const static of config.api.static) {
@@ -56,7 +56,7 @@ const createServer = async (object) => {
   //         define: config.api.define
   //       }
 
-  //       app.use(`/${name}/`, timer, router(pluginConfig))
+  //       app.use(`/${name}/`, timer, createRouter(pluginConfig))
   //     }
 
   //     // custom plugins

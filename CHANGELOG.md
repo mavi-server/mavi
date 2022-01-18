@@ -28,3 +28,10 @@
 - api base path can be configured
 - the configuration object can be externally passed
 - multiple static paths and folders can be configured
+
+# 0.3.10
+
+- multiple sorting
+- more where query options
+- controller improvement
+- sql log option added. default is active for the development database. logs all the sqls that server have made

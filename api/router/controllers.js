@@ -3,7 +3,7 @@ const queryPopulateRelations = require('../services/knex-populate')
 // const formidable = require('formidable')
 
 /*
-// Disabled now. Will optional and be moved into ./api/config/index.js
+// Disabled now. Will be optional and be moved into ./api/config/index.js
 
 const firebase = require('firebase')
 require("firebase/firestore");
@@ -21,19 +21,23 @@ module.exports = (req, res) => {
   const model = req.config.model // data table name
   const { populate, columns, view /*exclude*/ /*schema*/ } = req.config
   const { query } = req // request query
-  let queryBuilder = req.app.db(model)
 
-  // router config - queries can be defined inside of the ./api/router/config.js
-  // this will overwrite the existing query properties
+  let queryBuilder = req.app.db(model) // knex query builder
+
+  // router config - queries can be defined inside of the "api.routes" config
   if (req.config.query && typeof req.config.query === 'object') {
-    Object.keys(req.config.query).forEach(key => {
-      // console.log("req query:", query[key])
-      query[key] = req.config.query[key]
-    })
+    for (const key in req.config.query) {
+      // preconfigured queries will not overwrite the incoming URLs query properties
+      if (!query[key]) {
+        query[key] = req.config.query[key]
+      } else {
+        console.log(`[query] "${key}" already exists in the URL query`)
+      }
+    }
   }
 
-  // router config - exclude option can be defined inside of the ./api/router/config.js
-  // this will overwrite the existing exclude properties
+  // router config - "exclude" option can be defined inside of the "api.routes" config
+  // this will overwrite the existing "exclude" properties
   if (query.exclude) {
     const excludeColumns = query.exclude.split(':')
     columns.forEach((col, i) => {
@@ -44,51 +48,100 @@ module.exports = (req, res) => {
     })
   }
 
-
   // if (req.owner) { // is-owner
   //   queryBuilder.where({ user: req.owner.id })
   // }
 
-
   if (!(columns && Array.isArray(columns))) {
-    return res.status(500).send('controller.js: req.config.columns should be an array')
+    return res.status(500).send('[controller] req.config.columns should be an array')
   }
 
-  if (Object.keys(query).length) {
-    Object.keys(query).forEach(key => {
-      switch (key) {
-        case 'limit':
-          query[key] = Number(query[key])
-          break;
-        case 'start':
-          query[key] = Number(query[key])
-          break;
-        case 'groupBy':
-          query[key] = String(query[key])
-          break;
-        case 'sort':
-          if (typeof query[key] === 'string') {
-            const [column, type] = query[key].split(':')
-            if (column && type) {
-              query[key] = { column: column || 'id', type: type || 'asc' }
-            }
-          }
-          break;
-        case 'where':
-        case 'orWhere':
-        case 'andWhere':
-        case 'whereIn':
-        case 'whereNotIn':
-          // &where=id-lg:2
-          // &where=id:1
-          // &whereIn=id:1:2:3:4
-          // &whereNotIn=id:6:7
-          // seperator => '_' or '-'
-          if (typeof query[key] === 'string') {
-            let operator = '='
-            const [column, condition] = query[key].split(':')[0].split(/-|_/)
+  // *view feature needs improvements*
+  // view config - "views" can be defined inside of the "api.define.view" config
+  // this will give the ability to make custom queries
+  if (view && $config.api.define && $config.api.define.views) { // if view is defined
+    if (!req.params.id) return res.status(500).send('[controller] parameter id is required')
+    try {
+      req.params.id = Number(req.params.id)
+    } catch (err) {
+      return res.status(500).send('[controller] parameter id should be a number')
+    }
 
+    queryBuilder = req.app.db
+
+    const selectRaw = `(${$config.api.define.views[view](req.app.db, req.params.id).toString()}) as ${view}`
+    queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
+
+    // console.log(queryBuilder.toString());
+  }
+
+  const handleControllerError = (err) => {
+    const { status, /*message,*/ detail, code } = err
+
+    res.error = {
+      status: status || 500,
+      message: code,
+      detail,
+      code
+    }
+    // console.log("err.response:", err)
+  }
+
+
+  // Query builder
+  for (const key in query) {
+    switch (key) {
+      case 'limit':
+        query[key] = Number(query[key])
+        break;
+      case 'start':
+        query[key] = Number(query[key])
+        break;
+      case 'sort': // (column|columns, direction, nulls)
+        // https://knexjs.org/#Builder-orderBy
+
+        // examples:
+        // simple sort: "name-asc"
+        // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
+
+        if (typeof query[key] === 'string') {
+          const Groups = query[key].split(':')
+          query[key] = []
+
+          for (const group of Groups) {
+            let [column, order, /*nulls*/] = group.split('-')
+            column = column || 'id'
+            order = order || 'asc'
+            // nulls = nulls || 'last' // not works idk why
+
+            query[key].push({ column, order })
+          }
+        }
+        break;
+      case 'where': // (column, operator, value|values)
+        // examples:
+        // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
+        if (typeof query[key] === 'string') {
+          const createParameters = group => {
+            if (!group || !group.part) return
+
+            let [column, condition, value] = group.part.split('-')
+            let operator = '=' // default
+            column = column || 'id'
+            condition = condition || 'eq'
+            value = value || false
+
+            // if condition is not specified, value would be false
+            if (!value) {
+              value = condition // condition is actually a value
+              condition = 'eq' // default condition
+            }
+
+            // convert the condition into operator so that knex can understand it
             switch (condition) {
+              case 'like':
+                operator = 'like'
+                break;
               case 'not':
               case 'neq':
                 operator = '<>'
@@ -113,48 +166,70 @@ module.exports = (req, res) => {
                 break;
             }
 
-
-            if (key.includes('In')) {
-              const values = query[key].split(':').map(n => Number(n)).slice(1)
-              query[key] = [column, values]
-            } else {
-              const values = query[key].split(':').slice(1)[0]
-              query[key] = [column, operator, values]
-            }
+            return [column, operator, value]
           }
-          break;
-      }
-    })
-    // console.log(query)
-  }
+          // split the query into groups
+          const reg = /-and-|-or-/g
+          const groupCount = query[key].split(reg).length
+          const Groups = new Array(groupCount).fill({})
 
-  // view feature needs improvements
-  if (view && $config.api.define && $config.api.define.views) { // if view is defined
-    if (!req.params.id) return res.status(500).send('controller.js: parameter id is required')
-    try {
-      req.params.id = Number(req.params.id)
-    } catch (err) {
-      return res.status(500).send('controller.js: parameter id should be a number')
+          Groups[0] = {
+            exec: 'where',
+            part: query[key],
+            params: createParameters({ part: query[key] })
+          }
+
+          if (groupCount > 1) {
+            let i = 1
+            const matches = [...query[key].matchAll(reg)]
+            for (const match of matches) {
+              const conjuctive = match[0].replace(/-/g, '')
+              const index = match.index + match[0].length
+              const nextIndex = matches[i] ? matches[i].index : undefined
+
+              Groups[i].exec = `${conjuctive}Where`
+              Groups[i].part = query[key].slice(index, nextIndex)
+              Groups[i].params = createParameters(Groups[i])
+              i++
+            }
+
+            // update first part
+            const firstIndex = matches[0].index
+            Groups[0].part = query[key].slice(0, firstIndex)
+            Groups[0].params = createParameters(Groups[0])
+          }
+
+          query[key] = Groups
+          // console.log(query[key])
+        }
+        break;
+      // case 'whereNull': // (column)
+      // case 'whereNotNull': // (column)
+      // case 'orWhereNull': // (column)
+      // case 'orWhereNotNull': // (column)
+      //   query[key] = String(query[key])
+      //   break;
+      // case 'whereIn': // (column|columns, array|callback|builder)
+      // case 'orWhereIn': // (column|columns, array|callback|builder)
+      // case 'whereNotIn': // (column|columns, array|callback|builder)
+      //   // examples:  
+      //   // simple whereIn: whereIn=id-1,2,3,4
+      //   // whereIn: whereIn=id-6,7:community-eq-1 (meaning is id 6 and 7 & community = 1 is included)
+
+      //   // if (key.includes('In')) {
+      //   //   const values = query[key].split(':').map(n => Number(n)).slice(1)
+      //   //   query[key] = [column, values]
+      //   // }
+      //   break;
+      // case 'whereLike': // (column, string|builder|raw) case sensitive
+      // case 'whereILike': // (column, string|builder|raw) case insensitive
+      //   break;
+      // case 'whereBetween': // (column, range)
+      // case 'orWhereBetween': // (column, range)
+      // case 'whereNotBetween': // (column, range)
+      // case 'orWhereNotBetween': // (column, range)
+      //   break;
     }
-
-    queryBuilder = req.app.db
-
-    const selectRaw = `(${$config.api.define.views[view](req.app.db, req.params.id).toString()}) as ${view}`
-    queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
-
-    // console.log(queryBuilder.toString());
-  }
-
-  const handleControllerError = (err) => {
-    const { status, /*message,*/ detail, code } = err
-
-    res.error = {
-      status: status || 500,
-      message: code,
-      detail,
-      code
-    }
-    // console.log("err.response:", err)
   }
 
   return {
@@ -162,45 +237,22 @@ module.exports = (req, res) => {
       if (!view) queryBuilder.select(columns)
 
       if (query.sort) {
-        queryBuilder.orderBy(query.sort.column, query.sort.type)
+        queryBuilder.orderBy(query.sort)
       }
-      if (query.limit) {
-        queryBuilder.limit(query.limit)
-      } else queryBuilder.limit(10)
+      if (query.limit || !query.limit) {
+        queryBuilder.limit(query.limit || 10)
+      }
       if (query.start) {
         queryBuilder.offset(query.start)
       }
-      if (query.groupBy) {
-        queryBuilder.groupBy(query.groupBy)
-      }
       if (query.where || req.owner) {
-        if (req.owner) { // is-owner
-          const where = {
-            user: req.owner.id
-          }
-          if (query.where) {
-            // convert literal where into object where
-            const [column, operator, value] = query.where
-            where[column] = value
-          }
-          queryBuilder.where(where)
+        if (query.where) for (const group of query.where) {
+          queryBuilder[group.exec](...group.params)
         }
-        else queryBuilder.where(...query.where)
+        if (req.owner) { // is-owner
+          queryBuilder.andWhere({ user: req.owner.id })
+        }
       }
-      if (query.andWhere) {
-        queryBuilder.andWhere(...query.andWhere)
-      }
-      if (query.orWhere) {
-        queryBuilder.orWhere(...query.orWhere)
-      }
-      if (query.whereIn) {
-        queryBuilder.whereIn(...query.whereIn)
-      }
-      if (query.whereNotIn) {
-        queryBuilder.whereNotIn(...query.whereNotIn)
-      }
-      // query & params ends
-      // console.log(query)
 
 
       let data = await queryBuilder.catch(handleControllerError)
@@ -214,18 +266,12 @@ module.exports = (req, res) => {
     },
     count: async function () {
       if (query.where || req.owner) {
-        if (req.owner) { // is-owner
-          const where = {
-            user: req.owner.id
-          }
-          if (query.where) {
-            // convert literal where into object where
-            const [column, operator, value] = query.where
-            where[column] = value
-          }
-          queryBuilder.where(where)
+        if (query.where) for (const group of query.where) {
+          queryBuilder[group.exec](...group.params)
         }
-        else queryBuilder.where(...query.where)
+        if (req.owner) { // is-owner
+          queryBuilder.andWhere({ user: req.owner.id })
+        }
       }
 
       let [data] = await queryBuilder.count('*').catch(handleControllerError)

@@ -24,8 +24,8 @@ const setMiddlewares = fn => {
 }
 
 const createRouter = ({ routes, define }) => {
-  if(!routes) throw new Error('Please define blue-server routes')
-  else if(!define) throw new Error('Please define blue-server define')
+  if (!routes) throw new Error('Please define blue-server routes')
+  else if (!define) throw new Error('Please define blue-server define')
 
   const $routes = hydrateRoutes({ routes, define }) // global routes
 
@@ -48,7 +48,7 @@ const createRouter = ({ routes, define }) => {
 
     // Use route configs to generate router
     for (const config of routes) {
-      if (config.method && !['get', 'post', 'put', 'delete'].includes(config.method)) {
+      if (config.method && !['get', 'post', 'put', 'delete'].includes(config.method.toLowerCase())) {
         res.error = {
           status: 500,
           message: 'Invalid request method'
@@ -74,7 +74,7 @@ const createRouter = ({ routes, define }) => {
         const data = req.body
         const { id, folder } = req.params
 
-        if(typeof config.controller === 'function') {
+        if (typeof config.controller === 'function') {
           return config.controller(req, res)
         }
 
