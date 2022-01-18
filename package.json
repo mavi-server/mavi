@@ -2,33 +2,34 @@
   "name": "blue-server-api",
   "version": "0.4.0",
   "description": "Create an abstracted and extendible server from one JSON file!",
-  "files": [
-    "/*"
-  ],
   "scripts": {
     "dev": "nodemon ./api/index --dev",
     "start": "nodemon ./api/index --dev",
-    "tsc": "npx tsc",
-    "build": "webpack --config webpack.config.js && npm run copy-dependency-files",
-    "copy-dependency-files": "copy \"package.json\" \"dist\" && copy \"LICENSE\" \"dist\" && copy \"README.md\" \"dist\" && copy \"ROADMAP.md\" \"dist\"",
-    "publish": "npm run build && npm run copy-dependency-files && cd \"dist\" && npm publish",
-    "db:up": "knex migrate:up --knexfile database/config.js",
-    "db:down": "knex migrate:down --knexfile database/config.js",
-    "db:make": "knex migrate:make db --knexfile database/config.js",
-    "db:latest": "knex migrate:latest --knexfile database/config.js",
-    "db:rollback": "knex migrate:rollback --knexfile database/config.js",
-    "db:list": "knex migrate:list --knexfile database/config.js",
-    "db:seed": "knex seed:run --knexfile database/config.js",
-    "db:res": "npm run db:down && npm run db:up && npm run db:seed"
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m-emre-yalcin/blue-server.git"
   },
-  "author": {
-    "name": "M. Emre Yalcin",
-    "email": "emrreyalcin@gmail.com"
-  },
+  "author": "M. Emre Yalcin <emrreyalcin@gmail.com>",
+  "contributors": [
+    {
+      "name": "M. Emre Yalcin",
+      "url": "https://github.com/m-emre-yalcin",
+      "author": true
+    }
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./README.md",
+    "./favicon.png",
+    "./LICENSE",
+    "./package.json",
+    "./ROADMAP.md",
+    "./CHANGELOG.md",
+    "./dist"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/m-emre-yalcin/blue-server/issues"
@@ -54,6 +55,7 @@
     "@types/express": "^4.17.1",
     "@types/node": "^16.11.7",
     "@types/serve-static": "^1.13.10",
+    "ts-loader": "^9.2.6",
     "typescript": "^4.5.4",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",

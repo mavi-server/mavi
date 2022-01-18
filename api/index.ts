@@ -6,6 +6,10 @@ const cookieParser = require('cookie-parser')
 const responseTime = require('response-time')
 const app = express()
 
+// Main Type
+import BlueServer from '../types/index'
+
+// Env variables
 require('dotenv').config({ path: path.resolve('.env') })
 
 // Functionality
@@ -18,8 +22,8 @@ const plugins = require('./plugins')
 const validateConfig = require('./services/validate-config')
 
 // Main
-const createServer = async (object) => {
-  const config = await validateConfig(object).catch((err) => {
+const createServer: BlueServer.createServer = async (object: BlueServer.config) => {
+  const config: BlueServer.config = await validateConfig(object).catch((err) => {
     console.error('[validateConfig]', err)
     process.exit(1)
   })
@@ -36,14 +40,14 @@ const createServer = async (object) => {
   app.use(`${config.api.base}/auth`, timer, createRouter(plugins.auth)) // Default plugin for auth
 
   // Set static folders
-  for (const static of config.api.static) {
+  for (const Static of config.api.static) {
     // virtual path
-    const Base = path.join(config.api.base, static.base || static.folder.replace('.', '')).replace(/\\/g, '/')
+    const Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/')
     // physical path
-    const Path = (static.fullpath || path.join(process.cwd(), static.folder)).replace(/\\/g, '/')
+    const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
 
     // set static folder
-    app.use(Base, express.static(Path, static.options))
+    app.use(Base, express.static(Path, Static.options))
     // console.log(Base, Path)
   }
 

@@ -1,26 +1,4 @@
 
-/*
-## Description
-- used in req.config
-- generates the api with the given config
-- can be extendable by middlewares
-- a later plan: these will be customizable on the UI
-*/
-
-/*
-## Configs
-{
-  path <String>: (required)
-  method <String>: (required) - post, get, path, put, delete, all
-  controller <String>: (required) - find, findOne, create, update, delete
-  middleware <String, Object>: (required) - interceptor, authorization, is-owner... all in routes.js middlewares
-  columns <Array>: (optional) - inherits from models. you can overwrite it. this property represents selected columns for the response
-  exlude <Array>: (optional) - it exclude from columns array. columns should not be '*' for exclude to be working
-  populate <Array>: (optional) - it populate the response with the given columns
-  view <String>: (optional) - the view name. if not defined, the controller name will be used
-}
-*/
-
 // These configs belong to one of my projects. You can get a concrete idea from the usage.
 // Be sure of that, the columns should be defined on your database.
 module.exports = {

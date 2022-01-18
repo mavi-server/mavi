@@ -1,25 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
+    "target": "ES5",
     "module": "ESNext",
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
-    "moduleResolution": "Node",
-    "allowJs": true,
-    // "strict": true,
+    "moduleResolution": "node",
     "sourceMap": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    // "outDir": "dist",
-    // "noEmit": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noImplicitReturns": true,
-    "types": [
-      "node"
-    ],
+    "strict": false,
+    "noEmitOnError": true,
+    "noImplicitAny": false,
+    "declaration": true,
+    "outDir": "dist",
   },
+  "exclude": [
+    "node_modules",
+    "**/__tests__/*"
+  ]
 }

@@ -1,27 +1,3 @@
-/* sub/populate config
-## Description
-- every fragment(column) is like a sub route used by the main routes
-- each parent column can be used for populating relational data or datasets from these sub routes
-- this parent column is usually an id or a virtual column
-- example: the posts entity doesn't have column as `isLiked`, but you can populate it via `likes`.
-  A user token will be required for this, and likes table should have a relation with the post ids.
-*/
-
-/*
-## Configs
-[tableName] {
-  select <String>: alias or real column name
-  from <String>: table name
-  on <String>: column name - contextual column
-  on2 <String>: column name - contextual column for type. tye property name can be changed later.
-  type <String>: populate types - ['count', 'token-reference', 'array-reference', 'object', 'array'] can be used for most cases
-  columns <Array>: (optional) - as default, inherits from models. you can overwrite it. this property represents columns that will be selected in the query
-  exlude <Array>: (optional) - it exclude from columns array. columns option should not be '*' for exclude to be working
-  returning <Array>: (optional) for token-reference. any existing column can be returned. also '*' can be used for returning all. multiple column selection is not supported yet.
-}
-*/
-// These configs belong to one of my projects. You can get a concrete idea from the usage.
-// Be sure that, the columns are defined in your database.
 module.exports = {
   // user: {
   //   select: 'user',
