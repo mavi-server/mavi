@@ -35,3 +35,7 @@
 - more where query options
 - controller improvement
 - sql log option added. default is active for the development database. logs all the sqls that server have made
+
+# 0.4.0
+
+- blue-server configuration types are defined

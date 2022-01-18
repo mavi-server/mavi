@@ -1,5 +1,5 @@
 // Default server configuration
-const $config = require('../../config')
+const $config = require('../../config/index')
 
 module.exports = function (config) {
   return new Promise((resolve, reject) => {
@@ -64,8 +64,8 @@ module.exports = function (config) {
       reject(new Error('config.api.static is not defined'))
     }
 
-    for (const static of config.api.static) {
-      if (!(static.fullpath || static.folder)) {
+    for (const Static of config.api.static) {
+      if (!(Static.fullpath || Static.folder)) {
         reject(new Error('config.api.static > invalid static options'))
       }
     }

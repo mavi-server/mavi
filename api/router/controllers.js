@@ -91,10 +91,8 @@ module.exports = (req, res) => {
   // Query builder
   for (const key in query) {
     switch (key) {
-      case 'limit':
-        query[key] = Number(query[key])
-        break;
-      case 'start':
+      case 'limit': // (number)
+      case 'start': // (number)
         query[key] = Number(query[key])
         break;
       case 'sort': // (column|columns, direction, nulls)

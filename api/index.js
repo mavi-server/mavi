@@ -17,14 +17,16 @@ const plugins = require('./plugins')
 // Services
 const validateConfig = require('./services/validate-config')
 
+// Main
 const createServer = async (object) => {
-  const config = await validateConfig(object).catch(err => {
+  const config = await validateConfig(object).catch((err) => {
     console.error('[validateConfig]', err)
     process.exit(1)
   })
   const HOST = config.host || 'localhost'
   const PORT = config.port || 3000
 
+  // Initialize
   app.use(express.json())
   app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
   app.use(cookieParser())
