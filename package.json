@@ -1,11 +1,27 @@
 {
   "name": "blue-server-api",
-  "version": "0.4.0",
+  "version": "0.4.5",
+  "license": "MIT",
   "description": "Create an abstracted and extendible server from one JSON file!",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bugs": {
+    "url": "https://github.com/m-emre-yalcin/blue-server/issues"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json",
+    "CHANGELOG.md",
+    ".env.example"
+  ],
+  "homepage": "https://github.com/m-emre-yalcin/blue-server",
   "scripts": {
     "dev": "nodemon ./api/index --dev",
     "start": "nodemon ./api/index --dev",
-    "build": "webpack --config webpack.config.js"
+    "build": "webpack --config webpack.config.js && npm run cp-df",
+    "cp-df": "copy \"package.json\" \"dist\" && copy \"LICENSE\" \"dist\" && copy \"README.md\" \"dist\" && copy \"CHANGELOG.md\" \"dist\" && copy \"favicon.png\" \"dist\""
   },
   "repository": {
     "type": "git",
@@ -19,22 +35,6 @@
       "author": true
     }
   ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "./README.md",
-    "./favicon.png",
-    "./LICENSE",
-    "./package.json",
-    "./ROADMAP.md",
-    "./CHANGELOG.md",
-    "./dist"
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/m-emre-yalcin/blue-server/issues"
-  },
-  "homepage": "https://github.com/m-emre-yalcin/blue-server",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",

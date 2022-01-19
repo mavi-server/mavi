@@ -7,22 +7,22 @@ const responseTime = require('response-time')
 const app = express()
 
 // Main Type
-import BlueServer from '../types/index'
+import BlueServer from './types'
 
 // Env variables
 require('dotenv').config({ path: path.resolve('.env') })
 
 // Functionality
-const database = require('../database')
-const createRouter = require('./router')
-const controllers = require('./router/controllers')
-const plugins = require('./plugins')
+const database = require('./database')
+const createRouter = require('./api/router')
+const controllers = require('./api/router/controllers')
+const plugins = require('./api/plugins')
 
 // Services
-const validateConfig = require('./services/validate-config')
+const validateConfig = require('./api/services/validate-config')
 
 // Main
-const createServer: BlueServer.createServer = async (object: BlueServer.config) => {
+export const createServer: BlueServer.createServer = async (object: BlueServer.config) => {
   const config: BlueServer.config = await validateConfig(object).catch((err) => {
     console.error('[validateConfig]', err)
     process.exit(1)
@@ -94,5 +94,3 @@ const initializer = (config) => (req, res, next) => {
   res.set('X-Powered-By', config.poweredBy)
   next()
 }
-
-module.exports = { createServer }

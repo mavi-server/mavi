@@ -1,6 +1,7 @@
 import { CorsOptions } from 'cors'
 import { ServeStaticOptions } from 'serve-static'
 import { Request, Response, NextFunction } from 'express'
+export default BlueServer
 
 type middleware = (req: Request, res: Response, next: NextFunction) => any
 type utils = 'detect-language'
@@ -8,10 +9,18 @@ type middlewares = 'authorization' | 'is-owner'
 type controllers = 'find' | 'findOne' | 'count' | 'delete' | 'update' | 'create' | 'upload'
 type methods = 'get' | 'post' | 'put' | 'delete'
 
+declare namespace BlueServer {
+  /**
+   * Creates a blue-server instance.
+   */
+  type createServer = (config: BlueServerConfig) => any
+  type config = BlueServerConfig
+}
+
 /**
  * Blue Server configuration
  */
-declare interface BlueServerConfig {
+export declare interface BlueServerConfig {
   /**
    * Port to listen on
    */
@@ -84,7 +93,7 @@ declare interface BlueServerConfig {
 /**
  * Will transformed into the API routes
  */
-declare interface Route {
+export declare interface Route {
   /**
    * Route path
    *
@@ -150,7 +159,7 @@ declare interface Route {
   - Used for creating a database
   - Used for api router and populate configurations
 */
-declare namespace Model {
+export declare namespace Model {
   type types =
     | 'increments'
     | 'integer'
@@ -212,7 +221,7 @@ declare namespace Model {
   }
 }
 
-declare namespace Populate {
+export declare namespace Populate {
   interface Columns {
     [columnName: string]: Properties
   }
@@ -262,7 +271,7 @@ declare namespace Populate {
   }
 }
 
-declare interface Static {
+export declare interface Static {
   /**
    * Virtual path of your static folder
    */
