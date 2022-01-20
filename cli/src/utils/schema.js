@@ -3,19 +3,6 @@
 - generate the tables from model files
 - creates a very long sql query and executes it
 - used with cli
-- these are the commands can be used for generate/delete/seed and migration purposes
-  some are the original knex commands and some are modified:
-  // package.json
-  "scripts": {
-    "db:up": "knex migrate:up --knexfile server/database/config.js",
-    "db:down": "knex migrate:down --knexfile server/database/config.js",
-    "db:make": "knex migrate:make db --knexfile server/database/config.js",
-    "db:latest": "knex migrate:latest --knexfile server/database/config.js",
-    "db:rollback": "knex migrate:rollback --knexfile server/database/config.js",
-    "db:list": "knex migrate:list --knexfile server/database/config.js",
-    "db:seed": "knex seed:run --knexfile server/database/config.js",
-    "db:res": "npm run db:down && npm run db:up && npm run db:seed",
-  }
 */
 
 /**
