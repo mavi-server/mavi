@@ -1,27 +1,33 @@
 {
   "name": "blue-server-api",
-  "version": "0.4.5",
+  "version": "0.4.11",
   "license": "MIT",
   "description": "Create an abstracted and extendible server from one JSON file!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bugs": {
-    "url": "https://github.com/m-emre-yalcin/blue-server/issues"
+    "url": "https://github.com/m-emre-yalcin/blue-server/issues",
+    "email": "emrreyalcin@gmail.com"
+  },
+  "bin": {
+    "blue-server": "cli/bin/blue-server.js"
   },
   "files": [
+    "cli",
+    "database",
     "dist",
     "LICENSE",
     "README.md",
+    "favicon.png",
     "package.json",
     "CHANGELOG.md",
     ".env.example"
   ],
   "homepage": "https://github.com/m-emre-yalcin/blue-server",
   "scripts": {
-    "dev": "nodemon ./api/index --dev",
-    "start": "nodemon ./api/index --dev",
-    "build": "webpack --config webpack.config.js && npm run cp-df",
-    "cp-df": "copy \"package.json\" \"dist\" && copy \"LICENSE\" \"dist\" && copy \"README.md\" \"dist\" && copy \"CHANGELOG.md\" \"dist\" && copy \"favicon.png\" \"dist\""
+    "dev": "nodemon ./index --dev",
+    "start": "tsc index && node ./index --dev",
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -48,7 +54,8 @@
     "knex": "^0.95.14",
     "languagedetect": "^2.0.0",
     "pg": "^8.7.1",
-    "response-time": "^2.3.2"
+    "response-time": "^2.3.2",
+    "webpack-dev-server": "^4.7.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",

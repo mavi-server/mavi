@@ -39,3 +39,14 @@
 # 0.4.0
 
 - blue-server configuration types are defined
+
+# 0.4.11
+
+- some performance issues fixed
+- some types are fixed
+- new `blue-server apply` command from bin (not finished)
+- new `blue-server start` command from bin
+- still not ready for production
+- next update, i will finish the `apply` command. it gives you control over the database via model files.
+- update readme.md
+- update npm package

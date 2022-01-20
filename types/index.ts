@@ -61,7 +61,13 @@ export declare interface BlueServerConfig {
      */
     define: {
       /**
-       * Order is important if there are foreign key references
+       * Database models
+       * 
+       * Used for creating/deleting tables
+       * 
+       * Used for api router and populate configurations
+       * 
+       * Order is important if there are existing foreign key references
        */
       models: Model.Tables
       /**
@@ -86,6 +92,8 @@ export declare interface BlueServerConfig {
   }
   /**
    * Knex database connection
+   * 
+   * See details: https://knexjs.org/#Installation-client
    */
   database: any // I will define this later.
   poweredBy?: string
@@ -156,11 +164,16 @@ export declare interface Route {
   view?: string
 }
 /**
-  - Used for creating a database
-  - Used for api router and populate configurations
-*/
+ * Database models
+ * 
+ * Used for creating/deleting tables
+ * 
+ * Used for api router and populate configurations
+ * 
+ * Order is important if there are existing foreign key references
+ */
 export declare namespace Model {
-  type types =
+  type dataTypes =
     | 'increments'
     | 'integer'
     | 'bigInteger'
@@ -185,14 +198,36 @@ export declare namespace Model {
     | 'point'
   type constraints = 'primary' | 'nullable' | 'notNullable' | 'unique'
   interface Tables {
+    /**
+     * Table name
+     */
     [tableName: string]: {
-      [columnName: string]: Properties
+      /**
+       * Column name
+       */
+      [columnName: string]: Properties,
+      // /**
+      //  * created_at and updated_at columns
+      //  */
+      // timestamps?: any | [any, any], // gives error!
     }
   }
   interface Properties {
-    type: types
+    /**
+     * Data type
+     */
+    type: dataTypes
+    /**
+     * Not null, primary, unique etc...
+     */
     constraints?: constraints[]
+    /**
+     * Default value
+     */
     defaultTo?: string | number | boolean
+    /**
+     * Maximum length
+     */
     maxlength?: number
     /**
      * Which column is the reference id.
@@ -214,10 +249,6 @@ export declare namespace Model {
      * Private columns are not included in the response.
      */
     private?: boolean
-    /**
-     * created_at and updated_at columns
-     */
-    timestamp?: boolean[] | [true, true]
   }
 }
 

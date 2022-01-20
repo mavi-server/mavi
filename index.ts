@@ -13,13 +13,14 @@ import BlueServer from './types'
 require('dotenv').config({ path: path.resolve('.env') })
 
 // Functionality
-const database = require('./database')
+const createDatabase = require('./database')
 const createRouter = require('./api/router')
 const controllers = require('./api/router/controllers')
 const plugins = require('./api/plugins')
 
 // Services
 const validateConfig = require('./api/services/validate-config')
+let database = null
 
 // Main
 export const createServer: BlueServer.createServer = async (object: BlueServer.config) => {
@@ -29,6 +30,9 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
   })
   const HOST = config.host || 'localhost'
   const PORT = config.port || 3000
+
+  // Connect to the database
+  database = createDatabase(config.database)
 
   // Initialize
   app.use(express.json())
@@ -87,7 +91,7 @@ const timer = responseTime((req, res, time) => {
 const initializer = (config) => (req, res, next) => {
   // set req.app properties
   req.app.$config = config
-  req.app.db = database(config.database)
+  req.app.db = database
   req.app.controllers = controllers
 
   // app name

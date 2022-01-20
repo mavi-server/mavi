@@ -1,6 +1,3 @@
-// const populate = require('../config-sub')
-// const models = require('../../../database/models')
-
 module.exports = ({ routes, define }) => {
   if (!define.models) define.models = {}
 
@@ -16,17 +13,17 @@ module.exports = ({ routes, define }) => {
 
         // global utils (order sensitive)
         if (!route.utils) route.utils = []
-        
+
         // some controllers might be a function (plugin controllers)
-        if(typeof route.controller === 'function') isPlugin = true // treated as a plugin
+        if (typeof route.controller === 'function') isPlugin = true // treated as a plugin
 
         // if route controller uses req.body, sanitize as default
         if (!isPlugin && route.controller.match(/create|update/gi)) route.utils.splice(0, 0, 'sanitize')
 
-        
+
         // schema columns
         if (define.models[from]) route.schema = Object.keys(define.models[from])
-        else if(!isPlugin) throw new Error('the blue-server model is not defined!')
+        else if (!isPlugin) throw new Error('the blue-server model is not defined!')
 
         // all the columns are neccessarry for query building
         // ensure all populated routes has columns too!

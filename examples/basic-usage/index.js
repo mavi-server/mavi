@@ -1,7 +1,7 @@
-const server = require('./blue-server/api/index');
-server({
+const { createServer } = 'blue-server-api'
+createServer({
   port: 3000,
-  origin:'http://localhost:3000',
+  origin: 'http://localhost:3000',
   // https://www.npmjs.com/package/cors
   cors: {
     methods: ['POST', 'GET', 'DELETE', 'PUT'],
@@ -12,7 +12,6 @@ server({
   database: {
     development: {
       client: 'pg',
-      version: 0.2,
       connection: {
         database: process.env.DEV_DB_NAME,
         user: process.env.DEV_DB_USER,
@@ -33,10 +32,9 @@ server({
         directory: './migrations',
       }
     },
-  
+
     production: {
       client: 'pg',
-      version: 0.2,
       connection: {
         database: process.env.PRO_DB_NAME,
         user: process.env.PRO_DB_USER,

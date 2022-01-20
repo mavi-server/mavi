@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES5",
-    "module": "ESNext",
+    "target": "es5",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "sourceMap": true,
     "strict": false,
     "noEmitOnError": true,
     "noImplicitAny": false,
     "declaration": true,
+    "allowJs": true,
     "outDir": "dist",
   },
   "exclude": [

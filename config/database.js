@@ -1,10 +1,9 @@
 // Database Config
-require('dotenv').config({ path: `../.env` }) // required for npm migrate scripts
+require('dotenv').config({ path: `../.env` })
 
 module.exports = {
   development: {
     client: 'pg',
-    version: 0.2,
     connection: {
       database: process.env.DEV_DB_NAME,
       user: process.env.DEV_DB_USER,
@@ -23,12 +22,12 @@ module.exports = {
     },
     seeds: {
       directory: './migrations',
-    }
+    },
+    debug: false,
   },
 
   production: {
     client: 'pg',
-    version: 0.2,
     connection: {
       database: process.env.PRO_DB_NAME,
       user: process.env.PRO_DB_USER,
@@ -47,6 +46,7 @@ module.exports = {
     },
     seeds: {
       directory: './migrations',
-    }
+    },
+    debug: false,
   }
 };

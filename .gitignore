@@ -6,6 +6,7 @@ dist-ssr
 .env
 .env.development
 .env.production
+types/*.js
 
 # remove later
 features.md
