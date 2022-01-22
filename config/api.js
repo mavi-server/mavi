@@ -37,18 +37,15 @@ module.exports = {
           type: 'integer',
           constraints: ['notNullable'],
           comment: 'author',
-          references: 'id',
-          inTable: 'users'
+          references: 'users.id',
         },
         community: {
           type: 'integer',
-          references: 'id',
-          inTable: 'communities'
+          references: 'communities.id',
         },
         channel: {
           type: 'integer',
-          references: 'id',
-          inTable: 'channels',
+          references: 'channels.id',
           defaultTo: 1,
         },
         title: {
@@ -78,7 +75,16 @@ module.exports = {
           type: 'string',
           constraints: ['notNullable']
         },
-        timestamps: [true, true]
+        updated_at: {
+          type: 'timestamp',
+          useTz: true,
+          precision: 6,
+        },
+        created_at: {
+          type: 'timestamp',
+          useTz: true,
+          precision: 6,
+        },
       },
     },
     populate: {

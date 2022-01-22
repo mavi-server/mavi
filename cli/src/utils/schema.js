@@ -1,23 +1,3 @@
-/*
-## Description
-- generate the tables from model files
-- creates a very long sql query and executes it
-- used with cli
-- these are the commands can be used for generate/delete/seed and migration purposes
-  some are the original knex commands and some are modified:
-  // package.json
-  "scripts": {
-    "db:up": "knex migrate:up --knexfile server/database/config.js",
-    "db:down": "knex migrate:down --knexfile server/database/config.js",
-    "db:make": "knex migrate:make db --knexfile server/database/config.js",
-    "db:latest": "knex migrate:latest --knexfile server/database/config.js",
-    "db:rollback": "knex migrate:rollback --knexfile server/database/config.js",
-    "db:list": "knex migrate:list --knexfile server/database/config.js",
-    "db:seed": "knex seed:run --knexfile server/database/config.js",
-    "db:res": "npm run db:down && npm run db:up && npm run db:seed",
-  }
-*/
-
 /**
  * 
  * @param {object} models 
@@ -32,67 +12,111 @@ const generateSchemaSQL = (models, options = {}) => {
     let tableSchemaString = []
 
     for (const column in Table) {
-      const settings = Table[column]
       let columnSchemaString = ''
+      const settings = Table[column]
 
-      // timestamps
-      if (column === 'timestamps' && Array.isArray(settings)) {
-        columnSchemaString = columnSchemaString.concat(`table.timestamps(${settings[0]},${settings[1]})`)
-        tableSchemaString.push(columnSchemaString)
+      // ## set chainable properties ## 
 
-        continue
+      // type is required
+      if (!settings.type) {
+        throw Error('schema generator: type is required')
       }
 
-      // type
-      if (settings.type) {
+      if ("type" in settings) {
+        // ## set type specific properties ##
         columnSchemaString = columnSchemaString.concat(`table.${settings.type}`)
-      } else throw new Error('generate-tables.js: type is required')
 
+        if (["integer", "bigInteger", "tinyint", "string", "binary", "increments"].includes(settings.type)) {
+          // set with length
+          if ("maxlength" in settings) {
+            // set max length if exists
+            columnSchemaString = columnSchemaString.concat(`('${column}', ${settings.maxlength})`)
+          }
+          else columnSchemaString = columnSchemaString.concat(`('${column}')`)
+        }
 
-      // column, maxlength, dataset
-      if (settings.maxlength) { // set max length if exists
-        columnSchemaString = columnSchemaString.concat(`('${column}', ${settings.maxlength})`)
-      } else if (settings.dataset) { // enum dataset
-        columnSchemaString = columnSchemaString.concat(`('${column}', ${JSON.stringify(settings.dataset)})`)
-      } else { // set column without max length
-        columnSchemaString = columnSchemaString.concat(`('${column}')`)
+        // set dataset if exists
+        else if ("dataset" in settings) {
+          // enum dataset
+          columnSchemaString = columnSchemaString.concat(`('${column}', ${JSON.stringify(settings.dataset)})`)
+        }
+
+        // default value for timestamp and datetime is current time
+        else if (settings.type.match(/datetime|timestamp/)) {
+          if ("useTz" in settings) columnSchemaString = columnSchemaString.concat(`('${column}', { useTz: ${settings.useTz} })`)
+          else if ("useTz" && "precision" in settings) columnSchemaString = columnSchemaString.concat(`('${column}', { useTz: ${settings.useTz}, precision: ${settings.precision} })`)
+          else columnSchemaString = columnSchemaString.concat(`('${column}')`)
+
+          // set default columns for special columns
+          // ERRORRR!!!
+          // if (column.match(/update/)) {
+          //   settings.defaultTo = "knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')"
+          // }
+          // else if (column.match(/create/)) {
+          //   settings.defaultTo = "knex.raw('CURRENT_TIMESTAMP')"
+          // }
+        }
+        else if (settings.type.match(/time/)) {
+          if ("precision" in settings) columnSchemaString = columnSchemaString.concat(`('${column}', { precision: ${settings.precision} })`)
+        }
+        else columnSchemaString = columnSchemaString.concat(`('${column}')`)
+        // ## end type specific properties ##
       }
+      if ("constraints" in settings) {
+        if (!Array.isArray(settings.constraints)) {
+          throw Error('schema generator: constraints must be an array')
+        }
 
-      // constraints
-      if (settings.constraints && Array.isArray(settings.constraints)) {
+        // set constraints
         settings.constraints.forEach(fn => {
-          columnSchemaString = columnSchemaString.concat('.', `${fn}()`)
+          // 'primary' | 'nullable' | 'notNullable' | 'unique' | 'unsigned'
+          columnSchemaString = columnSchemaString.concat(`.${fn}()`)
         })
       }
-
-      // default column value
-      if (settings.defaultTo) {
-        if (settings.type === 'timestamp') {
-          settings.defaultTo = 'knex.fn.now()'
-        }
-
-        columnSchemaString = columnSchemaString.concat('.', `defaultTo(${settings.defaultTo})`)
+      if ("defaultTo" in settings) {
+        columnSchemaString = columnSchemaString.concat(`.defaultTo("${settings.defaultTo}")`)
       }
-
+      if ("charset" in settings) {
+        columnSchemaString = columnSchemaString.concat(`.charset('${settings.charset}')`)
+      }
+      if ("comment" in settings) {
+        columnSchemaString = columnSchemaString.concat(`.comment('${settings.comment}')`)
+      }
 
       // create column
-      tableSchemaString.push(column)
+      tableSchemaString.push(columnSchemaString)
+      // ## end chainable properties ## 
 
-      // foreign key setter
-      if (settings.references && settings.inTable) {
-        tableSchemaString.push(`table.foreign('${column}').references('${settings.references}').inTable('${settings.inTable}')`)
-      } else if (settings.references && !settings.inTable) {
-        try {
-          const [inTable, references] = settings.references.split('.')
-          tableSchemaString.push(`table.foreign('${column}').references('${references}').inTable('${inTable}')`)
-        } catch (err) {
-          throw err
+
+      // ## set foreign keys at the end
+      if ("references" in settings) {
+        if (settings.references.split('.').length === 0) {
+          throw Error('schema generator: `references` must be in format table.column')
         }
+
+        // set foreign key
+        columnSchemaString = `table.foreign('${column}')`
+        columnSchemaString = columnSchemaString.concat(`.references('${settings.references}')`)
+
+        // set foreign key events
+        const events = ['onDelete', 'onUpdate']
+        events.forEach(fn => {
+          // 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'NO ACTION'
+          if (fn in settings) {
+            settings[fn] = settings[fn].toUpperCase()
+            columnSchemaString = columnSchemaString.concat(`.${fn}('${settings[fn]}')`)
+          }
+        })
+
+        // create foreign key
+        tableSchemaString.push(columnSchemaString)
       }
+      // ## end foreign keys ##
     }
 
-    // set as function
-    SQL[model] = `(table) => {${tableSchemaString.join(';')}}`
+    // set as function 
+    // used as: knex.schema.createTable(tableName, (table) => {...tableSchemaString...})
+    SQL[model] = tableSchemaString.join(';')
   }
 
   if (options.debug === true) {
@@ -114,4 +138,4 @@ const createTables = (Tables) => {
     console.error(err.detail)
   }
 }
-module.exports = { generateModelSql, createTables }
+module.exports = { generateSchemaSQL, createTables }

@@ -34,7 +34,7 @@ const populateDatas = async function (req, { populate, data }) {
             } else {
               const message = "knex-populate: `on` & `select` option should be defined"
               console.error(message)
-              throw new Error({ message })
+              throw Error({ message })
             }
             break;
           case 'token-reference':
@@ -63,7 +63,7 @@ const populateDatas = async function (req, { populate, data }) {
             } else {
               const message = "knex-populate: `select` option should be defined"
               console.error(message)
-              throw new Error({ message })
+              throw Error({ message })
             }
             break;
           case 'array-reference':
@@ -115,7 +115,7 @@ const populateDatas = async function (req, { populate, data }) {
       else {
         const message = "knex-populate: `type` option should be defined"
         console.error(message)
-        throw new Error({ message })
+        throw Error({ message })
       }
 
       return true

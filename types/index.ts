@@ -187,7 +187,6 @@ export declare namespace Model {
     | 'datetime'
     | 'time'
     | 'timestamp'
-    | 'timestamps'
     | 'binary'
     | 'enum'
     | 'json'
@@ -196,7 +195,8 @@ export declare namespace Model {
     | 'geometry'
     | 'geography'
     | 'point'
-  type constraints = 'primary' | 'nullable' | 'notNullable' | 'unique'
+  type constraints = 'primary' | 'nullable' | 'notNullable' | 'unique' | 'unsigned'
+  type foreignEventOptions = 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'NO ACTION'
   interface Tables {
     /**
      * Table name
@@ -206,10 +206,6 @@ export declare namespace Model {
        * Column name
        */
       [columnName: string]: Properties,
-      // /**
-      //  * created_at and updated_at columns
-      //  */
-      // timestamps?: any | [any, any], // gives error!
     }
   }
   interface Properties {
@@ -222,29 +218,60 @@ export declare namespace Model {
      */
     constraints?: constraints[]
     /**
-     * Default value
-     */
-    defaultTo?: string | number | boolean
-    /**
      * Maximum length
      */
     maxlength?: number
-    /**
-     * Which column is the reference id.
-     */
-    references?: string | 'id'
-    /**
-     * Which table to reference
-     */
-    inTable?: string
     /**
      * Dataset for `enum` type
      */
     dataset?: string[]
     /**
-     * Make comment on this column
+     * Used with `datetime`, `time`, `timestamp` types
+     * 
+     * In PostgreSQL and MySQL a precision option may be passed.
+     * 
+     * https://knexjs.org/#Schema-timestamps
+     */
+    precision?: number
+    /**
+     * 
+     * Used with `datetime`, `timestamp` types
+     * 
+     * By default PostgreSQL creates column with timezone (timestamptz type) and MSSQL does not (datetime2). This behaviour can be overriden by passing the useTz option (which is by default false for MSSQL and true for PostgreSQL). MySQL does not have useTz option.
+     * 
+     * In PostgreSQL and MSSQL a timezone option may be passed
+     */
+    useTz?: number
+    /**
+     * Sets the charset for the database table, only available within a createTable call, and only applicable to MySQL.
+     */
+    charset?: string
+    /**
+     * Default column value.
+     * 
+     * This can be a SQL too.
+     * 
+     * 
+     * *Example:*
+     * 
+     * defaultTo: "knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')"
+     * 
+     */
+    defaultTo?: string | number | boolean
+    /**
+     * Sets the comment for a table column.
      */
     comment?: string
+    onDelete?: foreignEventOptions
+    onUpdate?: foreignEventOptions
+    /**
+     * References to "table" where the foreign key column is located
+     */
+    references?: string,
+    /**
+     * Specifies an integer as unsigned. No-op if this is chained off of a non-integer field.
+     */
+    unsigned?: boolean,
     /**
      * Private columns are not included in the response.
      */

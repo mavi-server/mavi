@@ -25,7 +25,6 @@ module.exports = {
     },
     debug: false,
   },
-
   production: {
     client: 'pg',
     connection: {
@@ -48,5 +47,5 @@ module.exports = {
       directory: './migrations',
     },
     debug: false,
-  }
+  },
 };

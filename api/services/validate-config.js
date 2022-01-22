@@ -4,7 +4,7 @@ const $config = require('../../config/index')
 module.exports = function (config) {
   return new Promise((resolve, reject) => {
     if (!config) {
-      reject(new Error('config is not defined'))
+      reject(Error('config is not defined'))
     }
 
     // assign default configs if not provided
@@ -15,7 +15,7 @@ module.exports = function (config) {
     // check missing configs:
 
     if (!config.api) {
-      reject(new Error('config.api is not defined'))
+      reject(Error('config.api is not defined'))
     }
 
     // assign default api configs if not provided
@@ -45,37 +45,37 @@ module.exports = function (config) {
     }
 
     if (!config.api.base) {
-      reject(new Error('config.api.base is not defined'))
+      reject(Error('config.api.base is not defined'))
     }
 
     if (!config.api.routes) {
-      reject(new Error('config.api.routes is not defined'))
+      reject(Error('config.api.routes is not defined'))
     }
 
     if (typeof config.api.routes !== 'object') {
-      throw new Error('config.api.routes must be an object')
+      throw Error('config.api.routes must be an object')
     }
 
     if (!config.api.define) {
-      reject(new Error('config.api.define is not defined'))
+      reject(Error('config.api.define is not defined'))
     }
 
     if (!config.api.static) {
-      reject(new Error('config.api.static is not defined'))
+      reject(Error('config.api.static is not defined'))
     }
 
     for (const Static of config.api.static) {
       if (!(Static.fullpath || Static.folder)) {
-        reject(new Error('config.api.static > invalid static options'))
+        reject(Error('config.api.static > invalid static options'))
       }
     }
 
     if (!config.database) {
-      reject(new Error('config.database is not defined'))
+      reject(Error('config.database is not defined'))
     }
 
     if (config.database && !(config.database.development || config.database.production)) {
-      reject(new Error('config.database is invalid'))
+      reject(Error('config.database is invalid'))
     }
 
     resolve(config)

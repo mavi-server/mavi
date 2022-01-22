@@ -158,13 +158,11 @@ module.exports = {
             type: 'integer',
             constraints: ['notNullable'],
             comment: 'author',
-            references: 'id',
-            inTable: 'users',
+            references: 'users.id',
           },
           community: {
             type: 'integer',
-            references: 'id',
-            inTable: 'communities',
+            references: 'communities.id',
           },
           title: {
             type: 'string',
@@ -193,7 +191,18 @@ module.exports = {
             type: 'string',
             constraints: ['notNullable'],
           },
-          timestamps: [true, true],
+          updated_at: {
+            // if type is a timestamp and the column name includes `update`, date will be updated automatically on every update
+            type: 'timestamp',
+            useTz: true,
+            precision: 6,
+          },
+          created_at: {
+            // if type is a timestamp and the column name includes `create`, date will be created automatically on creation
+            type: 'timestamp',
+            useTz: true,
+            precision: 6,
+          },
         },
       },
       populate: {

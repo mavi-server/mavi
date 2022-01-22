@@ -20,12 +20,12 @@ const utils = {
 const setMiddlewares = fn => {
   if (typeof fn === 'function') return fn()
   else if (typeof fn === 'string') return middlewares[fn]
-  else throw new Error('Please define blue-server middlewares')
+  else throw Error('Please define blue-server middlewares')
 }
 
 const createRouter = ({ routes, define }) => {
-  if (!routes) throw new Error('Please define blue-server routes')
-  else if (!define) throw new Error('Please define blue-server define')
+  if (!routes) throw Error('Please define blue-server routes')
+  else if (!define) throw Error('Please define blue-server define')
 
   const $routes = hydrateRoutes({ routes, define }) // global routes
 
@@ -44,7 +44,7 @@ const createRouter = ({ routes, define }) => {
 
   for (const model in $routes) {
     const routes = $routes[model] // local routes
-    if (!routes) throw new Error(`Please define blue-server routes for ${model}`)
+    if (!routes) throw Error(`Please define blue-server routes for ${model}`)
 
     // Use route configs to generate router
     for (const config of routes) {

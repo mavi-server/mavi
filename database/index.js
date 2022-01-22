@@ -11,7 +11,7 @@ const createDatabase = (config) => {
   //     console.log(`[${counter}. sql]`, `\x1b[35m${data.sql}\x1b[0m`, data.bindings)
   //   })
   //   knex.on('query-error', function (err) {
-  //     throw new Error(err.message)
+  //     throw Error(err.message)
   //   })
   // }
 

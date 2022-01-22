@@ -23,7 +23,7 @@ module.exports = ({ routes, define }) => {
 
         // schema columns
         if (define.models[from]) route.schema = Object.keys(define.models[from])
-        else if (!isPlugin) throw new Error('the blue-server model is not defined!')
+        else if (!isPlugin) throw Error('the blue-server model is not defined!')
 
         // all the columns are neccessarry for query building
         // ensure all populated routes has columns too!
