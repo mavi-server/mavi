@@ -12,6 +12,8 @@ const generateSchemaSQL = (models, options = {}) => {
     let tableSchemaString = []
 
     for (const column in Table) {
+      if (column === 'hash') continue
+
       let columnSchemaString = ''
       const settings = Table[column]
 

@@ -197,18 +197,7 @@ export declare namespace Model {
     | 'point'
   type constraints = 'primary' | 'nullable' | 'notNullable' | 'unique' | 'unsigned'
   type foreignEventOptions = 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'NO ACTION'
-  interface Tables {
-    /**
-     * Table name
-     */
-    [tableName: string]: {
-      /**
-       * Column name
-       */
-      [columnName: string]: Properties,
-    }
-  }
-  interface Properties {
+  type Properties = {
     /**
      * Data type
      */
@@ -276,6 +265,27 @@ export declare namespace Model {
      * Private columns are not included in the response.
      */
     private?: boolean
+  }
+  type Tables = {
+    /**
+     * Table name
+     */
+    [tableName: string]: {
+      /**
+       * Column name
+       */
+      [columnName: string]: Properties | {}
+    } & {
+      /**
+       * Model hash. Used for detecting the changes then updating your database accordingly.
+       */
+      hash: string
+    }
+  } & {
+    /**
+     * Column hash. Used for detecting the changes then updating your database accordingly.
+     */
+    hash: string
   }
 }
 
