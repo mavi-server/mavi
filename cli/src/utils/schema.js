@@ -138,4 +138,5 @@ const createTables = (Tables) => {
     console.error(err.detail)
   }
 }
+
 module.exports = { generateSchemaSQL, createTables }
