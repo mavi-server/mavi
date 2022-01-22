@@ -128,17 +128,32 @@ const generateSchemaSQL = (models, options = {}) => {
   return SQL
 }
 
-const createTables = (Tables) => {
-  const eachTableName = Object.keys(Tables)
-  const execString = eachTableName.reduce((string, key) => {
-    return string.concat(`.createTable("${key}", ${Tables[key]})`)
-  }, 'knex.schema')
+const up = async (models) => {
+  // Generate schema queries for restructuring the database
+  const SchemaSQL = generateSchemaSQL(models, { debug: false })
+  const tableCount = Object.keys(SchemaSQL).length
+  console.log(`Executing schema queries...`)
+  console.log(`${tableCount} table${tableCount ? 's' : ''} to create`)
 
-  try {
-    return eval(execString)
-  } catch (err) {
-    console.error(err.detail)
+  // execute queries
+  for (const model in SchemaSQL) {
+    const sql = SchemaSQL[model]
+    await knex.schema.createTable(model, (table) => {
+      eval(sql)
+      console.log(`\x1b[32m[Table ${model} created]\x1b[0m`)
+    })
+  }
+}
+const down = async (models) => {
+  for (const model in models) {
+    try {
+      await knex.raw(`DROP TABLE IF EXISTS "${model}" CASCADE`)
+      console.log(`\x1b[31m[Table ${model} removed]\x1b[0m`)
+    } catch (err) {
+      console.error(err.detail)
+    }
   }
 }
 
-module.exports = { generateSchemaSQL, createTables }
+
+module.exports = { generateSchemaSQL, up, down }
