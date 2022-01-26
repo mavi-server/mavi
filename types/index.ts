@@ -196,7 +196,9 @@ export declare namespace Model {
     | 'geography'
     | 'point'
   type constraints = 'primary' | 'nullable' | 'notNullable' | 'unique' | 'unsigned'
-  type foreignEventOptions = 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'NO ACTION'
+  type SQL_Foreign_Commands = 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'NO ACTION'
+  type SQL_Commands = string
+
   type Properties = {
     /**
      * Data type
@@ -251,8 +253,8 @@ export declare namespace Model {
      * Sets the comment for a table column.
      */
     comment?: string
-    onDelete?: foreignEventOptions
-    onUpdate?: foreignEventOptions
+    onDelete?: SQL_Foreign_Commands | SQL_Commands
+    onUpdate?: SQL_Foreign_Commands | SQL_Commands
     /**
      * References to "table" where the foreign key column is located
      */

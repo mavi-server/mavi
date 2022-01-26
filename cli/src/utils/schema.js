@@ -44,21 +44,18 @@ const generateSchemaSQL = (models, options = {}) => {
         }
 
         // default value for timestamp and datetime is current time
-        else if (settings.type.match(/datetime|timestamp/)) {
-          if ("useTz" in settings) columnSchemaString = columnSchemaString.concat(`('${column}', { useTz: ${settings.useTz} })`)
-          else if ("useTz" && "precision" in settings) columnSchemaString = columnSchemaString.concat(`('${column}', { useTz: ${settings.useTz}, precision: ${settings.precision} })`)
-          else columnSchemaString = columnSchemaString.concat(`('${column}')`)
+        else if (settings.type.match(/datetime|timestamp/g)) {
+          if (!("precision" in settings)) settings.precision = 6
+          if (!("useTz" in settings)) settings.useTz = true
+
+          columnSchemaString = columnSchemaString.concat(`('${column}', { useTz: ${settings.useTz}, precision: ${settings.precision} })`)
 
           // set default columns for special columns
-          // ERRORRR!!!
-          // if (column.match(/update/)) {
-          //   settings.defaultTo = "knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')"
-          // }
-          // else if (column.match(/create/)) {
-          //   settings.defaultTo = "knex.raw('CURRENT_TIMESTAMP')"
-          // }
+          if (column.match(/[Cc]reate|[Uu]pdate/g)) {
+            columnSchemaString = columnSchemaString.concat(`.defaultTo(knex.fn.now(${settings.precision}))`)
+          }
         }
-        else if (settings.type.match(/time/)) {
+        else if (settings.type.match(/time/g)) {
           if ("precision" in settings) columnSchemaString = columnSchemaString.concat(`('${column}', { precision: ${settings.precision} })`)
         }
         else columnSchemaString = columnSchemaString.concat(`('${column}')`)
@@ -90,7 +87,7 @@ const generateSchemaSQL = (models, options = {}) => {
       // ## end chainable properties ## 
 
 
-      // ## set foreign keys at the end
+      // set foreign keys
       if ("references" in settings) {
         if (settings.references.split('.').length === 0) {
           throw Error('schema generator: `references` must be in format table.column')
@@ -103,7 +100,6 @@ const generateSchemaSQL = (models, options = {}) => {
         // set foreign key events
         const events = ['onDelete', 'onUpdate']
         events.forEach(fn => {
-          // 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'NO ACTION'
           if (fn in settings) {
             settings[fn] = settings[fn].toUpperCase()
             columnSchemaString = columnSchemaString.concat(`.${fn}('${settings[fn]}')`)
@@ -113,7 +109,6 @@ const generateSchemaSQL = (models, options = {}) => {
         // create foreign key
         tableSchemaString.push(columnSchemaString)
       }
-      // ## end foreign keys ##
     }
 
     // set as function 
@@ -128,7 +123,7 @@ const generateSchemaSQL = (models, options = {}) => {
   return SQL
 }
 
-const up = async (models) => {
+const up = async (knex, models) => {
   // Generate schema queries for restructuring the database
   const SchemaSQL = generateSchemaSQL(models, { debug: false })
   const tableCount = Object.keys(SchemaSQL).length
@@ -144,7 +139,7 @@ const up = async (models) => {
     })
   }
 }
-const down = async (models) => {
+const down = async (knex, models) => {
   for (const model in models) {
     try {
       await knex.raw(`DROP TABLE IF EXISTS "${model}" CASCADE`)

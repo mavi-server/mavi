@@ -48,4 +48,15 @@ module.exports = {
     },
     debug: false,
   },
+  triggerFunctions: {
+    ON_UPDATE_TIMESTAMP_SQL: `
+      CREATE OR REPLACE FUNCTION on_update_timestamp()
+        RETURNS trigger AS $$
+        BEGIN
+          NEW.updated_at = now();
+          RETURN NEW;
+        END;
+      $$ language 'plpgsql';
+    `,
+  },
 };
