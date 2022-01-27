@@ -4,7 +4,7 @@ const { writeFile, existsSync } = require('fs')
 const debug = true
 
 // Functionalities
-const { generateSchemaSQL } = require('../utils/schema')
+const { generateSchemaSQL, generateColumnType } = require('../utils/schema')
 
 // Env variables
 require('dotenv').config({ path: path.resolve('.env') })
@@ -178,32 +178,59 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
 
           // find matching column
           if (doesColumnHashMatches(models[model][column].hash)) {
-            // if column renamed
-            if (!(column in db_model.model_json)) {
-              await knex.schema.alterTable(model, (table) => {
+            await knex.schema.alterTable(model, (table) => {
+              // if column renamed
+              if (!(column in db_model.model_json)) {
                 table.renameColumn(db_model_json_column.name, column)
+                console.log(`\x1b[36m[${model}.${db_model_json_column.name} renamed to ${model}.\x1b[32m${column}]\x1b[0m`)
+              }
+
+              // if column type changed
+              if (db_model_json_column.type !== models[model][column].type) {
+                eval(generateColumnType(models[model][column], column) + '.alter()')
+                console.log(`\x1b[36m[${model}.${column} type changed to \x1b[32m${models[model][column].type}]\x1b[0m`)
+              }
+
+              // if charset or defaultTo or comment changed
+              ['charset', 'defaultTo', 'comment'].forEach(fn => {
+                if (db_model_json_column[fn] !== models[model][column][fn]) {
+                  table[fn](models[model][column][fn]).alter()
+                  console.log(`\x1b[36m[${model}.${column}.${fn} changed to \x1b[32m${models[model][column][fn]}]\x1b[0m`)
+                }
               })
-              console.log(`\x1b[36m[${model}.${db_model_json_column.name} renamed to ${model}.\x1b[32m${column}]\x1b[0m`)
-            }
 
-            // column maxlength changed
-            // if (db_model_json_column.maxlength !== models[model][column].maxlength) {
-            //   await knex.schema.alterTable(model, (table) => {
-            //     table.string(column, models[model][column].maxlength)
-            //   })
-            //   console.log(`[${model}.${column} maxlength changed to \x1b[34m${models[model][column].maxlength}\x1b[0m]`)
-            // }
+              // if constraints changed
+              if (models[model][column].constraints) {
+                const removedConstraints = models[model][column].constraints.filter(ct => !db_model_json_column.constraints.find(db_ct => db_ct === ct))
+                const addedConstraints = db_model_json_column.constraints.filter(db_ct => !models[model][column].constraints.find(ct => ct === db_ct))
+                if (removedConstraints.length) {
+                  // drop constraints
+                  removedConstraints.forEach(fn => {
+                    let Fn = `drop${fn[0].toUpperCase() + fn.slice(1)}`
+
+                    if (fn === 'nullable') Fn = 'dropNullable'
+                    else if (fn === 'notNullable') Fn = 'setNullable'
+
+                    table[Fn](column) // drop
+                    console.log(`\x1b[36m[${model}.${column} constraints removed: \x1b[32m${removedConstraints.join(', ')}]\x1b[0m`)
+                  })
+                }
+                if (addedConstraints.length) {
+                  addedConstraints.forEach(fn => {
+                    table[fn](column) // set
+                    console.log(`\x1b[36m[${model}.${column} constraints added: \x1b[32m${addedConstraints.join(', ')}]\x1b[0m`)
+                  })
+                }
+              }
+            })
+
+            // ERROR
+            // update the column properties
+            // await knex.schema.alterTable(model, (table) => {
+            //   eval(generateSchemaSQL(modelWithOneColumn, { alter: true, debug })[model])
+            //   console.log(`\x1b[36m[${model}.${column} properties are regenerated\x1b[0m]`)
+            // })
           }
-
-          // regenerate the all column properties
-          // await knex.schema.alterTable(model, (table) => {
-          //   // del column
-          //   table.dropColumn(column)
-          //   // need improvment!!
-          //   // add column
-          //   eval(generateSchemaSQL(modelWithOneColumn, { debug })[model])
-          // })
-          // console.log(`[${ model }.${ column } properties are regenerated\x1b[0m]`)
 
           // // not matched. create a new column
           else {

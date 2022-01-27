@@ -195,7 +195,7 @@ export declare namespace Model {
     | 'geometry'
     | 'geography'
     | 'point'
-  type constraints = 'primary' | 'nullable' | 'notNullable' | 'unique' | 'unsigned'
+  type constraints = 'primary' | 'nullable' | 'notNullable' | 'unique' | 'index'
   type SQL_Foreign_Commands = 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'NO ACTION'
   type SQL_Commands = string
 
