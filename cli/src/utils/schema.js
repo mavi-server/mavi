@@ -9,7 +9,8 @@ const generateSchemaSQL = (models, options = {}) => {
   const SQL = {}
   for (const model in models) {
     const Table = models[model] // alias
-    let tableSchemaString = []
+    let tableSchemaStringOne = []
+    let tableSchemaStringTwo = []
 
     for (const column in Table) {
       if (column === 'hash') continue
@@ -22,14 +23,16 @@ const generateSchemaSQL = (models, options = {}) => {
       }
 
       // create column string
-      tableSchemaString.push(generateColumnType(settings, column))
-      // create column constraints
-      tableSchemaString.push(generateForeignKey(settings, column))
+      tableSchemaStringOne.push(generateColumnType(settings, column))
+
+      // create column foreign
+      const foreignKey = generateForeignKey(settings, column, model)
+      if (foreignKey) tableSchemaStringTwo.push(foreignKey)
     }
 
     // set as function 
     // used as: knex.schema.createTable(tableName, (table) => {...tableSchemaString...})
-    SQL[model] = tableSchemaString.join(';')
+    SQL[model] = [...tableSchemaStringOne, ...tableSchemaStringTwo].join(';')
   }
 
 
@@ -44,9 +47,12 @@ const generateColumnType = (settings, column) => {
   let columnSchemaString = `table.${settings.type}`
 
   if (["integer", "tinyint", "string", "binary"].includes(settings.type)) {
-    if (!("maxlength" in settings)) settings.maxlength = 255
-
-    columnSchemaString = columnSchemaString.concat(`('${column}', ${settings.maxlength})`)
+    if ("maxlength" in settings) {
+      columnSchemaString = columnSchemaString.concat(`('${column}', ${settings.maxlength})`)
+    }
+    else {
+      columnSchemaString = columnSchemaString.concat(`('${column}')`)
+    }
   }
 
   // set dataset if exists
@@ -72,12 +78,10 @@ const generateColumnType = (settings, column) => {
   }
   else columnSchemaString = columnSchemaString.concat(`('${column}')`)
 
-  Array(["charset", "defaultTo", "comment", "unsigned"])
-    .filter(fn => fn in settings)
-    .forEach(fn => {
-      columnSchemaString = columnSchemaString.concat(`.${fn}()`)
-    })
-
+  if ("charset" in settings) columnSchemaString = columnSchemaString.concat(`.charset('${settings.charset}')`)
+  if ("defaultTo" in settings) columnSchemaString = columnSchemaString.concat(`.defaultTo('${settings.defaultTo}')`)
+  if ("comment" in settings) columnSchemaString = columnSchemaString.concat(`.comment('${settings.comment}')`)
+  if ("unsigned" in settings) columnSchemaString = columnSchemaString.concat(`.unsigned()`)
   if ("constraints" in settings) {
     settings.constraints.forEach(constraint => {
       columnSchemaString = columnSchemaString.concat(`.${constraint}()`)
@@ -87,13 +91,13 @@ const generateColumnType = (settings, column) => {
   return columnSchemaString
 }
 
-const generateForeignKey = (settings, column) => {
-  let columnSchemaString = `table.foreign('${column}')`
-
+const generateForeignKey = (settings, column, table) => {
   if ("references" in settings) {
     if (settings.references.split('.').length === 0) {
       throw Error('schema generator: `references` must be in format table.column')
     }
+
+    let columnSchemaString = `table.foreign('${column}', '${table}_${column}__${settings.references.replace('.', '_')}_foreign')`
 
     columnSchemaString = columnSchemaString.concat(`.references('${settings.references}')`)
 
@@ -105,9 +109,8 @@ const generateForeignKey = (settings, column) => {
         columnSchemaString = columnSchemaString.concat(`.${fn}('${settings[fn]}')`)
       }
     })
+    return columnSchemaString
   }
-
-  return columnSchemaString
 }
 
 const up = async (knex, models) => {

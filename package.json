@@ -1,6 +1,6 @@
 {
   "name": "blue-server-api",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "license": "MIT",
   "description": "Create an abstracted and extendible server from one JSON file!",
   "main": "dist/index.js",

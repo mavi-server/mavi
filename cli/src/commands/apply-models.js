@@ -109,7 +109,7 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
           await knex.raw(`ALTER TABLE "${row.model_name}" DROP COLUMN IF EXISTS "${column}" CASCADE`)
 
           // log
-          console.log(`\x1b[31m[Column ${column} removed from ${row.model_name}]\x1b[0m`)
+          console.log(`\x1b[31m[${row.model_name}.${column} removed]\x1b[0m`)
 
           // if there is duplicated column in model file, previous column will be deleted
         }
@@ -182,67 +182,80 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
               }
 
               // if constraints changed
-              if (models[model][column].constraints) {
-                const addedConstraints = models[model][column].constraints.filter(ct => !db_model_json_column.constraints.find(db_ct => db_ct === ct))
-                const removedConstraints = db_model_json_column.constraints.filter(db_ct => !models[model][column].constraints.find(ct => ct === db_ct))
+              if (models[model][column].constraints !== db_model_json_column.constraints) {
+                if (models[model][column].constraints && !db_model_json_column.constraints) {
+                  // constraints defined in model but not in database state
+                  // will be handled below
+                  console.log(`\x1b[36m[${model}.${column} new constraints defined: \x1b[32m${models[model][column].constraints.join(', ')}]\x1b[0m`)
+                }
+                else if (!models[model][column].constraints && db_model_json_column.constraints) {
+                  // constraints removed from model but exists in database state
+                  // will be handled below
+                  console.log(`\x1b[36m[${model}.${column} all constraints deleted: \x1b[31m${db_model_json_column.constraints.join(', ')}]\x1b[0m`)
+                }
+                else {
+                  // detect if constraints changed (add/remove)
+                  const addedConstraints = models[model][column].constraints.filter(ct => !db_model_json_column.constraints.find(db_ct => db_ct === ct))
+                  const removedConstraints = db_model_json_column.constraints.filter(db_ct => !models[model][column].constraints.find(ct => ct === db_ct))
 
-                if (removedConstraints.length) {
-                  removedConstraints.forEach(fn => {
-                    let Fn = `drop${fn[0].toUpperCase() + fn.slice(1)}`
+                  if (removedConstraints.length) {
+                    removedConstraints.forEach(fn => {
+                      let Fn = `drop${fn[0].toUpperCase() + fn.slice(1)}`
 
-                    if (fn === 'nullable') {
-                      Fn = 'dropNullable'
-                      table[Fn](column)
-                    }
-                    else if (fn === 'notNullable') {
-                      Fn = 'setNullable'
-                      table[Fn](column)
-                    }
-                    else {
-                      switch (fn) {
-                        case 'unique':
-                          constraint = 'unique'
-                          break
-                        case 'primary':
-                          constraint = 'pkey'
-                          break
-                        case 'foreign':
-                          constraint = 'foreign'
-                          break
+                      if (fn === 'nullable') {
+                        Fn = 'dropNullable'
+                        table[Fn](column)
                       }
+                      else if (fn === 'notNullable') {
+                        Fn = 'setNullable'
+                        table[Fn](column)
+                      }
+                      else {
+                        switch (fn) {
+                          case 'unique':
+                            constraint = 'unique'
+                            break
+                          case 'primary':
+                            constraint = 'pkey'
+                            break
+                          case 'foreign':
+                            constraint = 'foreign'
+                            break
+                        }
 
-                      table[Fn](column, `${model}_${column}_${constraint}`)
-                    }
-                  })
+                        table[Fn](column, `${model}_${column}_${constraint}`)
+                      }
+                    })
 
-                  console.log(`\x1b[36m[${model} constraints removed: \x1b[32m${removedConstraints.join(', ')}]\x1b[0m`)
-                }
-                if (addedConstraints.length) {
-                  // will be handled below                  
-                  console.log(`\x1b[36m[${model} constraints added: \x1b[32m${addedConstraints.join(', ')}]\x1b[0m`)
-                }
+                    console.log(`\x1b[36m[${model} constraints removed: \x1b[32m${removedConstraints.join(', ')}]\x1b[0m`)
+                  }
+                  if (addedConstraints.length) {
+                    // will be handled below
+                    console.log(`\x1b[36m[${model} constraints added: \x1b[32m${addedConstraints.join(', ')}]\x1b[0m`)
+                  }
 
-                if ((addedConstraints.length && removedConstraints.length) === 0 && models[model][column].constraints.find(ct => ct === 'primary' || ct === 'unique')) {
-                  // GIVES ERROR SO SKIPPING
-                  return
+                  if ((addedConstraints.length && removedConstraints.length) === 0 && models[model][column].constraints.find(ct => ct === 'primary' || ct === 'unique')) {
+                    // GIVES ERROR SO SKIPPING
+                    return
+                  }
                 }
               }
 
               // if references is changed (not working right now)
-              // if (models[model][column].references !== db_model_json_column.references) {
-              //   if (db_model_json_column.references) {
-              //     // remove foreign key
-              //     await knex.raw(`ALTER TABLE ${model} DROP CONSTRAINT IF EXISTS ${model}_${db_model_json_column.name}_foreign`)
-              //     console.log(`\x1b[31m[${db_model_json_column.references} foreign key \x1b[0m constraint removed from ${model}.${column}]`)
-              //   }
+              if (models[model][column].references !== db_model_json_column.references) {
+                if (db_model_json_column.references) {
+                  // remove foreign key
+                  const CONSTRAINT_NAME = `${model}_${db_model_json_column.name}__${db_model_json_column.references.replace('.', '_')}_foreign`
+                  await knex.raw(`ALTER TABLE ${model} DROP CONSTRAINT IF EXISTS ${CONSTRAINT_NAME}`)
+                  console.log(`\x1b[31m[${db_model_json_column.references} foreign key \x1b[0m constraint removed from ${model}.${column}]`)
+                }
 
-              //   if (models[model][column].references) {
-              //     // add foreign key
-              //     await eval(generateForeignKey(models[model][column], column))
-              //     console.log(`\x1b[36m[${models[model][column].references} foreign key \x1b[0m constraint added to ${model}.${column}]`)
-              //   }
-              // }
-
+                if (models[model][column].references) {
+                  // add foreign key
+                  await eval(generateForeignKey(models[model][column], column, model))
+                  console.log(`\x1b[36m[${models[model][column].references} foreign key \x1b[0m constraint added to ${model}.${column}]`)
+                }
+              }
 
               // if enum dataset is changed (must check this one specially)
               if (models[model][column].type === "enum") {
@@ -295,11 +308,11 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
             })
           }
 
-          // // not matched. create a new column
+          // not matched. create a new column
           else {
             await knex.schema.alterTable(model, async (table) => {
               eval(generateSchemaSQL(modelWithOneColumn, { debug })[model])
-              console.log(`\x1b[32m[Column ${model}.${column} created]\x1b[0m`)
+              console.log(`\x1b[32m[${model}.${column} created]\x1b[0m`)
             })
           }
         }
