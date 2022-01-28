@@ -205,6 +205,24 @@ module.exports = {
           },
         },
       },
+      seeds: {
+        posts: [
+          {
+            id: 1,
+            user: 1,
+            community: 1,
+            title: 'Post 1',
+            published: true,
+            content: '<p>This is the first post</p>',
+            description: 'This is the first post',
+            thumbnail: 1,
+            tags: '[1,2]',
+            language: 'en',
+            updated_at: '2022-01-01 00:00:00',
+            created_at: '2022-01-01 00:00:00',
+          },
+        ],
+      },
       populate: {
         user: {
           select: 'user',

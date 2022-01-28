@@ -113,32 +113,4 @@ const generateForeignKey = (settings, column, table) => {
   }
 }
 
-const up = async (knex, models) => {
-  // Generate schema queries for restructuring the database
-  const SchemaSQL = generateSchemaSQL(models, { debug: false })
-  const tableCount = Object.keys(SchemaSQL).length
-  console.log(`Executing schema queries...`)
-  console.log(`${tableCount} table${tableCount ? 's' : ''} to create`)
-
-  // execute queries
-  for (const model in SchemaSQL) {
-    const sql = SchemaSQL[model]
-    await knex.schema.createTable(model, (table) => {
-      eval(sql)
-      console.log(`\x1b[32m[Table ${model} created]\x1b[0m`)
-    })
-  }
-}
-const down = async (knex, models) => {
-  for (const model in models) {
-    try {
-      await knex.raw(`DROP TABLE IF EXISTS "${model}" CASCADE`)
-      console.log(`\x1b[31m[Table ${model} removed]\x1b[0m`)
-    } catch (err) {
-      console.error(err.detail)
-    }
-  }
-}
-
-
-module.exports = { generateSchemaSQL, generateColumnType, generateForeignKey, up, down }
+module.exports = { generateSchemaSQL, generateColumnType, generateForeignKey }

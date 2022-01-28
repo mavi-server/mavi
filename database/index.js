@@ -7,7 +7,7 @@ const createDatabase = (config) => {
   const knex = require('knex')(cfg)
 
 
-  // create triggerFunctions
+  // Create trigger-functions
   for (const fn in $config.triggerFunctions) {
     knex.raw($config.triggerFunctions[fn]).then(() => {
       console.log(`\x1b[32m[Function ${fn} created]\x1b[0m`)

@@ -1,7 +1,9 @@
+// this script needs testing for edge cases
+
 const path = require('path')
 const util = require("util")
-const { writeFile, existsSync } = require('fs')
-const debug = true
+const { writeFile, existsSync, readdirSync } = require('fs')
+const debug = false
 
 // Functionalities
 const { generateSchemaSQL, generateColumnType, generateForeignKey } = require('../utils/schema')
@@ -66,14 +68,33 @@ const onUpdateTrigger = table => `
   BEFORE UPDATE ON ${table} FOR EACH ROW
   EXECUTE PROCEDURE on_update_timestamp();
 `
+const seedModelIfSeedableAndNotSeeded = async (model, seeded) => {
+  // check seed data
+  if (!seeded) {
+    const seedFile = `${model}.seed.js`
+    const modelSeedExists = existsSync(path.join(modelsPath, seedFile))
 
-// check modelsTable and insert/update models
+    if (modelSeedExists) {
+      const modelSeed = require(path.join(modelsPath, seedFile))
+
+      await knex(model).insert(modelSeed).then(() => {
+        seeded = true
+        console.log(`\x1b[32m[${model} seeded]\x1b[0m`)
+      })
+    }
+  }
+
+  return seeded
+}
+
+// check modelsTable and apply models
 knex.schema.hasTable(modelsTable).then(async (exists) => {
   if (!exists) {
     // create modelsTable for detecting model file changes
     await knex.schema.createTable(modelsTable, (table) => {
       table.string('model_hash', 128).primary()
       table.string('model_name', 128).unique()
+      table.boolean('model_seeded').defaultTo(false)
       table.json('model_json')
     })
   }
@@ -116,7 +137,7 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
       }
       else {
         // model removed from models folder
-        // *we should give a confirmation before removing the tables
+        // *maybe we should give a confirmation before removing the tables
 
         // delete model from database state
         await knex(modelsTable).where('model_hash', row.model_hash).delete()
@@ -128,6 +149,7 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
         console.log(`\x1b[31m[Table ${row.model_name} removed]\x1b[0m`)
       }
     }
+    // ### end compare database state with models ###
 
     // ### compare models with database state ###
     for (const model in models) {
@@ -317,11 +339,15 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
           }
         }
 
+        db_model.model_seeded = await seedModelIfSeedableAndNotSeeded(model, db_model.model_seeded)
+
+
         // update database state for model
         await knex(modelsTable).where({
           'model_hash': models[model].hash
         }).update({
           'model_name': model,
+          'model_seeded': db_model.model_seeded,
           'model_json': JSON.stringify(models[model])
         })
       }
@@ -334,9 +360,12 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
           console.log(`\x1b[32m[Table ${model} created]\x1b[0m`)
         }).then(async () => await knex.raw(onUpdateTrigger(model)))
 
+        const seeded = await seedModelIfSeedableAndNotSeeded(model, false)
+
         const data = {
           'model_hash': models[model].hash,
           'model_name': model,
+          'model_seeded': seeded,
           'model_json': JSON.stringify(models[model])
         }
         await knex(modelsTable).insert(data)
@@ -345,16 +374,11 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
     // ### end compare models with database state ###
   })
 })
-// console.log(models)
 
-// up(models)
-// down(models)
-
-
-// // test results
+// // see database state:
 // const test_result = await knex.select('*').from(modelsTable)
 // console.log(test_result)
 
-
 // note:
 // if any error occurs, the database state will be broken
+// maybe rollback/commit can be used to fix the database state
