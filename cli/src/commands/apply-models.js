@@ -4,7 +4,7 @@ const { writeFile, existsSync } = require('fs')
 const debug = true
 
 // Functionalities
-const { generateSchemaSQL, generateColumnType } = require('../utils/schema')
+const { generateSchemaSQL, generateColumnType, generateForeignKey } = require('../utils/schema')
 
 // Env variables
 require('dotenv').config({ path: path.resolve('.env') })
@@ -146,12 +146,8 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
           await knex.schema.renameTable(db_model.model_name, model)
           console.log(`\x1b[36m[Table ${db_model.model_name} renamed to \x1b[34m${model}]\x1b[0m`)
 
-          // if table is renamed, user should update model export names and filenames too
+          // important note: if table is renamed, user should update model export names and filenames too
         }
-        // look for the other changes, like foreign key changes
-        // ...
-        // ...
-        // ...
 
         // look for the column changes
         for (const column in models[model]) {
@@ -178,58 +174,125 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
 
           // find matching column
           if (doesColumnHashMatches(models[model][column].hash)) {
-            await knex.schema.alterTable(model, (table) => {
+            await knex.schema.alterTable(model, async (table) => {
               // if column renamed
               if (!(column in db_model.model_json)) {
                 table.renameColumn(db_model_json_column.name, column)
                 console.log(`\x1b[36m[${model}.${db_model_json_column.name} renamed to ${model}.\x1b[32m${column}]\x1b[0m`)
               }
 
-              // if column type changed
-              if (db_model_json_column.type !== models[model][column].type) {
-                eval(generateColumnType(models[model][column], column) + '.alter()')
-                console.log(`\x1b[36m[${model}.${column} type changed to \x1b[32m${models[model][column].type}]\x1b[0m`)
-              }
-
-              // if charset or defaultTo or comment changed
-              ['charset', 'defaultTo', 'comment'].forEach(fn => {
-                if (db_model_json_column[fn] !== models[model][column][fn]) {
-                  table[fn](models[model][column][fn]).alter()
-                  console.log(`\x1b[36m[${model}.${column}.${fn} changed to \x1b[32m${models[model][column][fn]}]\x1b[0m`)
-                }
-              })
-
               // if constraints changed
               if (models[model][column].constraints) {
-                const removedConstraints = models[model][column].constraints.filter(ct => !db_model_json_column.constraints.find(db_ct => db_ct === ct))
-                const addedConstraints = db_model_json_column.constraints.filter(db_ct => !models[model][column].constraints.find(ct => ct === db_ct))
+                const addedConstraints = models[model][column].constraints.filter(ct => !db_model_json_column.constraints.find(db_ct => db_ct === ct))
+                const removedConstraints = db_model_json_column.constraints.filter(db_ct => !models[model][column].constraints.find(ct => ct === db_ct))
+
                 if (removedConstraints.length) {
-                  // drop constraints
                   removedConstraints.forEach(fn => {
                     let Fn = `drop${fn[0].toUpperCase() + fn.slice(1)}`
 
-                    if (fn === 'nullable') Fn = 'dropNullable'
-                    else if (fn === 'notNullable') Fn = 'setNullable'
+                    if (fn === 'nullable') {
+                      Fn = 'dropNullable'
+                      table[Fn](column)
+                    }
+                    else if (fn === 'notNullable') {
+                      Fn = 'setNullable'
+                      table[Fn](column)
+                    }
+                    else {
+                      switch (fn) {
+                        case 'unique':
+                          constraint = 'unique'
+                          break
+                        case 'primary':
+                          constraint = 'pkey'
+                          break
+                        case 'foreign':
+                          constraint = 'foreign'
+                          break
+                      }
 
-                    table[Fn](column) // drop
-                    console.log(`\x1b[36m[${model}.${column} constraints removed: \x1b[32m${removedConstraints.join(', ')}]\x1b[0m`)
+                      table[Fn](column, `${model}_${column}_${constraint}`)
+                    }
                   })
+
+                  console.log(`\x1b[36m[${model} constraints removed: \x1b[32m${removedConstraints.join(', ')}]\x1b[0m`)
                 }
                 if (addedConstraints.length) {
-                  addedConstraints.forEach(fn => {
-                    table[fn](column) // set
-                    console.log(`\x1b[36m[${model}.${column} constraints added: \x1b[32m${addedConstraints.join(', ')}]\x1b[0m`)
-                  })
+                  // will be handled below                  
+                  console.log(`\x1b[36m[${model} constraints added: \x1b[32m${addedConstraints.join(', ')}]\x1b[0m`)
+                }
+
+                if ((addedConstraints.length && removedConstraints.length) === 0 && models[model][column].constraints.find(ct => ct === 'primary' || ct === 'unique')) {
+                  // GIVES ERROR SO SKIPPING
+                  return
                 }
               }
-            })
 
-            // ERROR
-            // update the column properties
-            // await knex.schema.alterTable(model, (table) => {
-            //   eval(generateSchemaSQL(modelWithOneColumn, { alter: true, debug })[model])
-            //   console.log(`\x1b[36m[${model}.${column} properties are regenerated\x1b[0m]`)
-            // })
+              // if references is changed (not working right now)
+              // if (models[model][column].references !== db_model_json_column.references) {
+              //   if (db_model_json_column.references) {
+              //     // remove foreign key
+              //     await knex.raw(`ALTER TABLE ${model} DROP CONSTRAINT IF EXISTS ${model}_${db_model_json_column.name}_foreign`)
+              //     console.log(`\x1b[31m[${db_model_json_column.references} foreign key \x1b[0m constraint removed from ${model}.${column}]`)
+              //   }
+
+              //   if (models[model][column].references) {
+              //     // add foreign key
+              //     await eval(generateForeignKey(models[model][column], column))
+              //     console.log(`\x1b[36m[${models[model][column].references} foreign key \x1b[0m constraint added to ${model}.${column}]`)
+              //   }
+              // }
+
+
+              // if enum dataset is changed (must check this one specially)
+              if (models[model][column].type === "enum") {
+                const addedEnums = models[model][column].dataset.filter(e => !db_model_json_column.dataset.find(db_e => db_e === e))
+                const removedEnums = db_model_json_column.dataset.filter(db_e => !models[model][column].dataset.find(e => e === db_e))
+
+
+                // if enums changed
+                if (removedEnums.length || addedEnums.length) {
+                  const dataset = models[model][column].dataset.map(d => `'${d}'::text`).join(', ')
+
+                  // needs to drop check-constraint first
+                  await knex.raw(`
+                    ALTER TABLE "${model}" DROP CONSTRAINT IF EXISTS "${model}_${column}_check";
+                    ALTER TABLE "${model}" ADD CONSTRAINT "${model}_${column}_check" CHECK (${column} IN (${dataset}));
+                  `)
+                  // then add new check-constraint without altering the column
+                  // important note here: if some rows in the database have values that are not in the new dataset, query will fail
+
+                  console.log(`\x1b[36m[${model}.${column} dataset changed: ${db_model_json_column.dataset.join(', ')} -> \x1b[32m${models[model][column].dataset.join(', ')} \x1b[0m`)
+                }
+                return
+              }
+
+              let columnSchemaString = generateColumnType(models[model][column], column) + '.alter()'
+              await eval(columnSchemaString)
+              // console.log({ [model + '.' + column]: columnSchemaString })
+
+              // ### Logs ###
+              // if column type changed
+              if (db_model_json_column.type !== models[model][column].type) {
+                console.log(`\x1b[36m[${model}.${column}.type changed from ${db_model_json_column.type} to \x1b[32m${models[model][column].type}]\x1b[0m`)
+              }
+              // if column length changed
+              if (db_model_json_column.maxlength !== models[model][column].maxlength) {
+                console.log(`\x1b[36m[${model}.${column}.maxlength changed from ${db_model_json_column.maxlength} to \x1b[32m${models[model][column].maxlength}]\x1b[0m`)
+              }
+              // if charset, defaultTo, comment, or unsigned is changed, just log it
+              ["charset", "defaultTo", "comment", "unsigned"].forEach(fn => {
+                if (db_model_json_column[fn] !== models[model][column][fn]) {
+                  console.log(`\x1b[36m[${model}.${column}.${fn} changed from ${db_model_json_column[fn]} to \x1b[32m${models[model][column][fn]}]\x1b[0m`)
+                }
+                else if (!models[model][column][fn] && db_model_json_column[fn]) {
+                  console.log(`\x1b[36m[${model}.${column}.${fn} removed]\x1b[0m`)
+                }
+                else if (models[model][column][fn] && !db_model_json_column[fn]) {
+                  console.log(`\x1b[36m[${model}.${column}.${fn} added]\x1b[0m`)
+                }
+              })
+            })
           }
 
           // // not matched. create a new column
