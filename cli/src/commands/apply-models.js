@@ -87,10 +87,10 @@ const seedModelIfSeedableAndNotSeeded = async (model, seeded) => {
   return seeded
 }
 
-// check modelsTable and apply models
+// check database state and apply models
 knex.schema.hasTable(modelsTable).then(async (exists) => {
   if (!exists) {
-    // create modelsTable for detecting model file changes
+    // create new database state for detecting model file changes
     await knex.schema.createTable(modelsTable, (table) => {
       table.string('model_hash', 128).primary()
       table.string('model_name', 128).unique()
@@ -263,7 +263,7 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
                 }
               }
 
-              // if references is changed (not working right now)
+              // if references is changed
               if (models[model][column].references !== db_model_json_column.references) {
                 if (db_model_json_column.references) {
                   // remove foreign key
