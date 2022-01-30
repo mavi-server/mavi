@@ -57,15 +57,15 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, plugin, pluginConfig, _i, _a, Static, Base, Path;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    var config, HOST, PORT, plugin, pluginConfig, _i, _a, Static, Path, _b, _c, Static, Base, Path;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
                     console.error('[validateConfig]', err);
                     process.exit(1);
                 })];
             case 1:
-                config = _b.sent();
+                config = _d.sent();
                 HOST = config.host || 'localhost';
                 PORT = config.port || 3000;
                 // Connect to the database
@@ -75,7 +75,7 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
                 app.use(cookieParser());
                 app.use(cors(config.cors));
-                app.use(initializer(config)); // Set req.app properties
+                app.use(initializer(config)); // Set req.app properties  
                 app.use("".concat(config.api.base), timer, createRouter(config.api, { name: 'api' })); // Primary router is api
                 // Set plugins
                 if (config.api.plugins) {
@@ -96,19 +96,27 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                         }
                     }
                 }
-                // Set static folders
-                if (config.api.static) {
-                    for (_i = 0, _a = config.api.static; _i < _a.length; _i++) {
+                // Set Blue-Server static folders
+                if (config.static) {
+                    for (_i = 0, _a = config.static; _i < _a.length; _i++) {
                         Static = _a[_i];
+                        Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
+                        app.use('/', timer, express.static(Path, Static)); // Primary static folders
+                    }
+                }
+                // Set api static folders
+                if (config.api.static) {
+                    for (_b = 0, _c = config.api.static; _b < _c.length; _b++) {
+                        Static = _c[_b];
                         Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/');
                         Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
                         // set static folder
-                        app.use(Base, express.static(Path, Static.options));
+                        app.use(Base, timer, express.static(Path, Static.options));
                         // console.log(Base, Path)
                     }
                 }
                 app.listen(PORT, HOST, function () {
-                    console.log("[".concat(HOST, ":").concat(PORT, "] Server is running"));
+                    console.log("[http://".concat(HOST, ":").concat(PORT, "/] Server is running"));
                 });
                 return [2 /*return*/, app];
         }

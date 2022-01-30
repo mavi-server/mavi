@@ -41,7 +41,7 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
   app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
   app.use(cookieParser())
   app.use(cors(config.cors))
-  app.use(initializer(config)) // Set req.app properties
+  app.use(initializer(config)) // Set req.app properties  
   app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'api' })) // Primary router is api
 
   // Set plugins
@@ -66,7 +66,17 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
     }
   }
 
-  // Set static folders
+  // Set Blue-Server static folders
+  if (config.static) {
+    for (const Static of config.static) {
+      // physical path
+      const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
+
+      app.use('/', timer, express.static(Path, Static)) // Primary static folders
+    }
+  }
+
+  // Set api static folders
   if (config.api.static) {
     for (const Static of config.api.static) {
       // virtual path
@@ -75,13 +85,13 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
       const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
 
       // set static folder
-      app.use(Base, express.static(Path, Static.options))
+      app.use(Base, timer, express.static(Path, Static.options))
       // console.log(Base, Path)
     }
   }
 
   app.listen(PORT, HOST, () => {
-    console.log(`[${HOST}:${PORT}] Server is running`)
+    console.log(`[http://${HOST}:${PORT}/] Server is running`)
   })
 
   return app

@@ -11,9 +11,8 @@ if (!config) {
 }
 
 switch (command) {
-  case "start":
-    console.log('\x1b[36mStarting Blue Server...\x1b[0m')
-    // script = path.join(__dirname, `../../dist/index.js`)
+  case "dev":
+    console.log('\x1b[36mStarting Development Blue Server...\x1b[0m')
     script = path.join(__dirname, `../../index.js`)
     require(script).createServer(config)
   case "apply":
@@ -27,7 +26,10 @@ switch (command) {
     require(script)
     break;
   default:
-    console.log("Unknown command: " + command)
-    process.exit(1)
+  case "start":
+    console.log('\x1b[36mStarting Blue Server...\x1b[0m')
+    script = path.join(__dirname, `../../dist/index.js`)
+    require(script).createServer(config)
+    break;
 }
 

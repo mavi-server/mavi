@@ -96,7 +96,8 @@ export declare interface BlueServerConfig {
    * See details: https://knexjs.org/#Installation-client
    */
   database: any // I will define this later.
-  poweredBy?: string
+  poweredBy?: string,
+  static: Static[]
 }
 /**
  * Will transformed into the API routes
@@ -128,7 +129,7 @@ export declare interface Route {
    * 
    * You can also put your functions in this array instead of strings.
   */
-  middlewares?: string | string[] | middleware | middlewares[]
+  middlewares?: middlewares[] | string | string[] | middleware
   /**
    * Columns inherited from your model files.
    *
