@@ -13,16 +13,6 @@ module.exports = {
       min: 2,
       max: 10
     },
-    migrations: {
-      directory: './migrations',
-      // schemaName: 'public',
-      tableName: 'knex_migrations',
-      stub: 'migration.stub.js',
-      // disableMigrationsListValidation: true,
-    },
-    seeds: {
-      directory: './migrations',
-    },
     debug: false,
   },
   production: {
@@ -35,16 +25,6 @@ module.exports = {
     pool: {
       min: 2,
       max: 10
-    },
-    migrations: {
-      directory: './migrations',
-      // schemaName: 'public',
-      tableName: 'knex_migrations',
-      stub: 'migration.stub.js',
-      // disableMigrationsListValidation: true,
-    },
-    seeds: {
-      directory: './migrations',
     },
     debug: false,
   },
