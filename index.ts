@@ -42,42 +42,43 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
   app.use(cookieParser())
   app.use(cors(config.cors))
   app.use(initializer(config)) // Set req.app properties
-  app.use(`${config.api.base}`, timer, createRouter(config.api)) // Default plugin is api
-  app.use(`${config.api.base}/auth`, timer, createRouter(plugins.auth)) // Default plugin for auth
-
-  // Set static folders
-  for (const Static of config.api.static) {
-    // virtual path
-    const Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/')
-    // physical path
-    const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
-
-    // set static folder
-    app.use(Base, express.static(Path, Static.options))
-    // console.log(Base, Path)
-  }
+  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'api' })) // Primary router is api
 
   // Set plugins
-  // if (config.api.plugins) {
-  //   // additional routes
-  //   for (const name in config.api.plugins) {
-  //     // default plugins
-  //     if (plugins[name]) {
-  //       const pluginConfig = {
-  //         routes: { [name]: plugins[name] },
-  //         define: config.api.define
-  //       }
+  if (config.api.plugins) {
+    // Check plugins configuration
+    for (const plugin in config.api.plugins) {
+      if (plugin in plugins) {
+        const pluginConfig = {
+          routes: plugins[plugin].routes,
+          define: config.api.define // uses the same `define` as the api (for now)
+        }
 
-  //       app.use(`/${name}/`, timer, createRouter(pluginConfig))
-  //     }
+        // Set plugin as Router
+        app.use(`${config.api.base}/${plugin}`, timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }))
+      }
 
-  //     // custom plugins
-  //     else {
-  //       console.error(`Plugin ${name} not found`)
-  //       continue
-  //     }
-  //   }
-  // }
+      // custom plugins
+      else {
+        console.error(`Plugin ${plugin} not found`)
+        continue
+      }
+    }
+  }
+
+  // Set static folders
+  if (config.api.static) {
+    for (const Static of config.api.static) {
+      // virtual path
+      const Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/')
+      // physical path
+      const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
+
+      // set static folder
+      app.use(Base, express.static(Path, Static.options))
+      // console.log(Base, Path)
+    }
+  }
 
   app.listen(PORT, HOST, () => {
     console.log(`[${HOST}:${PORT}] Server is running`)

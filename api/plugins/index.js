@@ -1,3 +1,4 @@
+// right now, only two plugins supported
 module.exports = {
   auth: {
     routes: {
@@ -5,5 +6,5 @@ module.exports = {
     },
     define: {}
   },
-  ipx: require('./ipx/index'), // bu niye çalışmadı?
+  ipx: require('./ipx/index'), // not tested
 }

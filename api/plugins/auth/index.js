@@ -1,23 +1,17 @@
-const auth = {
-  login: require('./login'),
-  logout: require('./logout'),
-  register: require('./register'),
-}
-
 module.exports = [
   {
     path: '/login',
     method: 'post',
-    controller: auth.login,
+    controller: require('./login'),
   },
   {
     path: '/logout',
     method: 'post',
-    controller: auth.logout,
+    controller: require('./logout'),
   },
   {
     path: '/register',
     method: 'post',
-    controller: auth.register,
+    controller: require('./register'),
   },
 ]

@@ -57,7 +57,7 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, _i, _a, Static, Base, Path;
+    var config, HOST, PORT, plugin, pluginConfig, _i, _a, Static, Base, Path;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
@@ -76,36 +76,37 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 app.use(cookieParser());
                 app.use(cors(config.cors));
                 app.use(initializer(config)); // Set req.app properties
-                app.use("".concat(config.api.base), timer, createRouter(config.api)); // Default plugin is api
-                app.use("".concat(config.api.base, "/auth"), timer, createRouter(plugins.auth)); // Default plugin for auth
-                // Set static folders
-                for (_i = 0, _a = config.api.static; _i < _a.length; _i++) {
-                    Static = _a[_i];
-                    Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/');
-                    Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
-                    // set static folder
-                    app.use(Base, express.static(Path, Static.options));
-                    // console.log(Base, Path)
-                }
+                app.use("".concat(config.api.base), timer, createRouter(config.api, { name: 'api' })); // Primary router is api
                 // Set plugins
-                // if (config.api.plugins) {
-                //   // additional routes
-                //   for (const name in config.api.plugins) {
-                //     // default plugins
-                //     if (plugins[name]) {
-                //       const pluginConfig = {
-                //         routes: { [name]: plugins[name] },
-                //         define: config.api.define
-                //       }
-                //       app.use(`/${name}/`, timer, createRouter(pluginConfig))
-                //     }
-                //     // custom plugins
-                //     else {
-                //       console.error(`Plugin ${name} not found`)
-                //       continue
-                //     }
-                //   }
-                // }
+                if (config.api.plugins) {
+                    // Check plugins configuration
+                    for (plugin in config.api.plugins) {
+                        if (plugin in plugins) {
+                            pluginConfig = {
+                                routes: plugins[plugin].routes,
+                                define: config.api.define // uses the same `define` as the api (for now)
+                            };
+                            // Set plugin as Router
+                            app.use("".concat(config.api.base, "/").concat(plugin), timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }));
+                        }
+                        // custom plugins
+                        else {
+                            console.error("Plugin ".concat(plugin, " not found"));
+                            continue;
+                        }
+                    }
+                }
+                // Set static folders
+                if (config.api.static) {
+                    for (_i = 0, _a = config.api.static; _i < _a.length; _i++) {
+                        Static = _a[_i];
+                        Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/');
+                        Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
+                        // set static folder
+                        app.use(Base, express.static(Path, Static.options));
+                        // console.log(Base, Path)
+                    }
+                }
                 app.listen(PORT, HOST, function () {
                     console.log("[".concat(HOST, ":").concat(PORT, "] Server is running"));
                 });

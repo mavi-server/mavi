@@ -23,11 +23,15 @@ const setMiddlewares = fn => {
   else throw Error('Please define blue-server middlewares')
 }
 
-const createRouter = ({ routes, define }) => {
+const createRouter = ({ routes, define }, options) => {
+  // colorful log:
+  console.log(`\x1b[36mCreating \x1b[32m${options.name}\x1b[36m router ${options.isPlugin ? 'as plugin' : 'as primary'}...\x1b[0m`,)
+
   if (!routes) throw Error('Please define blue-server routes')
   else if (!define) throw Error('Please define blue-server define')
 
-  const $routes = hydrateRoutes({ routes, define }) // global routes
+  const $routes = hydrateRoutes({ routes, define }, options) // global routes
+
 
   // set defined middlewares
   if (define && define.middlewares) {
