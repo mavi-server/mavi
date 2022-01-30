@@ -20,6 +20,8 @@ const plugins = require('./api/plugins')
 
 // Services
 const validateConfig = require('./api/services/validate-config')
+
+// Db instance
 let database = null
 
 // Main
@@ -76,7 +78,6 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
   //     }
   //   }
   // }
-
 
   app.listen(PORT, HOST, () => {
     console.log(`[${HOST}:${PORT}] Server is running`)

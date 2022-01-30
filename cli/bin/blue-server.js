@@ -12,18 +12,17 @@ if (!config) {
 
 switch (command) {
   case "start":
-    script = path.join(__dirname, `../src/commands/apply-models.js`)
-    require(script)
-
+    console.log('\x1b[36mStarting Blue Server...\x1b[0m')
     script = path.join(__dirname, `../../dist/index.js`)
     require(script).createServer(config)
-    break;
-  case "start-as-dev":
-    script = path.join(__dirname, `../../index`)
-    require(script).createServer(config)
-    break;
   case "apply":
+    console.log('\x1b[36mApplying Models...\x1b[0m')
     script = path.join(__dirname, `../src/commands/apply-models.js`)
+    require(script)
+    break;
+  case "remove":
+    console.log('\x1b[36mRemoving Models...\x1b[0m')
+    script = path.join(__dirname, `../src/commands/remove-models.js`)
     require(script)
     break;
   default:

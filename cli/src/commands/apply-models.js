@@ -1,4 +1,4 @@
-// this script needs testing for edge cases
+// this file needs testing for edge cases
 
 const path = require('path')
 const util = require("util")
@@ -18,12 +18,21 @@ const modelsPath = path.join(process.cwd(), './models/')
 const modelsDirExists = existsSync(modelsPath)
 
 // -
+const $config = require('../../../config')
 const config = require(configPath)
 const models = modelsDirExists ? require(path.join(modelsPath, './index.js')) : config.api.define.models  // get all models
 
 // Database connection
 const knex = require(path.join(__dirname, '../../../database'))(config.database)
 
+// Create trigger-functions
+const createTriggers = async () => {
+  for (const fn in $config.database.triggerFunctions) {
+    knex.raw($config.database.triggerFunctions[fn]).then(() => {
+      console.log(`\x1b[32m[Function ${fn} created]\x1b[0m`)
+    })
+  }
+}
 const assignHashesAndWrite = async (model) => {
   let newHashAssigned = false
   if (!models[model].hash) { // assign new model hash
@@ -73,15 +82,15 @@ const seedModelIfSeedableAndNotSeeded = async (model, seeded) => {
   if (!seeded) {
     const seedFile = `${model}.seed.js`
     const modelSeedExists = existsSync(path.join(modelsPath, seedFile))
+    let modelSeed = {}
 
-    if (modelSeedExists) {
-      const modelSeed = require(path.join(modelsPath, seedFile))
+    if (modelSeedExists) modelSeed = require(path.join(modelsPath, seedFile))
+    else if (model in config.api.define.seeds) modelSeed = config.api.define.seeds[model]
 
-      await knex(model).insert(modelSeed).then(() => {
-        seeded = true
-        console.log(`\x1b[32m[${model} seeded]\x1b[0m`)
-      })
-    }
+    await knex(model).insert(modelSeed).then(() => {
+      seeded = true
+      console.log(`\x1b[32m[${model} seeded]\x1b[0m`)
+    })
   }
 
   return seeded
