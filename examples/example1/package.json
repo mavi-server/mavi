@@ -1,14 +1,11 @@
 {
-  "name": "example1",
+  "name": "example2",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index --exec \"blue-server\""
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "blue-server-api": "^0.4.30"
-  }
+  "license": "ISC"
 }
