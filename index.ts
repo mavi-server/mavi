@@ -86,6 +86,7 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
     for (const Static of config.api.static) {
       // virtual path
       const Base = path.join(config.api.base, Static.base || Static.folder.replace(/../g, '')).replace(/\\/g, '/')
+
       // physical path
       const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
 
