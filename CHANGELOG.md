@@ -50,3 +50,12 @@
 - next update, i will finish the `apply` command. it gives you control over the database via model files.
 - update readme.md
 - update npm package
+
+# 0.5.0
+
+- cli command `blue-server apply` is finished
+- new cli commands `remove`, `apply`, `start`
+- more readability
+- new example1 project in /examples
+- new welcome page
+- and more

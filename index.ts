@@ -66,27 +66,31 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
     }
   }
 
-  // Set Blue-Server static folders
+
+  // Blue-Server static folders
   if (config.static) {
     for (const Static of config.static) {
-      // physical path
-      const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
+      // virtual path
+      const Base = Static.base || Static.folder.replace(/../g, '') || '/'
 
-      app.use('/', timer, express.static(Path, Static)) // Primary static folders
+      // physical path
+      const Path = path.join(config.__dirname, Static.folder)
+
+      // set static folder
+      app.use(Base, timer, express.static(Path, Static.options)) // Primary static folders
     }
   }
 
-  // Set api static folders
+  // API static folders
   if (config.api.static) {
     for (const Static of config.api.static) {
       // virtual path
-      const Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/')
+      const Base = path.join(config.api.base, Static.base || Static.folder.replace(/../g, '')).replace(/\\/g, '/')
       // physical path
       const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
 
       // set static folder
       app.use(Base, timer, express.static(Path, Static.options))
-      // console.log(Base, Path)
     }
   }
 

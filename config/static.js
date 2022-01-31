@@ -1,11 +1,9 @@
 // Default static paths
-// You can overwrite this in your config
-const path = require('path')
-
+// You can overwrite this in your own config file
 module.exports = [
   {
     base: '/',
-    fullpath: path.join(__dirname, '../public').replace(/\\/g, '/'),
+    folder: '../public',
     options: {
       dotfiles: 'ignore',
       etag: false,

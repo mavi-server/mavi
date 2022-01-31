@@ -1,7 +1,8 @@
 // Knex Documentation: https://knexjs.org/
-const createDatabase = (config) => {
-  const mode = (process.env.NODE_ENV || 'development').toLowerCase()
-  const cfg = mode === 'production' ? config.production : config.development
+const mode = (process.env.NODE_ENV || 'development').toLowerCase()
+
+const createDatabase = (database) => {
+  const cfg = mode === 'production' ? database.production : database.development
   const knex = require('knex')(cfg)
 
   // if (cfg.debug === true) {

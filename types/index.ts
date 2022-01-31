@@ -97,7 +97,7 @@ export declare interface BlueServerConfig {
    */
   database: any // I will define this later.
   poweredBy?: string,
-  static: Static[]
+  [any: string]: any
 }
 /**
  * Will transformed into the API routes

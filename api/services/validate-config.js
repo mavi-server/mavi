@@ -33,8 +33,8 @@ module.exports = function (config) {
         case 'static':
           // include default static path by default
           // *default static path includes a welcome screen
-          if (config.api["static"]) {
-            config.api["static"] = $config.api["static"].concat(config.api["static"])
+          if (config["static"]) {
+            config["static"] = $config["static"].concat(config["static"])
             break
           }
         default:
