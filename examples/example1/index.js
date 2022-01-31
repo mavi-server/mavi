@@ -3,14 +3,16 @@ module.exports = {
   poweredBy: 'BlueServer v'.concat(Package.version),
   host: 'localhost',
   port: 3001,
+  // Check the cors module for more options: https://www.npmjs.com/package/cors
   cors: {
     origin: ['http://localhost:3000', 'http://localhost:3001'],
     methods: ['POST', 'GET', 'DELETE', 'PUT'],
     allowedHeaders: ['x-access-token', 'x-refresh-token', 'token', 'content-type', 'accept'],
   },
+  // See more about this database connection: https://knexjs.org/#Installation-client
   database: {
     development: {
-      client: 'pg',
+      client: 'pg', // I have not tested for other RDBMSs yet. PostgreSQL works fine. (0.5.4)
       connection: {
         database: 'test',
         user: 'postgres',
@@ -37,7 +39,9 @@ module.exports = {
   },
   api: {
     base: '/api',
+    // Api routes
     routes: {
+      // [table name]: Routes[]
       posts: [
         {
           path: '/posts',
@@ -82,57 +86,30 @@ module.exports = {
     },
     define: {
       models: {
-        // an important note here: all `hash` properties are automatically assigned if you put your models in the `models` folder and export with their name
+        // an important note here: all the `hash` properties are automatically assigned if you put your models in the `models` folder and export with their name in index file
         // example models/index.js:
         // module.exports = {
         //   users: require('./users'),
         //   posts: require('./posts'),
         // }
-        // if you use them here, you should assign `hash` properties manually
+        // but if you use them here, you should assign `hash` properties manually
+        // after that, if you change table/column names or add new tables/columns, or change your column properties
+        // blue-server will update your database automatically.
+        // be careful if you drop/rename your hash property, dependent entity will be deleted entirely from your database (0.5.4 and previous versions)
         users: {
-          id: {
-            type: 'increments',
-            constraints: ['primary'],
-            hash: 'WzE2NDMyMTk4NjY1MDRddXNlcnMuaWQ'
-          },
-          username: {
-            type: 'string',
-            constraints: ['unique'],
-            maxlength: 18,
-            hash: 'WzE2NDMyMTk4Nzc0MjRddXNlcnMudXNlcm5hbWU'
-          },
-          email: {
-            type: 'string',
-            constraints: ['unique'],
-            maxlength: 100,
-            hash: 'WzE2NDMyMjA4Nzg4MDdddXNlcnMuZW1haWw'
-          },
-          fullname: {
-            type: 'string',
-            maxlength: 100,
-            hash: 'WzE2NDMyMjE0OTg0NzFdbXl1c2Vycy5mdWxsbmFtZQ'
-          },
-          password: {
-            type: 'string',
-            private: true,
-            hash: 'WzE2NDMzOTk3MzA4MjJddXNlcnMucGFzc3dvcmQ'
-          },
+          id: { type: 'increments', constraints: ['primary'], hash: 'WzE2NDMyMTk4NjY1MDRddXNlcnMuaWQ' },
+          username: { type: 'string', constraints: ['unique'], maxlength: 18, hash: 'WzE2NDMyMTk4Nzc0MjRddXNlcnMudXNlcm5hbWU' },
+          email: { type: 'string', constraints: ['unique'], maxlength: 100, hash: 'WzE2NDMyMjA4Nzg4MDdddXNlcnMuZW1haWw' },
+          fullname: { type: 'string', maxlength: 100, hash: 'WzE2NDMyMjE0OTg0NzFdbXl1c2Vycy5mdWxsbmFtZQ' },
+          password: { type: 'string', private: true, hash: 'WzE2NDMzOTk3MzA4MjJddXNlcnMucGFzc3dvcmQ' },
           bio: { type: 'string', maxlength: 255, hash: 'dXNlcnMuYmlv' },
           blocked: { type: 'boolean', default: false, hash: 'dXNlcnMuYmxvY2tlZA' },
           avatar: { type: 'string', hash: 'dXNlcnMuYXZhdGFy' },
           token: { type: 'text', private: true, hash: 'dXNlcnMudG9rZW4' },
           refresh: { type: 'text', private: true, hash: 'dXNlcnMucmVmcmVzaA' },
-          updated_at: {
-            type: 'timestamp',
-            useTz: true,
-            precision: 6,
-            hash: 'dXNlcnMudXBkYXRlZF9hdA'
-          },
+          updated_at: { type: 'timestamp', useTz: true, precision: 6, hash: 'dXNlcnMudXBkYXRlZF9hdA' },
           created_at: {
-            type: 'timestamp',
-            useTz: true,
-            precision: 6,
-            hash: 'dXNlcnMuY3JlYXRlZF9hdA'
+            type: 'timestamp', useTz: true, precision: 6, hash: 'dXNlcnMuY3JlYXRlZF9hdA'
           },
           hash: 'dXNlcnM'
         },
@@ -209,6 +186,7 @@ module.exports = {
           hash: 'WzE2NDM1Nzg3NDYwNzBdcG9zdHM'
         },
       },
+      // Seeds are automatically inserted into your database
       seeds: {
         posts: [
           {
@@ -273,6 +251,8 @@ module.exports = {
           },
         ]
       },
+      // Populate configs are used in routes
+      // There are different types of populates but none of them is standard. I will explain them when they are ready.
       populate: {
         user: {
           select: 'user',
@@ -286,6 +266,7 @@ module.exports = {
           type: 'array-reference',
         },
       },
+      // Middlewares are used in routes
       middlewares: {
         greetings: function (req, res, next) {
           console.log('Hello from middleware!')
@@ -293,10 +274,11 @@ module.exports = {
         },
       },
     },
+    // Static path under api
     static: [
       {
-        base: '/static',
-        folder: 'public',
+        base: '/static', // virtual path
+        folder: 'public', // pysical path (also can be fullpath)
         options: {
           dotfiles: 'ignore',
           etag: false,
