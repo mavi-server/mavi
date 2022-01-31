@@ -91,7 +91,8 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
   }
 
   app.listen(PORT, HOST, () => {
-    console.log(`[http://${HOST}:${PORT}/] Server is running`)
+    console.log(`\x1b[34m${config.poweredBy} is running\x1b[0m`)
+    console.log(`\x1b[34mNetwork:\x1b[0m http://${HOST}:${PORT}`)
   })
 
   return app

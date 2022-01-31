@@ -27,10 +27,16 @@ const knex = require(path.join(__dirname, '../../../database'))(config.database)
 
 // Create trigger-functions
 const createTriggers = async () => {
+  if (!$config.database.triggerFunctions) throw new Error('`database.triggerFunctions` are required for auto-timestamping, maybe other things in the future')
+
+  const mode = (process.env.NODE_ENV || 'development').toLowerCase()
   for (const fn in $config.database.triggerFunctions) {
-    knex.raw($config.database.triggerFunctions[fn]).then(() => {
-      console.log(`\x1b[32m[Function ${fn} created]\x1b[0m`)
-    })
+    await knex.raw($config.database.triggerFunctions[fn]).then(() => {
+      // log created functions
+      if (mode in $config.database[mode] && $config.database[mode].debug) {
+        console.log(`\x1b[32m[Function ${fn} created]\x1b[0m`)
+      }
+    }).catch(err => null)
   }
 }
 const assignHashesAndWrite = async (model) => {
@@ -72,7 +78,7 @@ const assignHashesAndWrite = async (model) => {
     // }
   }
 }
-const onUpdateTrigger = table => `
+const bindOnUpdateTrigger = table => `
   CREATE TRIGGER ${table}_updated_at
   BEFORE UPDATE ON ${table} FOR EACH ROW
   EXECUTE PROCEDURE on_update_timestamp();
@@ -96,7 +102,10 @@ const seedModelIfSeedableAndNotSeeded = async (model, seeded) => {
   return seeded
 }
 
-// check database state and apply models
+// Create triggers first
+createTriggers()
+
+// Check database state and apply models
 knex.schema.hasTable(modelsTable).then(async (exists) => {
   if (!exists) {
     // create new database state for detecting model file changes
@@ -367,7 +376,7 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
         await knex.schema.createTable(model, (table) => {
           eval(generateSchemaSQL({ [model]: models[model] }, { debug })[model])
           console.log(`\x1b[32m[Table ${model} created]\x1b[0m`)
-        }).then(async () => await knex.raw(onUpdateTrigger(model)))
+        }).then(async () => await knex.raw(bindOnUpdateTrigger(model)))
 
         const seeded = await seedModelIfSeedableAndNotSeeded(model, false)
 

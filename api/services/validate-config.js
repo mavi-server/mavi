@@ -1,5 +1,5 @@
 // Default server configuration
-const $config = require('../../config/index')
+const $config = require('../../config')
 
 module.exports = function (config) {
   return new Promise((resolve, reject) => {
@@ -12,7 +12,7 @@ module.exports = function (config) {
       if (!config[key]) config[key] = $config[key]
     }
 
-    // check missing configs:
+    // Check missing configs:
 
     if (!config.api) {
       reject(Error('config.api is not defined'))
@@ -24,9 +24,10 @@ module.exports = function (config) {
         case 'base':
           if (config["base"]) {
             // append / from the beggining
-            if (config["base"][0] != '/') config["base"] = `/${config["base"]}`
+            if (!config["base"].startsWith('/')) config["base"] = `/${config["base"]}`
+
             // remove / from the end
-            if (config["base"][config["base"].length - 1] == '/') config["base"] = config["base"].slice(0, -1)
+            if (config["base"].endsWith('/')) config["base"] = config["base"].slice(0, -1)
           }
           break
         case 'static':

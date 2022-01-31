@@ -116,7 +116,8 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                     }
                 }
                 app.listen(PORT, HOST, function () {
-                    console.log("[http://".concat(HOST, ":").concat(PORT, "/] Server is running"));
+                    console.log("\u001B[34m".concat(config.poweredBy, " is running\u001B[0m"));
+                    console.log("\u001B[34mNetwork:\u001B[0m http://".concat(HOST, ":").concat(PORT));
                 });
                 return [2 /*return*/, app];
         }

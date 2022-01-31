@@ -1,5 +1,3 @@
-const path = require('path')
-
 module.exports = {
   base: '/api', // api base url
   routes: {},

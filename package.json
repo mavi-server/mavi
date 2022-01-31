@@ -1,6 +1,6 @@
 {
   "name": "blue-server-api",
-  "version": "0.4.23",
+  "version": "0.4.24",
   "license": "MIT",
   "description": "Create an abstracted and extendible server from one JSON file!",
   "main": "dist/index.js",
@@ -48,7 +48,6 @@
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "firebase": "^9.6.1",
     "formidable": "^2.0.1",
     "ipx": "^0.9.1",
     "jsonwebtoken": "^8.5.1",
