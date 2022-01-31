@@ -93,10 +93,13 @@ const seedModelIfSeedableAndNotSeeded = async (model, seeded) => {
     if (modelSeedExists) modelSeed = require(path.join(modelsPath, seedFile))
     else if (model in config.api.define.seeds) modelSeed = config.api.define.seeds[model]
 
-    await knex(model).insert(modelSeed).then(() => {
-      seeded = true
-      console.log(`\x1b[32m[${model} seeded]\x1b[0m`)
-    })
+    // if seed data exists, seed the model table
+    if (modelSeed.length) {
+      await knex(model).insert(modelSeed).then(() => {
+        seeded = true
+        console.log(`\x1b[32m[${model} seeded]\x1b[0m`)
+      })
+    }
   }
 
   return seeded
@@ -171,8 +174,10 @@ knex.schema.hasTable(modelsTable).then(async (exists) => {
 
     // ### compare models with database state ###
     for (const model in models) {
-      // assigne hashes to model properties if not exists
-      await assignHashesAndWrite(model)
+      if (modelsDirExists) { // assignHashesAndWrite only works with models dir (for now)
+        // Assign hashes into model properties if not exists
+        await assignHashesAndWrite(model)
+      }
 
       // database state > model
       const db_model = db_models.find(m => m.model_hash === models[model].hash)
