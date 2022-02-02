@@ -63,7 +63,11 @@ const createRouter = ({ routes, define }, options) => {
       $router[config.method](config.path, ...config.middlewares.map(setMiddlewares), async (req, res) => {
         // controller settings
         req.config = config
-        req.config.model = model
+
+        // if user didn't assign models, use current model
+        if (!req.config.model) {
+          req.config.model = model
+        }
 
         // execute utils
         await Promise.all(config.utils.map(function (fn) {
@@ -82,8 +86,7 @@ const createRouter = ({ routes, define }, options) => {
           return config.controller(req, res)
         }
 
-        // methods
-        switch (config.controller) {
+        else switch (config.controller) {
           case 'find':
           case 'count':
           case 'findOne':

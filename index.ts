@@ -49,13 +49,15 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
     // Check plugins configuration
     for (const plugin in config.api.plugins) {
       if (plugin in plugins) {
-        const pluginConfig = {
-          routes: plugins[plugin].routes,
-          define: config.api.define // uses the same `define` as the api (for now)
-        }
+        if (config.api.plugins[plugin]) {
+          const pluginConfig = {
+            routes: plugins[plugin].routes,
+            define: config.api.define // uses the same `define` as the api (for now)
+          }
 
-        // Set plugin as Router
-        app.use(`${config.api.base}/${plugin}`, timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }))
+          // Set plugin as Router
+          app.use(`${config.api.base}/${plugin}`, timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }))
+        }
       }
 
       // custom plugins
@@ -104,7 +106,9 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
 }
 
 const timer = responseTime((req, res, time) => {
-  console.log(`\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.url}\x1b[0m ${time.toFixed(0)}ms`);
+  if (req.app.$config.timer === true) {
+    console.log(`\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.url}\x1b[0m ${time.toFixed(0)}ms`);
+  }
 })
 const initializer = (config) => (req, res, next) => {
   // set req.app properties

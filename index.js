@@ -82,12 +82,14 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                     // Check plugins configuration
                     for (plugin in config.api.plugins) {
                         if (plugin in plugins) {
-                            pluginConfig = {
-                                routes: plugins[plugin].routes,
-                                define: config.api.define // uses the same `define` as the api (for now)
-                            };
-                            // Set plugin as Router
-                            app.use("".concat(config.api.base, "/").concat(plugin), timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }));
+                            if (config.api.plugins[plugin]) {
+                                pluginConfig = {
+                                    routes: plugins[plugin].routes,
+                                    define: config.api.define // uses the same `define` as the api (for now)
+                                };
+                                // Set plugin as Router
+                                app.use("".concat(config.api.base, "/").concat(plugin), timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }));
+                            }
                         }
                         // custom plugins
                         else {
@@ -100,8 +102,8 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 if (config.static) {
                     for (_i = 0, _a = config.static; _i < _a.length; _i++) {
                         Static = _a[_i];
-                        Base = Static.base || Static.folder.replace('.', '');
-                        Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
+                        Base = Static.base || Static.folder.replace(/../g, '') || '/';
+                        Path = path.join(config.__dirname, Static.folder);
                         // set static folder
                         app.use(Base, timer, express.static(Path, Static.options)); // Primary static folders
                     }
@@ -110,7 +112,7 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 if (config.api.static) {
                     for (_b = 0, _c = config.api.static; _b < _c.length; _b++) {
                         Static = _c[_b];
-                        Base = path.join(config.api.base, Static.base || Static.folder.replace('.', '')).replace(/\\/g, '/');
+                        Base = path.join(config.api.base, Static.base || Static.folder.replace(/../g, '')).replace(/\\/g, '/');
                         Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
                         // set static folder
                         app.use(Base, timer, express.static(Path, Static.options));
@@ -126,7 +128,9 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
 }); };
 exports.createServer = createServer;
 var timer = responseTime(function (req, res, time) {
-    console.log("\u001B[33m[".concat(req.method, "]\u001B[0m \u001B[34m").concat(req.url, "\u001B[0m ").concat(time.toFixed(0), "ms"));
+    if (req.app.$config.timer === true) {
+        console.log("\u001B[33m[".concat(req.method, "]\u001B[0m \u001B[34m").concat(req.url, "\u001B[0m ").concat(time.toFixed(0), "ms"));
+    }
 });
 var initializer = function (config) { return function (req, res, next) {
     // set req.app properties

@@ -14,4 +14,10 @@ module.exports = [
     method: 'post',
     controller: require('./register'),
   },
+  {
+    path: '/delete/:id',
+    method: 'post',
+    controller: 'delete',
+    model: 'users',
+  }
 ]

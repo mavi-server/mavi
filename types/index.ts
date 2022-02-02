@@ -97,6 +97,7 @@ export declare interface BlueServerConfig {
    */
   database: any // I will define this later.
   poweredBy?: string,
+  timer: boolean,
   [any: string]: any
 }
 /**
@@ -130,6 +131,10 @@ export declare interface Route {
    * You can also put your functions in this array instead of strings.
   */
   middlewares?: middlewares[] | string | string[] | middleware
+  /**
+   * Which table the query use? (Uses model name by default)
+   */
+  model: string
   /**
    * Columns inherited from your model files.
    *

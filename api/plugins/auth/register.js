@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
 
     // Validate user input
     if (!(email && username && password && fullname)) {
-      return res.status(400).send("All input is required");
+      return res.status(400).send("Missing required fields");
     }
 
     // check if user already exist
@@ -19,14 +19,14 @@ module.exports = async (req, res) => {
     const oldUser = await req.app.db('users').first('*').where({ email }).orWhere({ username })
 
     if (oldUser) {
-      return res.status(409).send("User Already Exist. Please Login");
+      return res.status(409).send("User Already Exist. Please try another email or username.");
     }
 
     //Encrypt user password
     encryptedPassword = await bcrypt.hash(password, 10);
 
     // Create user in our database
-    const user = await req.app.db('users').create({
+    const user = await req.app.db('users').insert({
       username,
       fullname,
       email: email.toLowerCase(), // sanitize: convert email to lowercase
@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
     // return new user
     return res.status(201).json(payload);
   } catch (err) {
-    console.log(err);
+    return res.status(401).send(`Something went wrong: ${err}`);
   }
   // Register logic ends here
 }

@@ -1,9 +1,8 @@
 const queryPopulateRelations = require('../services/knex-populate')
-// const views = require('../../database/views')
-// const formidable = require('formidable')
+const formidable = require('formidable')
 
 /*
-// Disabled now. Will be optional and be moved into ./api/config/index.js
+// Disabled now. Can be optional or completely removed.
 
 const firebase = require('firebase')
 require("firebase/firestore");
@@ -17,12 +16,12 @@ const firestore = firebase.firestore()
 
 
 module.exports = (req, res) => {
-  const $config = req.app.$config
-  const model = req.config.model // data table name
-  const { populate, columns, view /*exclude*/ /*schema*/ } = req.config
   const { query } = req // request query
+  const { $config } = req.app // request config
+  const { model, populate, columns, view /*exclude*/ /*schema*/ } = req.config
 
-  let queryBuilder = req.app.db(model) // knex query builder
+  // knex query builder
+  let queryBuilder = req.app.db(model)
 
   // router config - queries can be defined inside of the "api.routes" config
   if (req.config.query && typeof req.config.query === 'object') {
@@ -313,7 +312,7 @@ module.exports = (req, res) => {
       res.data = data
 
       // try {
-      //   // realtime communication and recovery collection
+      //   // realtime communication
       //   firestore.collection(model).doc(String(data.id)).set(data)
       // } catch (err) { console.error('firebase - adding recovery collection is failed') }
 
@@ -340,7 +339,7 @@ module.exports = (req, res) => {
       // try {
       //   const id = where.id || where.user
 
-      //   // realtime communication and recovery collection
+      //   // realtime communication
       //   firestore.collection(model).doc(String(id)).update(data)
       // } catch (err) { console.error('firebase - updating recovery collection is failed') }
 
@@ -364,7 +363,7 @@ module.exports = (req, res) => {
       res.data = data
 
       // try {
-      //   // realtime communication and recovery collection
+      //   // realtime communication
       //   firestore.collection(model).doc(String(data.id)).delete()
       // } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
 
@@ -388,7 +387,7 @@ module.exports = (req, res) => {
             const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
 
             // try {
-            //   // realtime communication and recovery collection
+            //   // realtime communication
             //   firestore.collection('uploads').doc(result.id).set(result)
             // } catch (err) { console.error('firebase - recovering collection is failed') }
 
