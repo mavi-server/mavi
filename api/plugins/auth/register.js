@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
     // save user token
     user.token = token
     user.refresh = refresh
-    await req.app.db('users').update({ token, refresh }).where({ id: user.id })
+    await req.app.db('users').update({ token, refresh }).where({ id: user.id }).catch(err => null)
 
     // return new user
     return res.status(201).json(payload);

@@ -47,10 +47,6 @@ module.exports = (req, res) => {
     })
   }
 
-  // if (req.owner) { // is-owner
-  //   queryBuilder.where({ user: req.owner.id })
-  // }
-
   if (!(columns && Array.isArray(columns))) {
     return res.status(500).send('[controller] req.config.columns should be an array')
   }
@@ -247,7 +243,11 @@ module.exports = (req, res) => {
           queryBuilder[group.exec](...group.params)
         }
         if (req.owner) { // is-owner
-          queryBuilder.andWhere({ user: req.owner.id })
+          if (model === 'users') {
+            queryBuilder.andWhere({ id: req.owner.id })
+          } else {
+            queryBuilder.andWhere({ user: req.owner.id })
+          }
         }
       }
 
@@ -348,9 +348,15 @@ module.exports = (req, res) => {
     delete: async function (id, populateIt = true) {
       const where = {}
       if (id) where.id = id
-      if (req.owner) where.user = req.owner.id
+      if (req.owner) {
+        if (model === 'users') {
+          where.id = req.owner.id
+        } else {
+          where.user = req.owner.id
+        }
+      }
 
-      let [data] = await queryBuilder.del().where(where).returning(columns).catch(handleControllerError)
+      let [data] = await queryBuilder.delete().where(where).returning(columns).catch(handleControllerError)
       if (!data && req.owner) return res.status(400).send("You don't have permission for this")
 
       // populate options

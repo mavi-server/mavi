@@ -13,11 +13,13 @@ module.exports = [
     path: '/register',
     method: 'post',
     controller: require('./register'),
+    columns: ['id', 'username', 'fullname', 'email', 'avatar', 'token', 'refresh'],
   },
-  {
-    path: '/delete/:id',
-    method: 'post',
-    controller: 'delete',
-    model: 'users',
-  }
+  // {
+  //   path: '/delete/:id',
+  //   method: 'post',
+  //   controller: 'delete',
+  //   model: 'users',
+  //   columns: ['*'],
+  // }
 ]
