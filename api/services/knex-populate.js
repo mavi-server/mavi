@@ -57,9 +57,6 @@ const populateDatas = async function (req, { populate, data }) {
 
                 } else row[select] = null
               }
-              // else {
-              //   console.log("user not found", req.user)
-              // }
             } else {
               const message = "knex-populate: `select` option should be defined"
               console.error(message)

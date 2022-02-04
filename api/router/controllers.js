@@ -232,11 +232,11 @@ module.exports = (req, res) => {
       if (query.sort) {
         queryBuilder.orderBy(query.sort)
       }
-      if (query.limit || !query.limit) {
-        queryBuilder.limit(query.limit || 10)
-      }
       if (query.start) {
         queryBuilder.offset(query.start)
+      }
+      if (query.limit || !query.limit) {
+        queryBuilder.limit(query.limit || 10)
       }
       if (query.where || req.owner) {
         if (query.where) for (const group of query.where) {
