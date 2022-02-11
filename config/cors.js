@@ -1,4 +1,5 @@
 module.exports = {
-  methods: ['POST', 'GET', 'PUT', 'DELETE'],
+  origin: '*',
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   allowedHeaders: ['x-access-token', 'x-refresh-token', 'token'],
 }
