@@ -1,4 +1,4 @@
-# Blueserver CLI
+# Mavi CLI
 
-`blue-server start` starts the server.
-`blue-server apply` applies the model & model.seed configurations to the database.
+`mavi start` starts the server.
+`mavi apply` applies the model & model.seed configurations to the database.

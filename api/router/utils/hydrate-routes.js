@@ -3,6 +3,7 @@ module.exports = ({ routes, define }, { isPlugin }) => {
 
   const hydrateRoutes = () => {
     for (const from in routes) {
+      // complete required fields for every route
       for (let route of routes[from]) {
         /** set configurations just for entry route (not for sub routes) **/
 
@@ -22,8 +23,12 @@ module.exports = ({ routes, define }, { isPlugin }) => {
         }
 
         // schema columns
-        if (define.models[from]) route.schema = Object.keys(define.models[from]).filter(column => column !== 'hash')
-        else if (!isPlugin) throw Error('Blue-Server model is not defined!')
+        if (define.models[from]) {
+          route.schema = Object.keys(define.models[from]).filter(column => column !== 'hash')
+        }
+        else if (!isPlugin) {
+          throw Error('mavi model is not defined!')
+        }
 
         // all the columns are neccessarry for query building
         // ensure all populated routes has columns too!
@@ -57,6 +62,7 @@ module.exports = ({ routes, define }, { isPlugin }) => {
         // Don't include the excluded columns
         if (!route.exclude.includes(column)) route.columns.push(column)
       }
+
       // count type doesn't needs columns
       if (route.type && route.type === 'count') route.columns = []
 

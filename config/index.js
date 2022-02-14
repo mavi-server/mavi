@@ -9,5 +9,6 @@ module.exports = {
   cors: require('./cors'),
   database: require('./database'),
   api: require('./api'),
-  static: require('./static')
+  static: require('./static'),
+  plugins: ['uploads'],
 }

@@ -1,7 +1,7 @@
 import { CorsOptions } from 'cors'
 import { ServeStaticOptions } from 'serve-static'
 import { Request, Response, NextFunction } from 'express'
-export default BlueServer
+export default Mavi
 
 type middleware = (req: Request, res: Response, next: NextFunction) => any
 type utils = 'detect-language'
@@ -9,18 +9,18 @@ type middlewares = 'authorization' | 'is-owner'
 type controllers = 'find' | 'findOne' | 'count' | 'delete' | 'update' | 'create' | 'upload'
 type methods = 'get' | 'post' | 'put' | 'delete'
 
-declare namespace BlueServer {
+declare namespace Mavi {
   /**
-   * Creates a blue-server instance.
+   * Creates a mavi instance.
    */
-  type createServer = (config: BlueServerConfig) => any
-  type config = BlueServerConfig
+  type createServer = (config: MaviConfig) => any
+  type config = MaviConfig
 }
 
 /**
- * Blue Server configuration
+ * Mavi configuration
  */
-export declare interface BlueServerConfig {
+export declare interface MaviConfig {
   /**
    * Port to listen on
    */
@@ -39,66 +39,67 @@ export declare interface BlueServerConfig {
    * API configurations
    *
    */
-  api: {
-    base: string
-    /**
-     * You can serve multiple static folders from the api.
-     *
-     * See details: https://expressjs.com/en/4x/api.html#express.static
-     */
-    static: Static[]
-    /**
-      - Used by req.config
-      - Generates the api with the given config
-      - Can be extendable by middlewares
-     */
-    routes: {
-      [name: string]: Route[]
-    }
-    /**
-     * Definitions for the api routes
-     *
-     */
-    define: {
-      /**
-       * Database models
-       * 
-       * Used for creating/deleting tables
-       * 
-       * Used for api router and populate configurations
-       * 
-       * Order is important if there are existing foreign key references
-       */
-      models: Model.Tables
-      /**
-        - Every fragment(column) is like a sub route used by the parent routes
-        - Each parent column can be used for populating relational data or datasets from these sub routes
-        - This parent column is usually an id or a virtual column
-        - Example: the posts entity doesn't have column as `isLiked`, but you can populate it via `likes` table.
-          A user token will be required for this, and likes table should have a relation with the post ids.
-      */
-      populate: Populate.Columns
-      utils?: object
-      /**
-       * Middlewares for the api routes
-       *
-       * See details: https://expressjs.com/en/guide/using-middleware.html
-       */
-      middlewares?: {
-        [functionName: string]: middleware
-      }
-    }
-    plugins?: object
-  }
+  api: MaviApi
   /**
    * Knex database connection
    * 
    * See details: https://knexjs.org/#Installation-client
    */
   database: any // I will define this later.
-  poweredBy?: string,
-  timer: boolean,
+  poweredBy?: string
+  timer: boolean
   [any: string]: any
+}
+export declare interface MaviApi {
+  base: string
+  /**
+   * You can serve multiple static folders from the api.
+   *
+   * See details: https://expressjs.com/en/4x/api.html#express.static
+   */
+  static: Static[]
+  /**
+    - Used by req.config
+    - Generates the api with the given config
+    - Can be extendable by middlewares
+   */
+  routes: {
+    [name: string]: Route[]
+  }
+  /**
+   * Definitions for the api routes
+   *
+   */
+  define: {
+    /**
+     * Database models
+     * 
+     * Used for creating/deleting tables
+     * 
+     * Used for api router and populate configurations
+     * 
+     * Order is important if there are existing foreign key references
+     */
+    models: Model.Tables
+    /**
+      - Every fragment(column) is like a sub route used by the parent routes
+      - Each parent column can be used for populating relational data or datasets from these sub routes
+      - This parent column is usually an id or a virtual column
+      - Example: the posts entity doesn't have column as `isLiked`, but you can populate it via `likes` table.
+        A user token will be required for this, and likes table should have a relation with the post ids.
+    */
+    populate: Populate.Columns
+    utils?: object
+    /**
+     * Middlewares for the api routes
+     *
+     * See details: https://expressjs.com/en/guide/using-middleware.html
+     */
+    middlewares?: {
+      [functionName: string]: middleware
+    }
+  }
+  plugins?: object
 }
 /**
  * Will transformed into the API routes

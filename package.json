@@ -1,16 +1,16 @@
 {
-  "name": "blue-server-api",
-  "version": "0.5.5",
+  "name": "mavi",
+  "version": "0.5.10",
   "license": "MIT",
-  "description": "Create an abstracted and extendible server from one JSON file!",
+  "description": "Create scalable api routes and relational database without coding!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bugs": {
-    "url": "https://github.com/m-emre-yalcin/blue-server/issues",
+    "url": "https://github.com/m-emre-yalcin/mavi/issues",
     "email": "emrreyalcin@gmail.com"
   },
   "bin": {
-    "blue-server": "cli/bin/blue-server.js"
+    "mavi": "cli/bin/mavi.js"
   },
   "files": [
     "cli",
@@ -24,7 +24,7 @@
     "CHANGELOG.md",
     ".env.example"
   ],
-  "homepage": "https://github.com/m-emre-yalcin/blue-server",
+  "homepage": "https://github.com/m-emre-yalcin/mavi",
   "scripts": {
     "dev": "nodemon ./index --dev",
     "start": "tsc index && node ./index --dev",
@@ -33,7 +33,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/m-emre-yalcin/blue-server.git"
+    "url": "git+https://github.com/m-emre-yalcin/mavi.git"
   },
   "author": "M. Emre Yalcin <emrreyalcin@gmail.com>",
   "contributors": [
@@ -45,7 +45,7 @@
   ],
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "blue-server-api": "^0.5.0",
+    "mavi": "^0.5.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",

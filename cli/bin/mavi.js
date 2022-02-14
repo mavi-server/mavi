@@ -18,7 +18,7 @@ config.__dirname = path.join(__dirname, '../../config')
 
 switch (command) {
   case "dev":
-    console.log(`\x1b[36mStarting Sub-module Blue Server ${version} ${mode}...\x1b[0m`)
+    console.log(`\x1b[36mStarting Sub-module Mavi ${version} ${mode}...\x1b[0m`)
     script = path.join(__dirname, `../../index.js`)
     require(script).createServer(config)
   case "apply":
@@ -33,7 +33,7 @@ switch (command) {
     break;
   case "start":
   default:
-    console.log(`\x1b[36mStarting Blue Server ${version} ${mode}...\x1b[0m`)
+    console.log(`\x1b[36mStarting Mavi ${version} ${mode}...\x1b[0m`)
 
     console.log(`\x1b[36mApplying Models...\x1b[0m`)
     script = path.join(__dirname, `../src/commands/apply-models.js`)

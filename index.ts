@@ -7,7 +7,7 @@ const responseTime = require('response-time')
 const app = express()
 
 // Main Type
-import BlueServer from './types'
+import Mavi from './types'
 
 // Env variables
 require('dotenv').config({ path: path.resolve('.env') })
@@ -15,8 +15,7 @@ require('dotenv').config({ path: path.resolve('.env') })
 // Functionality
 const createDatabase = require('./database')
 const createRouter = require('./api/router')
-const controllers = require('./api/router/controllers')
-const plugins = require('./api/plugins')
+const controllers = require('./api/controllers')
 
 // Services
 const validateConfig = require('./api/services/validate-config')
@@ -25,8 +24,8 @@ const validateConfig = require('./api/services/validate-config')
 let database = null
 
 // Main
-export const createServer: BlueServer.createServer = async (object: BlueServer.config) => {
-  const config: BlueServer.config = await validateConfig(object).catch((err) => {
+export const createServer: Mavi.createServer = async (object: Mavi.config) => {
+  const config: Mavi.config = await validateConfig(object).catch((err) => {
     console.error('[validateConfig]', err)
     process.exit(1)
   })
@@ -48,28 +47,19 @@ export const createServer: BlueServer.createServer = async (object: BlueServer.c
   if (config.api.plugins) {
     // Check plugins configuration
     for (const plugin in config.api.plugins) {
-      if (plugin in plugins) {
-        if (config.api.plugins[plugin]) {
-          const pluginConfig = {
-            routes: plugins[plugin].routes,
-            define: config.api.define // uses the same `define` as the api (for now)
-          }
-
-          // Set plugin as Router
-          app.use(`${config.api.base}/${plugin}`, timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }))
-        }
+      const $plugin = {
+        base: config.api.plugins[plugin].base || plugin,
+        routes: { [plugin]: config.api.plugins[plugin].routes },
+        define: config.api.define // uses the same `define` as the api (for now)
       }
 
-      // custom plugins
-      else {
-        console.error(`Plugin ${plugin} not found`)
-        continue
-      }
+      // Set plugin as Router
+      app.use(`${config.api.base}/${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true }))
     }
   }
 
 
-  // Blue-Server static folders
+  // mavi static folders
   if (config.static) {
     for (const Static of config.static) {
       // virtual path
@@ -118,5 +108,7 @@ const initializer = (config) => (req, res, next) => {
 
   // app name
   res.set('X-Powered-By', config.poweredBy)
+
+  // ready
   next()
 }
