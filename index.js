@@ -56,7 +56,7 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, plugin, $plugin, _i, _a, Static, Base, Path, _b, _c, Static, Base, Path;
+    var config, HOST, PORT, plugin, $plugin, slash, _i, _a, Static, Base, Path, _b, _c, Static, Base, Path;
     var _d;
     return __generator(this, function (_e) {
         switch (_e.label) {
@@ -86,8 +86,8 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                             routes: (_d = {}, _d[plugin] = config.api.plugins[plugin].routes, _d),
                             define: config.api.define // uses the same `define` as the api (for now)
                         };
-                        // Set plugin as Router
-                        app.use("".concat(config.api.base, "/").concat($plugin.base), timer, createRouter($plugin, { name: plugin, isPlugin: true }));
+                        slash = $plugin.base.startsWith('/') ? '' : '/';
+                        app.use("".concat(config.api.base).concat(slash).concat($plugin.base), timer, createRouter($plugin, { name: plugin, isPlugin: true }));
                     }
                 }
                 // mavi static folders

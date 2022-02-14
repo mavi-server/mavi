@@ -375,6 +375,8 @@ module.exports = (req, res) => {
     },
     upload: async (folder, data) => {
       if (folder) {
+        console.log("folder", folder)
+
         // access form data files
         const form = new formidable.IncomingForm()
 

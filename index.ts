@@ -54,7 +54,8 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
       }
 
       // Set plugin as Router
-      app.use(`${config.api.base}/${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true }))
+      let slash = $plugin.base.startsWith('/') ? '' : '/'
+      app.use(`${config.api.base}${slash}${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true }))
     }
   }
 

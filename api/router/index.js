@@ -122,6 +122,7 @@ const createRouter = ({ routes, define }, options) => {
               break;
             case 'upload':
               $arguments = [folder, data]
+              break;
             case 'login':
             case 'logout':
             case 'register':

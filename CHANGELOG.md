@@ -59,3 +59,14 @@
 - new example1 project in /examples
 - new welcome page
 - and more
+
+# 0.5.10
+
+- custom controllers
+- custom plugins
+- new logo
+- welcome page changings
+
+# 0.5.11
+
+- hotfixes
