@@ -7,6 +7,7 @@ module.exports = {
     populate: {},
     utils: {},
     middlewares: {},
+    controllers: {},
   },
   plugins: {
     // auth: {},

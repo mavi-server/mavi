@@ -1,6 +1,6 @@
 const Package = require('./package.json')
 module.exports = {
-  poweredBy: 'BlueServer v'.concat(Package.version),
+  poweredBy: 'Mavi v'.concat(Package.version),
   host: 'localhost',
   port: 3001,
   // Check the cors module for more options: https://www.npmjs.com/package/cors
@@ -94,7 +94,7 @@ module.exports = {
         // }
         // but if you use them here, you should assign `hash` properties manually
         // after that, if you change table/column names or add new tables/columns, or change your column properties
-        // blue-server will update your database automatically.
+        // mavi will update your database automatically.
         // be careful if you drop/rename your hash property, dependent entity will be deleted entirely from your database (0.5.4 and previous versions)
         users: {
           id: { type: 'increments', constraints: ['primary'], hash: 'WzE2NDMyMTk4NjY1MDRddXNlcnMuaWQ' },

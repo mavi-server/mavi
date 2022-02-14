@@ -49,23 +49,23 @@ require('dotenv').config({ path: path.resolve('.env') });
 // Functionality
 var createDatabase = require('./database');
 var createRouter = require('./api/router');
-var controllers = require('./api/router/controllers');
-var plugins = require('./api/plugins');
+var controllers = require('./api/controllers');
 // Services
 var validateConfig = require('./api/services/validate-config');
 // Db instance
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, plugin, pluginConfig, _i, _a, Static, Base, Path, _b, _c, Static, Base, Path;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+    var config, HOST, PORT, plugin, $plugin, _i, _a, Static, Base, Path, _b, _c, Static, Base, Path;
+    var _d;
+    return __generator(this, function (_e) {
+        switch (_e.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
                     console.error('[validateConfig]', err);
                     process.exit(1);
                 })];
             case 1:
-                config = _d.sent();
+                config = _e.sent();
                 HOST = config.host || 'localhost';
                 PORT = config.port || 3000;
                 // Connect to the database
@@ -81,24 +81,16 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 if (config.api.plugins) {
                     // Check plugins configuration
                     for (plugin in config.api.plugins) {
-                        if (plugin in plugins) {
-                            if (config.api.plugins[plugin]) {
-                                pluginConfig = {
-                                    routes: plugins[plugin].routes,
-                                    define: config.api.define // uses the same `define` as the api (for now)
-                                };
-                                // Set plugin as Router
-                                app.use("".concat(config.api.base, "/").concat(plugin), timer, createRouter(pluginConfig, { name: plugin, isPlugin: true }));
-                            }
-                        }
-                        // custom plugins
-                        else {
-                            console.error("Plugin ".concat(plugin, " not found"));
-                            continue;
-                        }
+                        $plugin = {
+                            base: config.api.plugins[plugin].base || plugin,
+                            routes: (_d = {}, _d[plugin] = config.api.plugins[plugin].routes, _d),
+                            define: config.api.define // uses the same `define` as the api (for now)
+                        };
+                        // Set plugin as Router
+                        app.use("".concat(config.api.base, "/").concat($plugin.base), timer, createRouter($plugin, { name: plugin, isPlugin: true }));
                     }
                 }
-                // Blue-Server static folders
+                // mavi static folders
                 if (config.static) {
                     for (_i = 0, _a = config.static; _i < _a.length; _i++) {
                         Static = _a[_i];
@@ -139,5 +131,6 @@ var initializer = function (config) { return function (req, res, next) {
     req.app.controllers = controllers;
     // app name
     res.set('X-Powered-By', config.poweredBy);
+    // ready
     next();
 }; };

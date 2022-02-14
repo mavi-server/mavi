@@ -1,5 +1,7 @@
-const queryPopulateRelations = require('../services/knex-populate')
 const formidable = require('formidable')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const queryPopulateRelations = require('../services/knex-populate')
 
 /*
 // Disabled now. Can be optional or completely removed.
@@ -14,6 +16,7 @@ firebase.initializeApp({
 const firestore = firebase.firestore()
 */
 
+// this file needs to be separated into pieces.
 
 module.exports = (req, res) => {
   const { query } = req // request query
@@ -23,7 +26,7 @@ module.exports = (req, res) => {
   // knex query builder
   let queryBuilder = req.app.db(model)
 
-  // router config - queries can be defined inside of the "api.routes" config
+  // queries can be defined inside of the "api.routes" config as well
   if (req.config.query && typeof req.config.query === 'object') {
     for (const key in req.config.query) {
       // preconfigured queries will not overwrite the incoming URLs query properties
@@ -35,7 +38,7 @@ module.exports = (req, res) => {
     }
   }
 
-  // router config - "exclude" option can be defined inside of the "api.routes" config
+  // "exclude" option can be defined inside of the "api.routes" config
   // this will overwrite the existing "exclude" properties
   if (query.exclude) {
     const excludeColumns = query.exclude.split(':')
@@ -47,12 +50,13 @@ module.exports = (req, res) => {
     })
   }
 
+  // double check the columns type
   if (!(columns && Array.isArray(columns))) {
     return res.status(500).send('[controller] req.config.columns should be an array')
   }
 
   // *view feature needs improvements*
-  // view config - "views" can be defined inside of the "api.define.view" config
+  // "views" can be defined inside of the "api.define.view" config
   // this will give the ability to make custom queries
   if (view && $config.api.define && $config.api.define.views) { // if view is defined
     if (!req.params.id) return res.status(500).send('[controller] parameter id is required')
@@ -226,6 +230,21 @@ module.exports = (req, res) => {
   }
 
   return {
+    count: async () => {
+      if (query.where || req.owner) {
+        if (query.where) for (const group of query.where) {
+          queryBuilder[group.exec](...group.params)
+        }
+        if (req.owner) { // is-owner
+          queryBuilder.andWhere({ user: req.owner.id })
+        }
+      }
+
+      let [data] = await queryBuilder.count('*').catch(handleControllerError)
+      data.count = Number(data.count || 0)
+
+      return res.send(data)
+    },
     find: async (populateIt = true) => {
       if (!view) queryBuilder.select(columns)
 
@@ -257,26 +276,10 @@ module.exports = (req, res) => {
       if (populateIt && data && data.length && populate && Array.isArray(populate)) {
         data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
-      res.data = data
 
-      return data
+      return res.send(data)
     },
-    count: async function () {
-      if (query.where || req.owner) {
-        if (query.where) for (const group of query.where) {
-          queryBuilder[group.exec](...group.params)
-        }
-        if (req.owner) { // is-owner
-          queryBuilder.andWhere({ user: req.owner.id })
-        }
-      }
-
-      let [data] = await queryBuilder.count('*').catch(handleControllerError)
-      res.data = data.count = Number(data.count)
-
-      return data.count || 0
-    },
-    findOne: async function (populateIt = true) {
+    findOne: async (populateIt = true) => {
       const where = {}
       let { id, name, username } = req.params
 
@@ -284,8 +287,7 @@ module.exports = (req, res) => {
       else if (name) {
         name = name.replace(/%20|%|\+|\s|-/g, ' ')
         where.name = name
-      }
-      else if (username) where.username = username
+      } else if (username) where.username = username
       if (req.owner) where.user = req.owner.id
 
       queryBuilder.first(columns).where(where)
@@ -295,13 +297,12 @@ module.exports = (req, res) => {
         data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
       if (Array.isArray(data)) data = data[0] || null
-      res.data = data
 
       if (!data && req.owner) return res.status(400).send("You don't have permission for this")
 
-      return data
+      return res.send(data)
     },
-    create: async function (body, populateIt = true) {
+    create: async (body, populateIt = true) => {
       let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError)
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
@@ -309,16 +310,15 @@ module.exports = (req, res) => {
       }
 
       if (Array.isArray(data)) data = data[0] || null
-      res.data = data
 
       // try {
       //   // realtime communication
       //   firestore.collection(model).doc(String(data.id)).set(data)
       // } catch (err) { console.error('firebase - adding recovery collection is failed') }
 
-      return data
+      return res.send(data)
     },
-    update: async function (id, body) {
+    update: async (id, body) => {
       const where = {}
       if (id) where.id = id
       if (req.owner) {
@@ -334,7 +334,6 @@ module.exports = (req, res) => {
       if (!data && req.owner) return res.status(400).send("You don't have permission for this")
 
       if (Array.isArray(data)) data = data[0] || null
-      res.data = data
 
       // try {
       //   const id = where.id || where.user
@@ -343,9 +342,9 @@ module.exports = (req, res) => {
       //   firestore.collection(model).doc(String(id)).update(data)
       // } catch (err) { console.error('firebase - updating recovery collection is failed') }
 
-      return data
+      return res.send(data)
     },
-    delete: async function (id, populateIt = true) {
+    delete: async (id, populateIt = true) => {
       const where = {}
       if (id) where.id = id
       if (req.owner) {
@@ -366,23 +365,25 @@ module.exports = (req, res) => {
 
 
       if (Array.isArray(data)) data = data[0] || null
-      res.data = data
 
       // try {
       //   // realtime communication
       //   firestore.collection(model).doc(String(data.id)).delete()
       // } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
 
-      return data
+      return res.send(data)
     },
-    upload: function (folder, data) {
+    upload: async (folder, data) => {
       if (folder) {
         // access form data files
         const form = new formidable.IncomingForm()
-        form.parse(req)
+
         // start processing
+        form.parse(req)
+
+        // listen process
         form.on('fileBegin', function (name, file) {
-          file.path = process.cwd() + `/static/uploads/${folder}/` + file.name
+          file.path = process.cwd() + `/uploads/${folder}/` + file.name
         })
 
         // obtain file
@@ -409,5 +410,119 @@ module.exports = (req, res) => {
         return res.status(500).send('upload controller: please define `folder` parameter')
       }
     },
+    register: async (req, res) => {
+      // Register logic starts here
+      try {
+        // Get user input
+        const { fullname, username, email, password } = req.body;
+
+        // Validate user input
+        if (!(email && username && password && fullname)) {
+          return res.status(400).send("Missing required fields");
+        }
+
+        // check if user already exist
+        // Validate if user exist in our database
+        const oldUser = await req.app.db(model).first('*').where({ email }).orWhere({ username })
+
+        if (oldUser) {
+          return res.status(409).send("User Already Exist. Please try another email or username.");
+        }
+
+        //Encrypt user password
+        encryptedPassword = await bcrypt.hash(password, 10);
+
+        // Create user in our database
+        const user = await req.app.db(model).insert({
+          username,
+          fullname,
+          email: email.toLowerCase(), // sanitize: convert email to lowercase
+          password: encryptedPassword,
+        })
+
+        const payload = {
+          id: user.id,
+          email: user.email,
+          fullname: user.fullname,
+          username: user.username,
+          avatar: user.avatar
+        }
+
+        // Create token
+        const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE || "2h" })
+        const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_EXPIRE || "30d" })
+
+        // save user token
+        user.token = token
+        user.refresh = refresh
+        await req.app.db(model).update({ token, refresh }).where({ id: user.id }).catch(err => null)
+
+        // return new user
+        return res.status(201).json(payload);
+      } catch (err) {
+        return res.status(401).send(`Something went wrong: ${err}`);
+      }
+      // Register logic ends here
+    },
+    login: async (req, res) => {
+      // Login logic starts here
+      try {
+        // Get user input
+        const { username, email, password } = req.body
+
+        // Validate user input
+        if (!((username || email) && password)) {
+          return res.status(400).send("All input is required")
+        }
+
+        // Validate if user exist in our database
+        const user = await req.app.db(model).first().where(email ? { email } : { username })
+
+        if (user && (await bcrypt.compare(password, user.password))) {
+          // token payload
+          const payload = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            fullname: user.fullname,
+          }
+
+          // revive tokens
+          const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE || "2h" })
+          const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_EXPIRE || "30d" })
+
+          // set new token in response headers
+          res.set('x-access-token', token)
+
+          // set token cookie
+          res.cookie('token', token, {
+            maxAge: 86400 * 7 * 1000, // 7 days
+            httpOnly: true, // http only, prevents JavaScript cookie access
+            overwrite: true,
+            secure: process.env.NODE_ENV === 'production', // cookie must be sent over https / ssl
+            domain: process.env.CLIENT_URL,
+            path: '/'
+          })
+
+          // save new tokens for consistency
+          await req.app.db(model).update({ token, refresh }).where({ id: user.id })
+
+          payload.token = token // access token
+          return res.status(200).json(payload)
+        }
+        return res.status(400).send("Invalid Credentials")
+      } catch (err) {
+        console.log(err)
+        return res.status(500).send("Server error")
+      }
+      // Register logic ends here
+    },
+    logout: (req, res) => {
+      res.set('x-access-token', null)
+      res.clearCookie('token')
+
+      res.status(200).send("User cookie removed")
+    }
   }
 }

@@ -1,4 +1,4 @@
-# Blue Server
+# Mavi
 
 Create an abstracted and extendible server from one JSON file!
 
@@ -20,13 +20,13 @@ There are two ways to use this module.
 
 ### NPM module usage
 
-`npm i blue-server-api` (name will change later)
+`npm i mavi`
 
-With the npm usage, you just have to define your server config inside of the `./index.js` and use `blue-server start` script then you ready to go!
+With the npm usage, you just have to define your server config inside of the `./index.js` and use `mavi start` script then you ready to go!
 
 ### Sub module usage
 
-Clone this repository `https://github.com/m-emre-yalcin/blue-server`
+Clone this repository `https://github.com/m-emre-yalcin/mavi`
 then `npm install` all the dependencies and `npm run build` to create the `dist` folder. Then in your `index.js` file, you can create the server with `require('./dist/index').createServer(serverConfig)` function. Then start your app with `nodemon index.js`.
 
 ---
@@ -36,7 +36,7 @@ An example server configuration file:
 ```js
 const Package = require('./package.json')
 module.exports = {
-  poweredBy: 'BlueServer v'.concat(Package.version),
+  poweredBy: 'Mavi v'.concat(Package.version),
   host: 'localhost',
   port: 3001,
   cors: {

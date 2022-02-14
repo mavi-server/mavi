@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index --exec \"blue-server\""
+    "start": "nodemon index --exec \"mavi\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "blue-server-api": "^0.4.30"
+    "mavi": "^0.4.30"
   }
 }

@@ -38,14 +38,14 @@
 
 # 0.4.0
 
-- blue-server configuration types are defined
+- mavi configuration types are defined
 
 # 0.4.11
 
 - some performance issues fixed
 - some types are fixed
-- new `blue-server apply` command from bin (not finished)
-- new `blue-server start` command from bin
+- new `mavi apply` command from bin (not finished)
+- new `mavi start` command from bin
 - still not ready for production
 - next update, i will finish the `apply` command. it gives you control over the database via model files.
 - update readme.md
@@ -53,7 +53,7 @@
 
 # 0.5.0
 
-- cli command `blue-server apply` is finished
+- cli command `mavi apply` is finished
 - new cli commands `remove`, `apply`, `start`
 - more readability
 - new example1 project in /examples
