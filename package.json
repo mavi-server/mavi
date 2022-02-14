@@ -2,7 +2,7 @@
   "name": "mavi",
   "version": "0.5.10",
   "license": "MIT",
-  "description": "Create an abstracted and extendible server from one JSON file!",
+  "description": "Create scalable api routes and relational database without coding!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bugs": {
