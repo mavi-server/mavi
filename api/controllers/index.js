@@ -422,8 +422,9 @@ module.exports = (req, res) => {
           if (file) {
             const filePath = `/uploads/${childFolder}/` + file.newFilename
 
-            data.url = process.cwd() + filePath
-            data.alt = req.body.alt || file.originalFilename.split('.').shift().replace('-', ' ')
+            data.id = Number((Math.random() * 10000).toFixed())
+            data.url = filePath
+            data.alt = req.body.alt || file.originalFilename.split('.').shift().replace(/-/g, ' ')
             // console.log(data)
 
             if (!model || !columns) {

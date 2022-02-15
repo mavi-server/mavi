@@ -85,6 +85,9 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
 
       // set static folder
       app.use(Base, timer, express.static(Path, Static.options))
+
+      // colorful log:
+      console.log(`\x1b[36mServing \x1b[32m${Base}\x1b[36m path from \x1b[35m${Path}\x1b[0m`,)
     }
   }
 

@@ -108,6 +108,8 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                         Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
                         // set static folder
                         app.use(Base, timer, express.static(Path, Static.options));
+                        // colorful log:
+                        console.log("\u001B[36mServing \u001B[32m".concat(Base, "\u001B[36m path from \u001B[35m").concat(Path, "\u001B[0m"));
                     }
                 }
                 app.listen(PORT, HOST, function () {
