@@ -8,10 +8,8 @@ const verifyTokenAndSetOwner = (req, res, next) => {
     return res.status(403).send("A token is required for authentication")
   }
   return jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, async function (err, decoded) {
-    if (err) {
-      // if token is not verified
-      return res.status(401).send("Unauthorized");
-    }
+    // if token is not verified
+    if (err) return res.status(401).send("Unauthorized");
 
     // pass to the next request
     req.user = decoded

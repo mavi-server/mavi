@@ -1,6 +1,9 @@
-const formidable = require('formidable')
+const { IncomingForm } = require('formidable')
+const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const path = require('path')
+const { renameSync, existsSync, mkdirSync } = require('fs')
 const queryPopulateRelations = require('../services/knex-populate')
 
 /*
@@ -83,7 +86,10 @@ module.exports = (req, res) => {
       detail,
       code
     }
-    // console.log("err.response:", err)
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log("err.response:", err)
+    }
   }
 
 
@@ -373,43 +379,82 @@ module.exports = (req, res) => {
 
       return res.send(data)
     },
-    upload: async (folder, data) => {
-      if (folder) {
-        console.log("folder", folder)
+    upload: async (childFolder, data) => {
+      if (childFolder) {
+        // default options:
+        const options = {
+          multiples: false,
+          keepExtensions: true,
+          uploadDir: path.join(process.cwd(), `/uploads/${childFolder}/`),
+          maxFileSize: 5242880, // bytes = 5mb
+          allowEmptyFiles: false,
+          filter: function ({ name, originalFilename, mimetype }) {
+            // keep only accepted mime types
+            const accept = req.config.accept || 'image' // default: image
+            return mimetype && mimetype.includes(accept);
+          },
+          filename: function (name, ext, file) {
+            // generate a unique filename
+            return uuidv4() + ext
+          }
+        }
+
+        // overwrite some options
+        if ("uploads" in $config.api.plugins) {
+          const { folder, maxFileSize } = $config.api.plugins.uploads
+
+          options.uploadDir = path.join(process.cwd(), `/${folder}/${childFolder}/`)
+          options.maxFileSize = maxFileSize
+        }
+
+        // create child directory if not exists
+        if (!existsSync(options.uploadDir)) {
+          mkdirSync(options.uploadDir)
+        }
 
         // access form data files
-        const form = new formidable.IncomingForm()
+        const form = new IncomingForm(options)
 
         // start processing
         form.parse(req)
-
-        // listen process
-        form.on('fileBegin', function (name, file) {
-          file.path = process.cwd() + `/uploads/${folder}/` + file.name
-        })
-
-        // obtain file
         form.on('file', async function (name, file) {
           // register uploaded file
           if (file) {
-            data.url = `/uploads/${folder}/` + file.name
-            const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
+            // const filename = `/uploads/${childFolder}/` + file.newFilename
+            // const extension = `.${file.originalFilename.split('.').pop()}`
+            // file.path = process.cwd() + filename
+            data.url = file.path
 
-            // try {
-            //   // realtime communication
-            //   firestore.collection('uploads').doc(result.id).set(result)
-            // } catch (err) { console.error('firebase - recovering collection is failed') }
+            if (!model || !columns) {
+              return res.send(data)
+            }
 
-            return res.status(200).json(result)
-          } else {
+            else {
+              console.log("results bekleniyor")
+              const result = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
+              console.log(result)
+              // try {
+              //   // realtime communication
+              //   firestore.collection(model).doc(result.id).set(result)
+              // } catch (err) { console.error('firebase - recovering collection is failed') }
+
+              return res.status(200).json(result)
+            }
+          }
+
+          else {
             console.error('upload controller: `file` not defined')
             return res.status(500).send('upload controller: `file` not defined')
           }
         })
+        form.on('error', function (err) {
+          console.error('upload controller: ' + err)
+          return res.status(500).send('upload controller: ' + err)
+        })
       }
       else {
-        console.error('upload controller: please define `folder` parameter')
-        return res.status(500).send('upload controller: please define `folder` parameter')
+        console.error('upload controller: please define `childFolder` parameter')
+        return res.status(500).send('upload controller: please define `childFolder` parameter')
       }
     },
     register: async (req, res) => {
@@ -425,7 +470,7 @@ module.exports = (req, res) => {
 
         // check if user already exist
         // Validate if user exist in our database
-        const oldUser = await req.app.db(model).first('*').where({ email }).orWhere({ username })
+        const oldUser = await req.app.db('users').first('*').where({ email }).orWhere({ username })
 
         if (oldUser) {
           return res.status(409).send("User Already Exist. Please try another email or username.");
@@ -435,7 +480,7 @@ module.exports = (req, res) => {
         encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create user in our database
-        const user = await req.app.db(model).insert({
+        const user = await req.app.db('users').insert({
           username,
           fullname,
           email: email.toLowerCase(), // sanitize: convert email to lowercase
@@ -478,7 +523,7 @@ module.exports = (req, res) => {
         }
 
         // Validate if user exist in our database
-        const user = await req.app.db(model).first().where(email ? { email } : { username })
+        const user = await req.app.db('users').first().where(email ? { email } : { username })
 
         if (user && (await bcrypt.compare(password, user.password))) {
           // token payload
@@ -508,7 +553,7 @@ module.exports = (req, res) => {
           })
 
           // save new tokens for consistency
-          await req.app.db(model).update({ token, refresh }).where({ id: user.id })
+          await req.app.db('users').update({ token, refresh }).where({ id: user.id })
 
           payload.token = token // access token
           return res.status(200).json(payload)

@@ -70,3 +70,10 @@
 # 0.5.11
 
 - hotfixes
+
+# 0.5.12
+
+- upload controller: issues fixed
+- upload controller improved
+- upload controller: `accept` mimetype option added
+- uploads plugin: custom `folder` and `maxFileSize` option added

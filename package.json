@@ -1,6 +1,6 @@
 {
   "name": "mavi",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "license": "MIT",
   "description": "Create scalable api routes and relational database without coding!",
   "main": "dist/index.js",
@@ -45,7 +45,6 @@
   ],
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "mavi": "^0.5.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -55,8 +54,10 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
     "languagedetect": "^2.0.0",
+    "mavi": "^0.5.0",
     "pg": "^8.7.1",
     "response-time": "^2.3.2",
+    "uuid": "^8.3.2",
     "webpack-dev-server": "^4.7.3"
   },
   "devDependencies": {

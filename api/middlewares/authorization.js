@@ -1,7 +1,6 @@
 // This middleware is used to check if users's token is valid.
 // If token is expired, it refreshes and sends back to the client as a response header.
 // Client should handle the remaining jobs.
-
 const jwt = require("jsonwebtoken");
 
 const authorization = (req, res, next) => {
@@ -9,16 +8,13 @@ const authorization = (req, res, next) => {
     return res.status(403).send("A token is required for authentication");
   }
 
-  return jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, async function (err, decoded) {
+  return jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
+    // if token is not verified:
+    if (err) return await refreshToken(req, res, next)
+
     // pass to the next request
     req.user = decoded;
     req.body.user = decoded.id // for create, update, delete controllers. no need to send user id on client side.
-
-    if (err) {
-      // if token is not verified:
-      return await refreshToken(req, res, next)
-    }
-
     return next();
   })
 };

@@ -1,4 +1,5 @@
 // Default Server Settings
+const { join } = require('path');
 const { name, version } = require('../package.json')
 
 module.exports = {
@@ -10,5 +11,5 @@ module.exports = {
   database: require('./database'),
   api: require('./api'),
   static: require('./static'),
-  plugins: ['uploads'],
+  plugins: {}
 }
