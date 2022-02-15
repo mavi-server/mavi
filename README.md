@@ -6,6 +6,23 @@ This module aims to lift repetitive works that you have made every time building
 
 `Important`: The package is still in development. I do not recommend to use in production. I have plans to make this module more user friendly and I am open to collaborations. You can [email](mailto:emrreyalcin@gmail.com) me or open an issue if you decided to contribute.
 
+---
+
+There are two ways to use this module.
+
+## NPM module usage
+
+`npm i mavi`
+
+With the npm usage, you just have to define your server config inside of the `./index.js` and use `mavi start` script then you ready to go!
+
+## Sub module usage
+
+Clone this repository `https://github.com/m-emre-yalcin/mavi`
+then `npm install` all the dependencies and `npm run build` to create the `dist` folder. Then in your `index.js` file, you can create the server with `require('./dist/index').createServer(serverConfig)` function. Then start your app with `nodemon index.js`.
+
+---
+
 ## Example
 
 The file below will create the entire server. You need to connect your database first then you can add some routes.
@@ -13,23 +30,6 @@ The file below will create the entire server. You need to connect your database 
 _Don't forget, the columns you choose on one route should be defined in your database too._
 
 Define more populate options and middlewares to be able to use them in your routes.
-
----
-
-There are two ways to use this module.
-
-### NPM module usage
-
-`npm i mavi`
-
-With the npm usage, you just have to define your server config inside of the `./index.js` and use `mavi start` script then you ready to go!
-
-### Sub module usage
-
-Clone this repository `https://github.com/m-emre-yalcin/mavi`
-then `npm install` all the dependencies and `npm run build` to create the `dist` folder. Then in your `index.js` file, you can create the server with `require('./dist/index').createServer(serverConfig)` function. Then start your app with `nodemon index.js`.
-
----
 
 An example server configuration file:
 
