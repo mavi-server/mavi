@@ -417,22 +417,23 @@ module.exports = (req, res) => {
 
         // start processing
         form.parse(req)
-        form.on('file', async function (name, file) {
+        form.on('file', async function (formname, file) {
           // register uploaded file
           if (file) {
-            // const filename = `/uploads/${childFolder}/` + file.newFilename
-            // const extension = `.${file.originalFilename.split('.').pop()}`
-            // file.path = process.cwd() + filename
-            data.url = file.path
+            const filePath = `/uploads/${childFolder}/` + file.newFilename
+
+            data.url = process.cwd() + filePath
+            data.alt = req.body.alt || file.originalFilename.split('.').shift().replace('-', ' ')
+            // console.log(data)
 
             if (!model || !columns) {
               return res.send(data)
             }
 
             else {
-              console.log("results bekleniyor")
-              const result = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
-              console.log(result)
+              const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
+              // console.log(result)
+
               // try {
               //   // realtime communication
               //   firestore.collection(model).doc(result.id).set(result)
