@@ -1,5 +1,3 @@
-# Mavi
-
 ![mavi-server](https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/brand.svg)
 
 Create an abstracted and extendible server from one JSON file!
