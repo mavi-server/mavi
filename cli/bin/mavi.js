@@ -31,6 +31,11 @@ switch (command) {
     script = path.join(__dirname, `../src/commands/remove-models.js`)
     require(script)
     break;
+  case "recreate":
+    console.log(`\x1b[36mSchema recreated\x1b[0m`)
+    script = path.join(__dirname, `../src/commands/reset-schema.js`)
+    require(script)
+    break;
   case "start":
   default:
     console.log(`\x1b[36mStarting Mavi ${version} ${mode}...\x1b[0m`)

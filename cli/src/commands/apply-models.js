@@ -2,7 +2,7 @@
 
 const path = require('path')
 const util = require("util")
-const { writeFile, existsSync, readdirSync } = require('fs')
+const { writeFile, existsSync } = require('fs')
 const debug = false
 
 // Functionalities
@@ -406,3 +406,5 @@ applyModels() // then apply models
 // note:
 // if any error occurs, the database state will be broken
 // maybe rollback/commit can be used to fix the database state
+
+module.exports = applyModels

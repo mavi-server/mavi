@@ -10,7 +10,7 @@ const knex = require(path.join(__dirname, '../../../database'))(config.database)
 const DB_STATE = knex.schema.hasTable(modelsTable)
 if (DB_STATE) {
   knex.schema.dropTable(modelsTable).then(() => {
-    console.log('\x1b[36mModels removed!\x1b[0m')
+    console.log('\x1b[34mModels removed!\x1b[0m')
     process.exit(0)
   })
 }

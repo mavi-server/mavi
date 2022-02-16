@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
-const { renameSync, existsSync, mkdirSync } = require('fs')
+const { existsSync, mkdirSync } = require('fs')
 const queryPopulateRelations = require('../services/knex-populate')
 
 /*
@@ -90,6 +90,7 @@ module.exports = (req, res) => {
     if (process.env.NODE_ENV === 'development') {
       console.log("err.response:", err)
     }
+    res.status(res.error.status).send(res.error)
   }
 
 
@@ -249,7 +250,7 @@ module.exports = (req, res) => {
       let [data] = await queryBuilder.count('*').catch(handleControllerError)
       data.count = Number(data.count || 0)
 
-      return res.send(data)
+      return res.status(200).json(data.count)
     },
     find: async (populateIt = true) => {
       if (!view) queryBuilder.select(columns)
