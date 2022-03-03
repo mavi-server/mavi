@@ -60,6 +60,7 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
   }
 
 
+
   // mavi static folders
   if (config.static) {
     for (const Static of config.static) {
@@ -101,7 +102,7 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
 
 const timer = responseTime((req, res, time) => {
   if (req.app.$config.timer === true) {
-    console.log(`\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.url}\x1b[0m ${time.toFixed(0)}ms`);
+    console.log(`\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.originalUrl}\x1b[0m ${time.toFixed(0)}ms`);
   }
 })
 const initializer = (config) => (req, res, next) => {

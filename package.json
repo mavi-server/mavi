@@ -50,15 +50,12 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "formidable": "^2.0.1",
-    "ipx": "^0.9.1",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
     "languagedetect": "^2.0.0",
-    "mavi": "^0.5.0",
     "pg": "^8.7.1",
     "response-time": "^2.3.2",
-    "uuid": "^8.3.2",
-    "webpack-dev-server": "^4.7.3"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.17.5",

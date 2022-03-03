@@ -123,7 +123,7 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
 exports.createServer = createServer;
 var timer = responseTime(function (req, res, time) {
     if (req.app.$config.timer === true) {
-        console.log("\u001B[33m[".concat(req.method, "]\u001B[0m \u001B[34m").concat(req.url, "\u001B[0m ").concat(time.toFixed(0), "ms"));
+        console.log("\u001B[33m[".concat(req.method, "]\u001B[0m \u001B[34m").concat(req.originalUrl, "\u001B[0m ").concat(time.toFixed(0), "ms"));
     }
 });
 var initializer = function (config) { return function (req, res, next) {

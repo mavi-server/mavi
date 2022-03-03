@@ -22,6 +22,10 @@ module.exports = ({ routes, define }, { isPlugin }) => {
           }
         }
 
+        // this is a static route. serve static files:
+        // if("folder" in route){
+        // }
+
         // schema columns
         if (define.models[from]) {
           route.schema = Object.keys(define.models[from]).filter(column => column !== 'hash')

@@ -133,6 +133,11 @@ const createRouter = ({ routes, define }, options) => {
           return await req.app.controllers(req, res)[config.controller](...$arguments)
         }
 
+        // this is a static route:
+        // else if("folder" in config){
+        //   return res.sendFile(path.join(__dirname, '../../', config.folder, req.url))
+        // }
+
         else {
           // controller not found
           return res.status(500).send('Controller not found')

@@ -1,5 +1,4 @@
 // Default Server Settings
-const { join } = require('path');
 const { name, version } = require('../package.json')
 
 module.exports = {
