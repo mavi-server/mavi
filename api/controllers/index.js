@@ -425,6 +425,10 @@ module.exports = (req, res) => {
           if (file) {
             const filePath = `/uploads/${childFolder}/` + file.newFilename
 
+            if (req.user) {
+              data.user = req.user.id
+            }
+
             data.id = Number((Math.random() * 10000).toFixed())
             data.url = filePath
             data.alt = req.body.alt || file.originalFilename.split('.').shift().replace(/-/g, ' ')
@@ -441,7 +445,7 @@ module.exports = (req, res) => {
               //   firestore.collection(model).doc(result.id).set(result)
               // } catch (err) { console.error('firebase - recovering collection is failed') }
 
-              return res.status(201).json(result)
+              return res.status(201).send(result)
             }
           } else {
             console.error('upload controller: `file` not defined')
@@ -473,7 +477,12 @@ module.exports = (req, res) => {
 
         // check if user already exist
         // Validate if user exist in our database
-        const { count } = await req.app.db('users').count('*').where({ email }).orWhere({ username })
+        const [{ count }] = await req.app
+          .db('users')
+          .count('*')
+          .where({ username })
+          .orWhere({ email })
+          .catch(handleControllerError) // [ { count: 'number' } ]
 
         if (Number(count)) {
           return res.status(409).send('User Already Exist. Please try another email or username.')
@@ -482,32 +491,43 @@ module.exports = (req, res) => {
         //Encrypt user password
         encryptedPassword = await bcrypt.hash(password, 10)
 
-        const payload = {
+        const data = {
           email: email.toLowerCase(), // sanitize: convert email to lowercase
           fullname: fullname.trim(), // sanitize: remove white spaces
           username: username.trim(), // sanitize: remove white spaces
-          avatar,
+          avatar: avatar,
           password: encryptedPassword,
         }
 
-        // Create/assign access tokens:
+        // Get new user id
+        const [user] = await req.app
+          .db('users')
+          .insert(data)
+          .returning(['id', 'email', 'fullname', 'username', 'avatar', 'token', 'refresh'])
+          .catch(handleControllerError)
+
+        // Create/assign access tokens with *user id*:
+
         // 1- access token for restricted resources
-        payload.token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        const token = await jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
           expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
         })
 
         // 2- refresh token for long term access
-        payload.refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+        const refresh = await jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {
           expiresIn: process.env.REFRESH_EXPIRE || '30d',
         })
 
-        // Create user in our database:
-        const [user] = await req.app
-          .db('users')
-          .insert(payload)
-          .returning(['id', 'email', 'fullname', 'username', 'avatar', 'token', 'refresh'])
-          .catch(handleControllerError)
+        user.token = token
+        user.refresh = refresh
 
+        // Update user access tokens:
+        await req.app
+          .db('users')
+          .update({ token, refresh })
+          .where({ username })
+          .orWhere({ email })
+          .catch(handleControllerError)
 
         // return new user
         return res.status(201).send(user)
