@@ -1,5 +1,5 @@
 const { IncomingForm } = require('formidable')
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require('uuid')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
@@ -47,7 +47,7 @@ module.exports = (req, res) => {
     const excludeColumns = query.exclude.split(':')
     columns.forEach((col, i) => {
       // exclude columns
-      if (excludeColumns.find(C => col == C)) {
+      if (excludeColumns.find((C) => col == C)) {
         columns.splice(i, 1)
       }
     })
@@ -61,7 +61,8 @@ module.exports = (req, res) => {
   // *view feature needs improvements*
   // "views" can be defined inside of the "api.define.view" config
   // this will give the ability to make custom queries
-  if (view && $config.api.define && $config.api.define.views) { // if view is defined
+  if (view && $config.api.define && $config.api.define.views) {
+    // if view is defined
     if (!req.params.id) return res.status(500).send('[controller] parameter id is required')
     try {
       req.params.id = Number(req.params.id)
@@ -84,15 +85,14 @@ module.exports = (req, res) => {
       status: status || 500,
       message: code,
       detail,
-      code
+      code,
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log("err.response:", err)
+      console.log('err.response:', err)
     }
     res.status(res.error.status).send(res.error)
   }
-
 
   // Query builder
   for (const key in query) {
@@ -100,7 +100,7 @@ module.exports = (req, res) => {
       case 'limit': // (number)
       case 'start': // (number)
         query[key] = Number(query[key])
-        break;
+        break
       case 'sort': // (column|columns, direction, nulls)
         // https://knexjs.org/#Builder-orderBy
 
@@ -113,7 +113,7 @@ module.exports = (req, res) => {
           query[key] = []
 
           for (const group of Groups) {
-            let [column, order, /*nulls*/] = group.split('-')
+            let [column, order /*nulls*/] = group.split('-')
             column = column || 'id'
             order = order || 'asc'
             // nulls = nulls || 'last' // not works idk why
@@ -121,12 +121,12 @@ module.exports = (req, res) => {
             query[key].push({ column, order })
           }
         }
-        break;
+        break
       case 'where': // (column, operator, value|values)
         // examples:
         // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
         if (typeof query[key] === 'string') {
-          const createParameters = group => {
+          const createParameters = (group) => {
             if (!group || !group.part) return
 
             let [column, condition, value] = group.part.split('-')
@@ -145,29 +145,29 @@ module.exports = (req, res) => {
             switch (condition) {
               case 'like':
                 operator = 'like'
-                break;
+                break
               case 'not':
               case 'neq':
                 operator = '<>'
-                break;
+                break
               case 'eq':
                 operator = '='
-                break;
+                break
               case 'lg':
                 operator = '>'
-                break;
+                break
               case 'lge':
                 operator = '>='
-                break;
+                break
               case 'sm':
                 operator = '<'
-                break;
+                break
               case 'sme':
                 operator = '<='
-                break;
+                break
               default:
                 operator = '='
-                break;
+                break
             }
 
             return [column, operator, value]
@@ -180,7 +180,7 @@ module.exports = (req, res) => {
           Groups[0] = {
             exec: 'where',
             part: query[key],
-            params: createParameters({ part: query[key] })
+            params: createParameters({ part: query[key] }),
           }
 
           if (groupCount > 1) {
@@ -206,7 +206,7 @@ module.exports = (req, res) => {
           query[key] = Groups
           // console.log(query[key])
         }
-        break;
+        break
       // case 'whereNull': // (column)
       // case 'whereNotNull': // (column)
       // case 'orWhereNull': // (column)
@@ -216,7 +216,7 @@ module.exports = (req, res) => {
       // case 'whereIn': // (column|columns, array|callback|builder)
       // case 'orWhereIn': // (column|columns, array|callback|builder)
       // case 'whereNotIn': // (column|columns, array|callback|builder)
-      //   // examples:  
+      //   // examples:
       //   // simple whereIn: whereIn=id-1,2,3,4
       //   // whereIn: whereIn=id-6,7:community-eq-1 (meaning is id 6 and 7 & community = 1 is included)
 
@@ -239,10 +239,12 @@ module.exports = (req, res) => {
   return {
     count: async () => {
       if (query.where || req.owner) {
-        if (query.where) for (const group of query.where) {
-          queryBuilder[group.exec](...group.params)
-        }
-        if (req.owner) { // is-owner
+        if (query.where)
+          for (const group of query.where) {
+            queryBuilder[group.exec](...group.params)
+          }
+        if (req.owner) {
+          // is-owner
           queryBuilder.andWhere({ user: req.owner.id })
         }
       }
@@ -265,10 +267,12 @@ module.exports = (req, res) => {
         queryBuilder.limit(query.limit || 10)
       }
       if (query.where || req.owner) {
-        if (query.where) for (const group of query.where) {
-          queryBuilder[group.exec](...group.params)
-        }
-        if (req.owner) { // is-owner
+        if (query.where)
+          for (const group of query.where) {
+            queryBuilder[group.exec](...group.params)
+          }
+        if (req.owner) {
+          // is-owner
           if (model === 'users') {
             queryBuilder.andWhere({ id: req.owner.id })
           } else {
@@ -277,14 +281,13 @@ module.exports = (req, res) => {
         }
       }
 
-
       let data = await queryBuilder.catch(handleControllerError)
       // populate options
       if (populateIt && data && data.length && populate && Array.isArray(populate)) {
         data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
 
-      return res.send(data)
+      return res.status(200).send(data)
     },
     findOne: async (populateIt = true) => {
       const where = {}
@@ -307,7 +310,7 @@ module.exports = (req, res) => {
 
       if (!data && req.owner) return res.status(400).send("You don't have permission for this")
 
-      return res.send(data)
+      return res.status(200).send(data)
     },
     create: async (body, populateIt = true) => {
       let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError)
@@ -323,7 +326,7 @@ module.exports = (req, res) => {
       //   firestore.collection(model).doc(String(data.id)).set(data)
       // } catch (err) { console.error('firebase - adding recovery collection is failed') }
 
-      return res.send(data)
+      return res.status(201).send(data)
     },
     update: async (id, body) => {
       const where = {}
@@ -349,7 +352,7 @@ module.exports = (req, res) => {
       //   firestore.collection(model).doc(String(id)).update(data)
       // } catch (err) { console.error('firebase - updating recovery collection is failed') }
 
-      return res.send(data)
+      return res.status(204).send(data)
     },
     delete: async (id, populateIt = true) => {
       const where = {}
@@ -370,7 +373,6 @@ module.exports = (req, res) => {
         data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
       }
 
-
       if (Array.isArray(data)) data = data[0] || null
 
       // try {
@@ -378,7 +380,7 @@ module.exports = (req, res) => {
       //   firestore.collection(model).doc(String(data.id)).delete()
       // } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
 
-      return res.send(data)
+      return res.status(202).send(data)
     },
     upload: async (childFolder, data) => {
       if (childFolder) {
@@ -392,16 +394,16 @@ module.exports = (req, res) => {
           filter: function ({ name, originalFilename, mimetype }) {
             // keep only accepted mime types
             const accept = req.config.accept || 'image' // default: image
-            return mimetype && mimetype.includes(accept);
+            return mimetype && mimetype.includes(accept)
           },
           filename: function (name, ext, file) {
             // generate a unique filename
             return uuidv4() + ext
-          }
+          },
         }
 
         // overwrite some options
-        if ("uploads" in $config.api.plugins) {
+        if ('uploads' in $config.api.plugins) {
           const { folder, maxFileSize } = $config.api.plugins.uploads
 
           options.uploadDir = path.join(process.cwd(), `/${folder}/${childFolder}/`)
@@ -430,9 +432,7 @@ module.exports = (req, res) => {
 
             if (!model || !columns) {
               return res.send(data)
-            }
-
-            else {
+            } else {
               const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
               // console.log(result)
 
@@ -441,11 +441,9 @@ module.exports = (req, res) => {
               //   firestore.collection(model).doc(result.id).set(result)
               // } catch (err) { console.error('firebase - recovering collection is failed') }
 
-              return res.status(200).json(result)
+              return res.status(201).json(result)
             }
-          }
-
-          else {
+          } else {
             console.error('upload controller: `file` not defined')
             return res.status(500).send('upload controller: `file` not defined')
           }
@@ -454,66 +452,73 @@ module.exports = (req, res) => {
           console.error('upload controller: ' + err)
           return res.status(500).send('upload controller: ' + err)
         })
-      }
-      else {
+      } else {
         console.error('upload controller: please define `childFolder` parameter')
         return res.status(500).send('upload controller: please define `childFolder` parameter')
       }
     },
+    /**
+     * To be able to use this controller, you need to have users table in your database
+     */
     register: async (req, res) => {
       // Register logic starts here
       try {
         // Get user input
-        const { fullname, username, email, password } = req.body;
+        const { fullname, username, avatar, email, password } = req.body
 
         // Validate user input
-        if (!(email && username && password && fullname)) {
-          return res.status(400).send("Missing required fields");
+        if (!fullname || !email || !username || !password) {
+          return res.status(400).send('Missing required fields')
         }
 
         // check if user already exist
         // Validate if user exist in our database
-        const oldUser = await req.app.db('users').first('*').where({ email }).orWhere({ username })
+        const { count } = await req.app.db('users').count('*').where({ email }).orWhere({ username })
 
-        if (oldUser) {
-          return res.status(409).send("User Already Exist. Please try another email or username.");
+        if (Number(count)) {
+          return res.status(409).send('User Already Exist. Please try another email or username.')
         }
 
         //Encrypt user password
-        encryptedPassword = await bcrypt.hash(password, 10);
-
-        // Create user in our database
-        const user = await req.app.db('users').insert({
-          username,
-          fullname,
-          email: email.toLowerCase(), // sanitize: convert email to lowercase
-          password: encryptedPassword,
-        })
+        encryptedPassword = await bcrypt.hash(password, 10)
 
         const payload = {
-          id: user.id,
-          email: user.email,
-          fullname: user.fullname,
-          username: user.username,
-          avatar: user.avatar
+          email: email.toLowerCase(), // sanitize: convert email to lowercase
+          fullname: fullname.trim(), // sanitize: remove white spaces
+          username: username.trim(), // sanitize: remove white spaces
+          avatar,
+          password: encryptedPassword,
         }
 
-        // Create token
-        const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE || "2h" })
-        const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_EXPIRE || "30d" })
+        // Create/assign access tokens:
+        // 1- access token for restricted resources
+        payload.token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
+        })
 
-        // save user token
-        user.token = token
-        user.refresh = refresh
-        await req.app.db(model).update({ token, refresh }).where({ id: user.id }).catch(err => null)
+        // 2- refresh token for long term access
+        payload.refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+          expiresIn: process.env.REFRESH_EXPIRE || '30d',
+        })
+
+        // Create user in our database:
+        const [user] = await req.app
+          .db('users')
+          .insert(payload)
+          .returning(['id', 'email', 'fullname', 'username', 'avatar', 'token', 'refresh'])
+          .catch(handleControllerError)
+
 
         // return new user
-        return res.status(201).json(payload);
+        return res.status(201).send(user)
       } catch (err) {
-        return res.status(401).send(`Something went wrong: ${err}`);
+        return res.status(401).send(`Something went wrong: ${err}`)
       }
       // Register logic ends here
     },
+    /**
+     * To be able to use this controller, you need to have users table in your database
+     */
     login: async (req, res) => {
       // Login logic starts here
       try {
@@ -521,12 +526,16 @@ module.exports = (req, res) => {
         const { username, email, password } = req.body
 
         // Validate user input
-        if (!((username || email) && password)) {
-          return res.status(400).send("All input is required")
+        if (!(username || email) || !password) {
+          return res.status(400).send('All input is required')
         }
 
         // Validate if user exist in our database
-        const user = await req.app.db('users').first().where(email ? { email } : { username })
+        const user = await req.app
+          .db('users')
+          .first()
+          .where(email ? { email } : { username })
+          .catch(handleControllerError)
 
         if (user && (await bcrypt.compare(password, user.password))) {
           // token payload
@@ -538,9 +547,13 @@ module.exports = (req, res) => {
             fullname: user.fullname,
           }
 
-          // revive tokens
-          const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_LIFE || "2h" })
-          const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_EXPIRE || "30d" })
+          // Revive tokens:
+          const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
+          })
+          const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+            expiresIn: process.env.REFRESH_EXPIRE || '30d',
+          })
 
           // set new token in response headers
           res.set('x-access-token', token)
@@ -552,19 +565,22 @@ module.exports = (req, res) => {
             overwrite: true,
             secure: process.env.NODE_ENV === 'production', // cookie must be sent over https / ssl
             domain: process.env.CLIENT_URL,
-            path: '/'
+            path: '/',
           })
 
           // save new tokens for consistency
           await req.app.db('users').update({ token, refresh }).where({ id: user.id })
 
-          payload.token = token // access token
-          return res.status(200).json(payload)
+          // assign access token for the response
+          payload.token = token
+
+          // return signed user
+          return res.status(200).send(payload)
         }
-        return res.status(400).send("Invalid Credentials")
+        return res.status(400).send('Invalid Credentials')
       } catch (err) {
         console.log(err)
-        return res.status(500).send("Server error")
+        return res.status(500).send('Server error')
       }
       // Register logic ends here
     },
@@ -572,7 +588,7 @@ module.exports = (req, res) => {
       res.set('x-access-token', null)
       res.clearCookie('token')
 
-      res.status(200).send("User cookie removed")
-    }
+      res.status(200).send('User cookie removed')
+    },
   }
 }
