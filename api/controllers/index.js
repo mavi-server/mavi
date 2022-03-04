@@ -384,8 +384,18 @@ module.exports = (req, res) => {
     },
     upload: async (childFolder, data) => {
       if (childFolder) {
+        // if controller has default options:
+        // check childFolder has a permission to be used
+        if (req.config.options && req.config.options.folders) {
+          if (!req.config.options.folders.includes(childFolder)) {
+            return res.status(400).send("You don't have permission for this")
+          }
+        }
+        const options = req.config.options || {}
+
+
         // default options:
-        const options = {
+        const $options = {
           multiples: false,
           keepExtensions: true,
           uploadDir: path.join(process.cwd(), `/uploads/${childFolder}/`),
@@ -393,30 +403,23 @@ module.exports = (req, res) => {
           allowEmptyFiles: false,
           filter: function ({ name, originalFilename, mimetype }) {
             // keep only accepted mime types
-            const accept = req.config.accept || 'image' // default: image
+            const accept = (options && options.accept) || 'image' // default: image
             return mimetype && mimetype.includes(accept)
           },
           filename: function (name, ext, file) {
             // generate a unique filename
             return uuidv4() + ext
           },
-        }
-
-        // overwrite some options
-        if ('uploads' in $config.api.plugins) {
-          const { folder, maxFileSize } = $config.api.plugins.uploads
-
-          options.uploadDir = path.join(process.cwd(), `/${folder}/${childFolder}/`)
-          options.maxFileSize = maxFileSize
+          ...options // overwrite default options
         }
 
         // create child directory if not exists
-        if (!existsSync(options.uploadDir)) {
-          mkdirSync(options.uploadDir)
+        if (!existsSync($options.uploadDir)) {
+          mkdirSync($options.uploadDir)
         }
 
         // access form data files
-        const form = new IncomingForm(options)
+        const form = new IncomingForm($options)
 
         // start processing
         form.parse(req)

@@ -41,7 +41,7 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
   app.use(cookieParser())
   app.use(cors(config.cors))
   app.use(initializer(config)) // Set req.app properties  
-  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'api' })) // Primary router is api
+  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'api', debug: true })) // Primary router is api
 
   // Set plugins
   if (config.api.plugins) {
@@ -55,7 +55,7 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
 
       // Set plugin as Router
       let slash = $plugin.base.startsWith('/') ? '' : '/'
-      app.use(`${config.api.base}${slash}${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true }))
+      app.use(`${config.api.base}${slash}${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true, debug: true }))
     }
   }
 
@@ -72,23 +72,6 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
 
       // set static folder
       app.use(Base, timer, express.static(Path, Static.options)) // Primary static folders
-    }
-  }
-
-  // API static folders
-  if (config.api.static) {
-    for (const Static of config.api.static) {
-      // virtual path
-      const Base = path.join(config.api.base, Static.base || Static.folder.replace(/../g, '')).replace(/\\/g, '/')
-
-      // physical path
-      const Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/')
-
-      // set static folder
-      app.use(Base, timer, express.static(Path, Static.options))
-
-      // colorful log:
-      console.log(`\x1b[36mServing \x1b[32m${Base}\x1b[36m path from \x1b[35m${Path}\x1b[0m`,)
     }
   }
 

@@ -2,35 +2,31 @@
 const express = require('express')
 const hydrateRoutes = require('./utils/hydrate-routes')
 const $router = express.Router()
-// const $routes = require('./config')
+const { join } = require('path')
 
 // Default middlewares
 const middlewares = {
-  'authorization': require('../middlewares/authorization'),
-  'interceptor': require('../middlewares/interceptor'),
+  authorization: require('../middlewares/authorization'),
+  interceptor: require('../middlewares/interceptor'),
   'is-owner': require('../middlewares/is-owner'),
 }
 
 // Default utils
 const utils = {
   'detect-language': require('../utils/detect-language'),
-  'sanitize': require('../utils/sanitize'),
+  sanitize: require('../utils/sanitize'),
 }
 
 // Default controllers
 const controllers = ['count', 'find', 'findOne', 'create', 'delete', 'update', 'upload', 'login', 'logout', 'register']
 
-
-const setMiddlewares = fn => {
+const setMiddlewares = (fn) => {
   if (typeof fn === 'function') return fn()
   else if (typeof fn === 'string') return middlewares[fn]
   else throw Error('Please define mavi middlewares')
 }
 
 const createRouter = ({ routes, define }, options) => {
-  // colorful log:
-  console.log(`\x1b[36mCreating \x1b[32m${options.name}\x1b[36m routes ${options.isPlugin ? 'as plugin' : 'as primary'}...\x1b[0m`,)
-
   if (!routes) throw Error('Please define mavi routes')
   else if (!define) throw Error('Please define mavi define')
 
@@ -58,91 +54,112 @@ const createRouter = ({ routes, define }, options) => {
     let routes = $routes[model] // local routes
     if (!routes) throw Error(`Please define mavi routes for ${model}`)
 
-    // Use route configs to generate router
+    // Use model.route.config to generate router
     for (const config of routes) {
-      if (config.method && !['get', 'post', 'put', 'delete'].includes(config.method.toLowerCase())) {
-        res.error = {
-          status: 500,
-          message: 'Invalid request method'
-        }
-        return res.status(res.error.status).send(res.error)
+      if (
+        config.method &&
+        !['get', 'post', 'put', 'delete', 'head', 'connect', 'trace', 'patch'].includes(config.method.toLowerCase())
+      ) {
+        return res.status(400).send('Invalid request method')
       }
 
-      // generate router
-      $router[config.method](config.path, ...config.middlewares.map(setMiddlewares), async (req, res) => {
-        // controller settings
-        req.config = config
+      // Generate static routes: // https://expressjs.com/en/4x/api.html#express.static
+      if ("serve" in config) {
+        // virtual path
+        const Base = config.path
 
-        // if user didn't assign models, use current model
-        if (!req.config.model) {
-          req.config.model = model
+        // physical path
+        const Path = (config.fullpath || join(process.cwd(), config.folder)).replace(/\\/g, '/')
+
+        // set static folder
+        $router.use(Base, ...config.middlewares.map(setMiddlewares), express.static(Path, config.serve))
+
+        if (options.debug) {
+          // colorful log:
+          console.log(`\x1b[36mServing  \x1b[32m[${config.method}]${config.path}\x1b[36m path from \x1b[35m${Path}\x1b[0m`,)
         }
+      }
 
-        // execute utils
-        await Promise.all(config.utils.map(function (fn) {
-          if (utils[fn]) {
-            req.body = utils[fn](req.body, config)
-          } else console.error('utils function not found:', fn)
-          return req.body
-        }))
+      // Generate api routes:
+      else {
+        $router[config.method](config.path, ...config.middlewares.map(setMiddlewares), async (req, res) => {
+          // controller settings
+          req.config = config
 
-        // Use controller directly which is defined in routes[x].controller
-        if (typeof config.controller === 'function') {
-          return config.controller(req, res)
-        }
-
-        // Use custom controllers (comes first because users can overwrite the default controllers)
-        else if (config.controller in define.controllers) {
-          // execute defined controller
-          return await define.controllers[config.controller](req, res)
-        }
-
-        // Use default controllers
-        else if (controllers.includes(config.controller)) {
-          // params & datas
-          const data = req.body
-          const { id, folder } = req.params
-          let $arguments = []
-
-          // set $arguments for default controllers
-          switch (config.controller) {
-            case 'find':
-            case 'count':
-            case 'findOne':
-              $arguments = []
-              break;
-            case 'create':
-              $arguments = [data]
-              break;
-            case 'delete':
-              $arguments = [id]
-              break;
-            case 'update':
-              $arguments = [id, data]
-              break;
-            case 'upload':
-              $arguments = [folder, data]
-              break;
-            case 'login':
-            case 'logout':
-            case 'register':
-              $arguments = [req, res]
+          // if user didn't assign models, use current model
+          if (!req.config.model) {
+            req.config.model = model
           }
 
-          // execute default controller
-          return await req.app.controllers(req, res)[config.controller](...$arguments)
-        }
+          // execute utils
+          if (config.utils) await Promise.all(
+            config.utils.map(function (fn) {
+              if (utils[fn]) {
+                req.body = utils[fn](req.body, config)
+              } else console.error('Utility function not found:', `${model}.utils: [${fn}]`)
+              return req.body
+            }),
+          )
 
-        // this is a static route:
-        // else if("folder" in config){
-        //   return res.sendFile(path.join(__dirname, '../../', config.folder, req.url))
-        // }
+          // Use controller directly which is defined in routes[x].controller
+          if (typeof config.controller === 'function') {
+            return config.controller(req, res)
+          }
 
-        else {
-          // controller not found
-          return res.status(500).send('Controller not found')
-        }
-      })
+          // Use custom controllers: (comes first because users can overwrite the default controllers)
+          else if (config.controller in define.controllers) {
+            // execute defined controller
+            return await define.controllers[config.controller](req, res)
+          }
+
+          // Use default controllers
+          else if (controllers.includes(config.controller)) {
+            // params & datas
+            const data = req.body
+            const { id, folder } = req.params
+            let $arguments = []
+
+            // set $arguments for default controllers
+            switch (config.controller) {
+              case 'find':
+              case 'count':
+              case 'findOne':
+                $arguments = []
+                break
+              case 'create':
+                $arguments = [data]
+                break
+              case 'delete':
+                $arguments = [id]
+                break
+              case 'update':
+                $arguments = [id, data]
+                break
+              case 'upload':
+                $arguments = [folder, data]
+                break
+              case 'login':
+              case 'logout':
+              case 'register':
+                $arguments = [req, res]
+            }
+
+            // execute default controller
+            return await req.app.controllers(req, res)[config.controller](...$arguments)
+          }
+
+          else {
+            // controller not found
+            return res.status(500).send('Controller not found')
+          }
+        })
+      }
+
+      if (options.debug) {
+        // colorful log:
+        console.log(
+          `\x1b[36mCreating \x1b[32m[${config.method}] ${config.path}\x1b[36m ${options.name} path\x1b[0m`)
+      }
     }
   }
 

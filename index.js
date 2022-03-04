@@ -56,16 +56,16 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, plugin, $plugin, slash, _i, _a, Static, Base, Path, _b, _c, Static, Base, Path;
-    var _d;
-    return __generator(this, function (_e) {
-        switch (_e.label) {
+    var config, HOST, PORT, plugin, $plugin, slash, _i, _a, Static, Base, Path;
+    var _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
                     console.error('[validateConfig]', err);
                     process.exit(1);
                 })];
             case 1:
-                config = _e.sent();
+                config = _c.sent();
                 HOST = config.host || 'localhost';
                 PORT = config.port || 3000;
                 // Connect to the database
@@ -76,18 +76,18 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 app.use(cookieParser());
                 app.use(cors(config.cors));
                 app.use(initializer(config)); // Set req.app properties  
-                app.use("".concat(config.api.base), timer, createRouter(config.api, { name: 'api' })); // Primary router is api
+                app.use("".concat(config.api.base), timer, createRouter(config.api, { name: 'api', debug: true })); // Primary router is api
                 // Set plugins
                 if (config.api.plugins) {
                     // Check plugins configuration
                     for (plugin in config.api.plugins) {
                         $plugin = {
                             base: config.api.plugins[plugin].base || plugin,
-                            routes: (_d = {}, _d[plugin] = config.api.plugins[plugin].routes, _d),
+                            routes: (_b = {}, _b[plugin] = config.api.plugins[plugin].routes, _b),
                             define: config.api.define // uses the same `define` as the api (for now)
                         };
                         slash = $plugin.base.startsWith('/') ? '' : '/';
-                        app.use("".concat(config.api.base).concat(slash).concat($plugin.base), timer, createRouter($plugin, { name: plugin, isPlugin: true }));
+                        app.use("".concat(config.api.base).concat(slash).concat($plugin.base), timer, createRouter($plugin, { name: plugin, isPlugin: true, debug: true }));
                     }
                 }
                 // mavi static folders
@@ -98,18 +98,6 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                         Path = path.join(config.__dirname, Static.folder);
                         // set static folder
                         app.use(Base, timer, express.static(Path, Static.options)); // Primary static folders
-                    }
-                }
-                // API static folders
-                if (config.api.static) {
-                    for (_b = 0, _c = config.api.static; _b < _c.length; _b++) {
-                        Static = _c[_b];
-                        Base = path.join(config.api.base, Static.base || Static.folder.replace(/../g, '')).replace(/\\/g, '/');
-                        Path = (Static.fullpath || path.join(process.cwd(), Static.folder)).replace(/\\/g, '/');
-                        // set static folder
-                        app.use(Base, timer, express.static(Path, Static.options));
-                        // colorful log:
-                        console.log("\u001B[36mServing \u001B[32m".concat(Base, "\u001B[36m path from \u001B[35m").concat(Path, "\u001B[0m"));
                     }
                 }
                 app.listen(PORT, HOST, function () {
