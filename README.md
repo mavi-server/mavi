@@ -39,7 +39,7 @@ module.exports = {
   poweredBy: 'Mavi v'.concat(Package.version),
   host: 'localhost',
   port: 3001,
-  cors: {
+  cors: { // https://www.npmjs.com/package/cors#configuring-cors-w-dynamic-origin
     origin: [process.env.CLIENT_URL || 'http://localhost:3000', process.env.SERVER_URL || 'http://localhost:3001'],
     methods: ['POST', 'GET', 'DELETE', 'PUT'],
     allowedHeaders: ['x-access-token', 'x-refresh-token', 'token', 'content-type', 'accept'],
@@ -56,7 +56,7 @@ module.exports = {
         min: 2,
         max: 10,
       },
-      logs: true, // prints knex queries to console
+      debug: true, // prints knex queries to console
     },
     production: {
       client: 'pg',
@@ -81,6 +81,7 @@ module.exports = {
           controller: 'find',
           exclude: ['content'],
           populate: ['bookmark', 'user', 'community', 'thumbnail', 'responseCount'],
+          middlewares: ['greetings'],
         },
         {
           path: '/posts/count',
@@ -113,6 +114,49 @@ module.exports = {
           middlewares: ['authorization'],
           utils: ['detect-language'],
           populate: ['bookmark', 'user', 'community', 'thumbnail'],
+        },
+      ],
+      uploads: [
+        {
+          path: '/uploads',
+          method: 'get',
+          serve: {
+            folder: 'uploads',
+            dotfiles: 'ignore',
+            etag: false,
+            extentsions: ['png', 'jpg', 'jpeg', 'gif', 'ico', 'svg'],
+            maxAge: '1d',
+          },
+        },
+        {
+          path: '/uploads/list',
+          method: 'get',
+          controller: 'find',
+        },
+        {
+          path: '/uploads/:id',
+          method: 'get',
+          controller: 'findOne',
+          middlewares: ['is-owner'],
+        },
+        {
+          path: '/uploads/:folder',
+          method: 'post',
+          controller: [
+            'upload',
+            {
+              accept: 'image',
+              folders: ['avatars', 'thumnail'],
+              maxFileSize: 5242880, // bytes = 5mb
+            },
+          ],
+          middlewares: ['authorization'],
+        },
+        {
+          path: '/uploads/:id',
+          method: 'put',
+          controller: 'update',
+          middlewares: ['is-owner'],
         },
       ],
     },
@@ -153,56 +197,101 @@ module.exports = {
           id: {
             type: 'increments',
             constraints: ['primary'],
+            hash: 'cG9zdHMuaWQ',
           },
           user: {
             type: 'integer',
             constraints: ['notNullable'],
             comment: 'author',
             references: 'users.id',
+            hash: 'cG9zdHMudXNlcg',
           },
           community: {
             type: 'integer',
             references: 'communities.id',
+            hash: 'cG9zdHMuY29tbXVuaXR5',
           },
           title: {
             type: 'string',
             maxlength: 100,
+            hash: 'cG9zdHMudGl0bGU',
           },
           published: {
             type: 'boolean',
             defaultTo: true,
+            hash: 'cG9zdHMucHVibGlzaGVk',
           },
           content: {
             type: 'text',
             constraints: ['notNullable'],
+            hash: 'cG9zdHMuY29udGVudA',
           },
           description: {
             type: 'string',
             maxlength: 300,
+            hash: 'cG9zdHMuZGVzY3JpcHRpb24',
           },
           thumbnail: {
             type: 'integer',
             references: 'uploads.id',
+            hash: 'cG9zdHMudGh1bWJuYWls',
           },
           tags: {
             type: 'string',
+            hash: 'cG9zdHMudGFncw',
           },
           language: {
             type: 'string',
             constraints: ['notNullable'],
+            hash: 'cG9zdHMubGFuZ3VhZ2U',
           },
           updated_at: {
             // if type is a timestamp and the column name includes `update`, date will be updated automatically on every update
             type: 'timestamp',
             useTz: true,
             precision: 6,
+            hash: 'cG9zdHMudXBkYXRlZF9hdA',
           },
           created_at: {
             // if type is a timestamp and the column name includes `create`, date will be created automatically on creation
             type: 'timestamp',
             useTz: true,
             precision: 6,
+            hash: 'cG9zdHMuY3JlYXRlZF9hdA',
           },
+          hash: 'WzE2NDM1Nzg3NDYwNzBdcG9zdHM',
+        },
+        uploads: {
+          id: {
+            type: 'increments',
+            constraints: ['primary'],
+            hash: 'dXBsb2Fkcy5pZA',
+          },
+          url: {
+            type: 'text',
+            constraints: ['notNullable'],
+            hash: 'dXBsb2Fkcy51cmw',
+          },
+          alt: { type: 'text', hash: 'dXBsb2Fkcy5hbHQ' },
+          user: {
+            type: 'integer',
+            comment: 'Image owner',
+            references: 'users.id',
+            hash: 'dXBsb2Fkcy51c2Vy',
+          },
+          updated_at: {
+            type: 'timestamp',
+            useTz: true,
+            precision: 6,
+            hash: 'dXBsb2Fkcy51cGRhdGVkX2F0',
+          },
+          created_at: {
+            type: 'timestamp',
+            useTz: true,
+            precision: 6,
+            hash: 'dXBsb2Fkcy5jcmVhdGVkX2F0',
+          },
+          hash: 'dXBsb2Fkcw',
         },
       },
       seeds: {
@@ -286,8 +375,6 @@ module.exports = {
           returning: 'id', // '*' or spesific column
         },
       },
-      views: {}, // This options is not standard and will change in the near future.
-      utils: {},
       middlewares: {
         greetings: function (req, res, next) {
           console.log('Hello from middleware!')
