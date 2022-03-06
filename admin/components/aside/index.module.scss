@@ -1,0 +1,55 @@
+.aside {
+  --aside-width: 280px;
+  z-index: 1;
+  background-color: var(--mavi);
+  box-shadow: 0 0 20px #1f20225d;
+  height: 100vh;
+  width: var(--aside-width);
+  overflow-y: auto;
+  transition: width 0.25s ease;
+  &.closed {
+    width: 0;
+  }
+  .head {
+    height: 120px;
+    @include flex_center;
+    svg {
+      width: 180px;
+    }
+  }
+  .body {
+    font-size: 1.2rem;
+    li {
+      a {
+        color: var(--primary);
+        font-weight: 300;
+        display: flex;
+        align-items: center;
+        flex: 1;
+        background-color: var(--mavi);
+        padding: var(--sm) 0;
+        padding-left: calc((var(--aside-width) - 180px) / 2);
+        border-left: 2px solid transparent;
+        transition: border-left-color, background-color 0.235s ease;
+        &.active {
+          border-left-color: var(--primary);
+          background-color: var(--mavi-dark);
+          &:active {
+            background-color: var(--mavi-darkest);
+          }
+        }
+        svg {
+          width: 25px;
+          height: 25px;
+          fill: var(--primary);
+          + span {
+            margin-left: var(--sm);
+          }
+        }
+      }
+    }
+  }
+  .foot {
+    background-color: green;
+  }
+}

@@ -1,0 +1,94 @@
+@function create-hsl-tone($arguments, $addS: 0%, $addL: 0%) {
+  $hue: map-get($arguments, h);
+  $saturation: map-get($arguments, s) + $addS;
+  $lightness: map-get($arguments, l) + $addL;
+
+  $color: hsl($hue, $saturation, $lightness);
+  @return $color;
+}
+
+@mixin create-color-variables($hslColors) {
+  $saturation: 50%;
+  $lightness: 50%;
+
+  @each $name, $hslColor in $hslColors {
+    #{'--' + $name}: create-hsl-tone($hslColor);
+    #{'--' + $name + '-dark'}: create-hsl-tone($hslColor, 0%, -5%);
+    #{'--' + $name + '-darkest'}: create-hsl-tone($hslColor, 0%, -10%);
+    #{'--' + $name + '-light'}: create-hsl-tone($hslColor, 0%, 5%);
+    #{'--' + $name + '-lighter'}: create-hsl-tone($hslColor, 0%, 10%);
+  }
+}
+
+$lightColors: (
+  primary: (
+    h: 250,
+    s: 41%,
+    l: 92%,
+  ),
+  secondary: (
+    h: 240,
+    s: 20%,
+    l: 79%,
+  ),
+  mavi: (
+    h: 214,
+    s: 90%,
+    l: 64%,
+  ),
+);
+
+$darkColors: (
+  primary: (
+    h: 240,
+    s: 21%,
+    l: 6%,
+  ),
+  secondary: (
+    h: 240,
+    s: 21%,
+    l: 6%,
+  ),
+  mavi: (
+    h: 214,
+    s: 90%,
+    l: 64%,
+  ),
+);
+
+$units: (
+  xxs: 0.25rem,
+  xs: 0.5rem,
+  sm: 0.75rem,
+  md: 1rem,
+  lg: 1.5rem,
+  xl: 2rem,
+);
+
+// Define common units:
+#__next {
+  @each $name, $value in $units {
+    #{'.p-' + $name} {
+      padding: $value;
+    }
+    #{'.m-' + $name} {
+      padding: $value;
+    }
+    #{'--' + $name}: $value;
+  }
+}
+
+// Define themes:
+#__next,
+#__next[light] {
+  @include create-color-variables($lightColors);
+}
+#__next[dark] {
+  @include create-color-variables($lightColors);
+}
+
+@mixin flex_center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

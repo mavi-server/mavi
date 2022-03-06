@@ -11,3 +11,4 @@ types/*.js
 # remove later
 features.md
 tests/*
+list.yml
