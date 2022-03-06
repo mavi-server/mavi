@@ -2,17 +2,17 @@ import type { NextPage } from 'next'
 import { Grid, Button } from '@mui/material'
 import styles from './index.module.css'
 
-const Home: NextPage = () => {
+const Settings: NextPage = () => {
   return (
-    <Grid container spacing={2} rowSpacing={2}>
-      <Grid item>
+    <>
+      <Grid item md={12}>
         <div>index</div>
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={12}>
         <Button variant="contained">Button</Button>
       </Grid>
-    </Grid>
+    </>
   )
 }
 
-export default Home
+export default Settings

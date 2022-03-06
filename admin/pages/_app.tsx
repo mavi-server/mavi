@@ -1,13 +1,27 @@
 import type { AppProps } from 'next/app'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import { ThemeProvider } from '@mui/material'
 import Theme from './_app.theme'
 import Head from 'next/head'
-import Aside from '../components/aside'
+import AppAside from '../components/aside'
+import AppHeader from '../components/header'
+import AppMain from '../components/main'
 
 import '../assets/styles/globals.scss'
-import styles from './_app.module.css'
 
 function App({ Component, pageProps }: AppProps) {
+  const { push } = useRouter()
+  const [headerTitle, setHeaderTitle] = useState('Settings')
+  const onNavigationChange = (nav: any) => {
+    setHeaderTitle(nav.title)
+    push(nav.href)
+  }
+
+  useEffect(() => {
+    document.documentElement.setAttribute('dir', 'ltr')
+  }, [])
+
   return (
     <ThemeProvider theme={Theme}>
       <Head>
@@ -17,11 +31,12 @@ function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/logo.svg" />
       </Head>
 
-      <Aside />
+      <AppAside onNavigationChange={onNavigationChange} />
 
-      <main className={styles.MainContainer}>
+      <AppHeader title={headerTitle} />
+      <AppMain>
         <Component {...pageProps} />
-      </main>
+      </AppMain>
     </ThemeProvider>
   )
 }

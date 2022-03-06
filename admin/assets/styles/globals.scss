@@ -7,13 +7,15 @@ body {
   font-family: 'Yanone Kaffeesatz', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
     Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-size: 16px;
+  overflow: unset;
+  width: 100%;
+  height: 100%;
 }
 
 #__next {
   display: flex;
-  flex-direction: row;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 }
 
 a {

@@ -1,4 +1,4 @@
-@function create-hsl-tone($arguments, $addS: 0%, $addL: 0%) {
+@function create-color-shade($arguments, $addS: 0%, $addL: 0%) {
   $hue: map-get($arguments, h);
   $saturation: map-get($arguments, s) + $addS;
   $lightness: map-get($arguments, l) + $addL;
@@ -6,25 +6,24 @@
   $color: hsl($hue, $saturation, $lightness);
   @return $color;
 }
-
 @mixin create-color-variables($hslColors) {
   $saturation: 50%;
   $lightness: 50%;
 
   @each $name, $hslColor in $hslColors {
-    #{'--' + $name}: create-hsl-tone($hslColor);
-    #{'--' + $name + '-dark'}: create-hsl-tone($hslColor, 0%, -5%);
-    #{'--' + $name + '-darkest'}: create-hsl-tone($hslColor, 0%, -10%);
-    #{'--' + $name + '-light'}: create-hsl-tone($hslColor, 0%, 5%);
-    #{'--' + $name + '-lighter'}: create-hsl-tone($hslColor, 0%, 10%);
+    #{'--' + $name}: create-color-shade($hslColor);
+    #{'--' + $name + '-dark'}: create-color-shade($hslColor, 0%, -5%);
+    #{'--' + $name + '-darkest'}: create-color-shade($hslColor, 0%, -10%);
+    #{'--' + $name + '-light'}: create-color-shade($hslColor, 0%, 5%);
+    #{'--' + $name + '-lighter'}: create-color-shade($hslColor, 0%, 10%);
   }
 }
 
 $lightColors: (
   primary: (
     h: 250,
-    s: 41%,
-    l: 92%,
+    s: 100%,
+    l: 100%,
   ),
   secondary: (
     h: 240,
@@ -63,9 +62,10 @@ $units: (
   md: 1rem,
   lg: 1.5rem,
   xl: 2rem,
+  xxl: 3rem,
 );
 
-// Define common units:
+// Define common units and vars:
 #__next {
   @each $name, $value in $units {
     #{'.p-' + $name} {
@@ -76,6 +76,9 @@ $units: (
     }
     #{'--' + $name}: $value;
   }
+  --aside-width: 280px;
+  --header-height: 80px;
+  --header-height-collapsed: 60px;
 }
 
 // Define themes:

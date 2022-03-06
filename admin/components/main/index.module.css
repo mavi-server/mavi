@@ -1,0 +1,11 @@
+.AppMain {
+  z-index: 0;
+  background-color: var(--primary);
+  padding-top: calc(var(--header-height) + var(--md));
+  padding-left: var(--xl);
+  padding-right: var(--xl);
+  width: calc(100% - var(--aside-width));
+  margin-left: var(--aside-width);
+  min-height: 100%;
+  display: grid;
+}

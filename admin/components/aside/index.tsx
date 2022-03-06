@@ -1,6 +1,7 @@
 import type { NextPage } from 'next'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { Button } from '@mui/material'
+import Link from 'next/link'
 import styles from './index.module.scss'
 import MaviLogo from '../../public/mavi.svg'
 
@@ -26,7 +27,11 @@ const ListItems = [
   },
 ]
 
-const Index: NextPage = () => {
+type Aside = {
+  onNavigationChange: (nav: any) => void
+}
+
+const AppAside = ({ onNavigationChange }: Aside) => {
   const { route } = useRouter()
 
   return (
@@ -39,12 +44,15 @@ const Index: NextPage = () => {
         {ListItems.map((item) => {
           return (
             <li key={item.title}>
-              <Link href={item.href}>
-                <a className={item.href === route ? styles.active : ''}>
+              <Button
+                onClick={() => onNavigationChange(item)}
+                className={`${styles.MuiButton} ${item.href === route ? styles.active : ''}`}
+              >
+                <div>
                   {item.icon}
                   <span>{item.title}</span>
-                </a>
-              </Link>
+                </div>
+              </Button>
             </li>
           )
         })}
@@ -55,4 +63,4 @@ const Index: NextPage = () => {
   )
 }
 
-export default Index
+export default AppAside

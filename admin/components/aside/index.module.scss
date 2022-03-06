@@ -1,5 +1,4 @@
 .aside {
-  --aside-width: 280px;
   z-index: 1;
   background-color: var(--mavi);
   box-shadow: 0 0 20px #1f20225d;
@@ -7,11 +6,15 @@
   width: var(--aside-width);
   overflow-y: auto;
   transition: width 0.25s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
   &.closed {
     width: 0;
   }
   .head {
-    height: 120px;
+    height: var(--header-height);
     @include flex_center;
     svg {
       width: 180px;
@@ -20,13 +23,17 @@
   .body {
     font-size: 1.2rem;
     li {
-      a {
+      .MuiButton {
         color: var(--primary);
         font-weight: 300;
         display: flex;
         align-items: center;
+        justify-content: flex-start;
+        font-size: 1rem;
+        width: 100%;
         flex: 1;
         background-color: var(--mavi);
+        border-radius: 0;
         padding: var(--sm) 0;
         padding-left: calc((var(--aside-width) - 180px) / 2);
         border-left: 2px solid transparent;
@@ -34,9 +41,6 @@
         &.active {
           border-left-color: var(--primary);
           background-color: var(--mavi-dark);
-          &:active {
-            background-color: var(--mavi-darkest);
-          }
         }
         svg {
           width: 25px;

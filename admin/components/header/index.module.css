@@ -1,0 +1,18 @@
+.AppHeader {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: var(--aside-width);
+  height: var(--header-height);
+  background-color: rgba(var(--primary), 0.5);
+  backdrop-filter: blur(6px);
+  padding: var(--sm) var(--sm) var(--sm) var(--xl);
+  display: flex;
+  align-items: center;
+  transition: height 0.25s ease;
+}
+.AppHeader.collapsed {
+  box-shadow: 0 0 10px var(--primary-darkest);
+  height: var(--header-height-collapsed);
+}
