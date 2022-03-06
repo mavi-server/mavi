@@ -47,7 +47,9 @@
           height: 25px;
           fill: var(--primary);
           + span {
-            margin-left: var(--sm);
+            margin-left: var(--md);
+            margin-top: 1px;
+            line-height: inherit;
           }
         }
       }

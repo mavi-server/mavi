@@ -9,3 +9,9 @@
   min-height: 100%;
   display: grid;
 }
+.GroupBox {
+  background-color: var(--primary-lighter);
+  padding: var(--lg);
+  border-radius: var(--sm);
+  border: 1px solid var(--primary-darkest);
+}

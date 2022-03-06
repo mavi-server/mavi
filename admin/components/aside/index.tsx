@@ -48,10 +48,8 @@ const AppAside = ({ onNavigationChange }: Aside) => {
                 onClick={() => onNavigationChange(item)}
                 className={`${styles.MuiButton} ${item.href === route ? styles.active : ''}`}
               >
-                <div>
-                  {item.icon}
-                  <span>{item.title}</span>
-                </div>
+                {item.icon}
+                <span>{item.title}</span>
               </Button>
             </li>
           )
