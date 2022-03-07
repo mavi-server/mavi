@@ -17,9 +17,19 @@ module.exports = (data, { schema }) => {
 
     // prevent objects with id properties to be send as objects
     for (let c in sanitized) {
-      if (typeof sanitized[c] === 'object' && 'id' in sanitized[c]) {
+      if (sanitized[c] && typeof sanitized[c] === 'object' && 'id' in sanitized[c]) {
         // sql queries only accepts id:
         sanitized[c] = sanitized[c].id
+      }
+      else if (Array.isArray(sanitized[c])) {
+        // sanitize arrays
+        sanitized[c] = sanitized[c].map(item => {
+          if (item && typeof item === 'object' && 'id' in item) {
+            return item.id
+          }
+          return item
+        })
+        sanitized[c] = JSON.stringify(sanitized[c])
       }
     }
 
