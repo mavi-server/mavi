@@ -3,6 +3,7 @@ const express = require('express')
 const hydrateRoutes = require('./utils/hydrate-routes')
 const $router = express.Router()
 const { join } = require('path')
+const routers = { api: 0, static: 0, }
 
 // Default middlewares
 const middlewares = {
@@ -75,8 +76,9 @@ const createRouter = ({ routes, define }, options) => {
         $router.use(Base, ...config.middlewares.map(setMiddlewares), express.static(Path, config.serve))
 
         if (options.debug) {
+          routers.static++
           // colorful log:
-          console.log(`\x1b[36mServing  \x1b[32m[${config.method}]${config.path}\x1b[36m path from \x1b[35m${Path}\x1b[0m`,)
+          // console.log(`\x1b[36mServing  \x1b[32m[${config.method}]${config.path}\x1b[36m path from \x1b[35m${Path}\x1b[0m`,)
         }
       }
 
@@ -157,11 +159,16 @@ const createRouter = ({ routes, define }, options) => {
 
       if (options.debug) {
         // colorful log:
-        console.log(
-          `\x1b[36mCreating \x1b[32m[${config.method}] ${config.path}\x1b[36m ${options.name} path\x1b[0m`)
+        // console.log(
+        //   `\x1b[36mCreating \x1b[32m[${config.method}] ${config.path}\x1b[36m ${options.name} path\x1b[0m`)
+        routers.api++
       }
     }
   }
+
+  // colorful log:
+  console.log(
+    `\x1b[36mRouter is ready: \x1b[32m${routers.api + routers.static} route is created. ${routers.static} is serving as a static\x1b[0m`)
 
   // Router is ready
   return $router
