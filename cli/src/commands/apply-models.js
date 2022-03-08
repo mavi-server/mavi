@@ -301,23 +301,37 @@ const applyModels = async () => {
 
                 // if enum dataset is changed (must check this one specially)
                 if (models[model][column].type === "enum") {
-                  const addedEnums = models[model][column].dataset.filter(e => !db_model_json_column.dataset.find(db_e => db_e === e))
-                  const removedEnums = db_model_json_column.dataset.filter(db_e => !models[model][column].dataset.find(e => e === db_e))
+                  // asume that enum dataset is changed
+                  if ("dataset" in db_model_json_column && Array.isArray(db_model_json_column.dataset)) {
+                    const addedEnums = models[model][column].dataset.filter(e => !db_model_json_column.dataset.find(db_e => db_e === e))
+                    const removedEnums = db_model_json_column.dataset.filter(db_e => !models[model][column].dataset.find(e => e === db_e))
 
 
-                  // if enums changed
-                  if (removedEnums.length || addedEnums.length) {
+                    // if enums changed
+                    if (removedEnums.length || addedEnums.length) {
+                      const dataset = models[model][column].dataset.map(d => `'${d}'::text`).join(', ')
+
+                      // needs to drop check-constraint first:
+                      await knex.raw(`
+                        ALTER TABLE "${model}" DROP CONSTRAINT IF EXISTS "${model}_${column}_check";
+                        ALTER TABLE "${model}" ADD CONSTRAINT "${model}_${column}_check" CHECK (${column} IN (${dataset}));
+                      `)
+                      // then add new check-constraint without altering the column
+                      // important note here: if some rows in the database have values that are not in the new dataset, query will fail
+
+                      console.log(`\x1b[36m[${model}.${column} dataset changed: ${db_model_json_column.dataset.join(', ')} -> \x1b[32m${models[model][column].dataset.join(', ')} \x1b[0m`)
+                    }
+                  }
+
+                  // no dataset changes but type is changed to enum
+                  else {
                     const dataset = models[model][column].dataset.map(d => `'${d}'::text`).join(', ')
 
-                    // needs to drop check-constraint first
-                    await knex.raw(`
-                    ALTER TABLE "${model}" DROP CONSTRAINT IF EXISTS "${model}_${column}_check";
-                    ALTER TABLE "${model}" ADD CONSTRAINT "${model}_${column}_check" CHECK (${column} IN (${dataset}));
-                  `)
-                    // then add new check-constraint without altering the column
-                    // important note here: if some rows in the database have values that are not in the new dataset, query will fail
+                    const sql = `ALTER TABLE "${model}" ADD CONSTRAINT "${model}_${column}_check" CHECK (${column} IN (${dataset}))`
 
-                    console.log(`\x1b[36m[${model}.${column} dataset changed: ${db_model_json_column.dataset.join(', ')} -> \x1b[32m${models[model][column].dataset.join(', ')} \x1b[0m`)
+                    // needs to add check-constraint:
+                    await knex.raw(sql)
+                    console.log(`\x1b[36m[${model}.${column} new dataset added: \x1b[32m${models[model][column].dataset.join(', ')} \x1b[0m`)
                   }
                   return
                 }
