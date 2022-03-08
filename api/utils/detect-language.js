@@ -6,7 +6,7 @@ const lngDetector = new LanguageDetect();
 
 module.exports = (data, { schema }) => {
   if (data) {
-    if (schema.find(c => c === 'content') && data.content != null) {
+    if (schema.find(c => c === 'content') && data.content != "") {
       // get part of the content for better performance
       const content = data.content.slice(0, 500)
 

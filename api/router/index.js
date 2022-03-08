@@ -167,8 +167,8 @@ const createRouter = ({ routes, define }, options) => {
 
   // colorful log:
   console.log(
-    `\x1b[36mRouter is ready: \x1b[32m${routers.api + routers.static} route${routers.api + routes.static ? ' is' : 's are'
-    } created. ${routers.static} ${routers.static ? 'is' : 'are'} serving as a static\x1b[0m`,
+    `\x1b[36mRouter is ready: \x1b[32m${routers.api + routers.static} route ${routers.api + routes.static ? 'is' : 'are'
+    } created \x1b[33m${routers.static} ${routers.static ? 'is' : 'are'} serving as a static path\x1b[0m`,
   )
 
   // Router is ready
