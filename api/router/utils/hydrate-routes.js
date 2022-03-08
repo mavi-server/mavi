@@ -53,7 +53,7 @@ module.exports = ({ routes, define }, { isPlugin }) => {
             route.schema = Object.keys(define.models[from]).filter(column => column !== 'hash')
           }
           else if (!isPlugin) {
-            throw Error('mavi model is not defined!')
+            throw Error(`Mavi model is not defined for ${from}`)
           }
         }
 

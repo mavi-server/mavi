@@ -238,21 +238,27 @@ module.exports = (req, res) => {
 
   return {
     count: async () => {
-      if (query.where || req.owner) {
-        if (query.where)
-          for (const group of query.where) {
-            queryBuilder[group.exec](...group.params)
-          }
-        if (req.owner) {
-          // is-owner
-          queryBuilder.andWhere({ user: req.owner.id })
+      if (query.where) {
+        for (const group of query.where) {
+          queryBuilder[group.exec](...group.params)
         }
+      }
+
+      // is-owner
+      if (req.owner) {
+        const where = {}
+
+        if (model === 'users') where.id = req.owner.id
+        else where.user = req.owner.id
+
+        if (query.where) queryBuilder.andWhere(where)
+        else queryBuilder.where(where)
       }
 
       let [data] = await queryBuilder.count('*').catch(handleControllerError)
       data.count = Number(data.count || 0)
 
-      return res.status(200).json(data.count)
+      return res.status(200).send(data)
     },
     find: async (populateIt = true) => {
       if (!view) queryBuilder.select(columns)
@@ -266,19 +272,20 @@ module.exports = (req, res) => {
       if (query.limit || !query.limit) {
         queryBuilder.limit(query.limit || 10)
       }
-      if (query.where || req.owner) {
-        if (query.where)
-          for (const group of query.where) {
-            queryBuilder[group.exec](...group.params)
-          }
-        if (req.owner) {
-          // is-owner
-          if (model === 'users') {
-            queryBuilder.andWhere({ id: req.owner.id })
-          } else {
-            queryBuilder.andWhere({ user: req.owner.id })
-          }
+      if (query.where) {
+        for (const group of query.where) {
+          queryBuilder[group.exec](...group.params)
         }
+      }
+      // is-owner
+      if (req.owner) {
+        const where = {}
+
+        if (model === 'users') where.id = req.owner.id
+        else where.user = req.owner.id
+
+        if (query.where) queryBuilder.andWhere(where)
+        else queryBuilder.where(where)
       }
 
       let data = await queryBuilder.catch(handleControllerError)

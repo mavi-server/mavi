@@ -3,7 +3,7 @@ const express = require('express')
 const hydrateRoutes = require('./utils/hydrate-routes')
 const $router = express.Router()
 const { join } = require('path')
-const routers = { api: 0, static: 0, }
+const routers = { api: 0, static: 0 }
 
 // Default middlewares
 const middlewares = {
@@ -65,7 +65,7 @@ const createRouter = ({ routes, define }, options) => {
       }
 
       // Generate static routes: // https://expressjs.com/en/4x/api.html#express.static
-      if ("serve" in config) {
+      if ('serve' in config) {
         // virtual path
         const Base = config.path
 
@@ -94,14 +94,15 @@ const createRouter = ({ routes, define }, options) => {
           }
 
           // execute utils
-          if (config.utils) await Promise.all(
-            config.utils.map(function (fn) {
-              if (utils[fn]) {
-                req.body = utils[fn](req.body, config)
-              } else console.error('Utility function not found:', `${model}.utils: [${fn}]`)
-              return req.body
-            }),
-          )
+          if (config.utils)
+            await Promise.all(
+              config.utils.map(function (fn) {
+                if (utils[fn]) {
+                  req.body = utils[fn](req.body, config)
+                } else console.error('Utility function not found:', `${model}.utils: [${fn}]`)
+                return req.body
+              }),
+            )
 
           // Use controller directly which is defined in routes[x].controller
           if (typeof config.controller === 'function') {
@@ -148,9 +149,7 @@ const createRouter = ({ routes, define }, options) => {
 
             // execute default controller
             return await req.app.controllers(req, res)[config.controller](...$arguments)
-          }
-
-          else {
+          } else {
             // controller not found
             return res.status(500).send('Controller not found')
           }
@@ -168,7 +167,9 @@ const createRouter = ({ routes, define }, options) => {
 
   // colorful log:
   console.log(
-    `\x1b[36mRouter is ready: \x1b[32m${routers.api + routers.static} route is created. ${routers.static} is serving as a static\x1b[0m`)
+    `\x1b[36mRouter is ready: \x1b[32m${routers.api + routers.static} route${routers.api + routes.static ? ' is' : 's are'
+    } created. ${routers.static} ${routers.static ? 'is' : 'are'} serving as a static\x1b[0m`,
+  )
 
   // Router is ready
   return $router

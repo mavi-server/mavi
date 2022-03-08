@@ -1,11 +1,12 @@
 // This middleware is used to check if users's token is valid.
 // If token is expired, it refreshes and sends back to the client as a response header.
 // Client should handle the remaining jobs.
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
 const authorization = (req, res, next) => {
-  if (!req.token || !req.user) {
-    return res.status(403).send("A token is required for authentication");
+  if (!req.token) {
+    if (req.user && req.user.token) req.token = req.user.token
+    else return res.status(403).send("A token is required for authentication");
   }
 
   return jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
