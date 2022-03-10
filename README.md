@@ -39,9 +39,10 @@ module.exports = {
   poweredBy: 'Mavi v'.concat(Package.version),
   host: 'localhost',
   port: 3001,
-  cors: { // https://www.npmjs.com/package/cors#configuring-cors-w-dynamic-origin
+  cors: {
+    // Check the cors module for more options: https://www.npmjs.com/package/cors
     origin: [process.env.CLIENT_URL || 'http://localhost:3000', process.env.SERVER_URL || 'http://localhost:3001'],
-    methods: ['POST', 'GET', 'DELETE', 'PUT'],
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     allowedHeaders: ['x-access-token', 'x-refresh-token', 'token', 'content-type', 'accept'],
   },
   database: {
@@ -159,40 +160,85 @@ module.exports = {
           middlewares: ['is-owner'],
         },
       ],
-    },
-    static: [
-      {
-        base: '/static',
-        folder: 'public',
-        options: {
-          dotfiles: 'ignore',
-          etag: false,
-          extensions: [
-            'html',
-            'htm',
-            'css',
-            'js',
-            'png',
-            'jpg',
-            'jpeg',
-            'gif',
-            'ico',
-            'svg',
-            'eot',
-            'ttf',
-            'woff',
-            'woff2',
-            'otf',
-          ],
-          maxAge: '1d',
-          setHeaders: function (res, path, stat) {
-            res.set('x-timestamp', Date.now())
-          },
+      // This entity below uses views
+      // Views are defined on the `define` property
+      users: [
+        {
+          path: '/posts',
+          method: 'get',
+          view: 'avg_user_age',
         },
-      },
-    ],
+      ]
+    },
     define: {
+      // Models generates your database table and api responses
+      // Api responses can be customized by the route configs
       models: {
+        // an important note here: all the `hash` properties are automatically assigned if you put your models in the `models` folder and export with their name in index file
+        // example models/index.js:
+        // module.exports = {
+        //   users: require('./users'),
+        //   posts: require('./posts'),
+        // }
+        // but if you use them here, you should assign `hash` properties manually
+        // after that, if you change table/column names or add new tables/columns, or change your column properties
+        // mavi will update your database automatically on restart (if you using nodemon, it will update after you save it).
+        // *** be careful if you drop/rename your hash property, dependent entity will be deleted entirely from your database (0.5.4 and previous versions) ***
+        users: {
+          id: {
+            type: 'increments',
+            constraints: ['primary'],
+            hash: 'WzE2NDMyMTk4NjY1MDRddXNlcnMuaWQ',
+          },
+          username: {
+            type: 'string',
+            constraints: ['unique'],
+            maxlength: 18,
+            hash: 'WzE2NDMyMTk4Nzc0MjRddXNlcnMudXNlcm5hbWU',
+          },
+          email: {
+            type: 'string',
+            constraints: ['unique'],
+            maxlength: 100,
+            hash: 'WzE2NDMyMjA4Nzg4MDdddXNlcnMuZW1haWw',
+          },
+          age: {
+            type: 'integer',
+            hash: 'WzENDMjA4Nzg4MDdddXNlcnMuYWdl',
+          }
+          fullname: {
+            type: 'string',
+            maxlength: 100,
+            hash: 'WzE2NDMyMjE0OTg0NzFdbXl1c2Vycy5mdWxsbmFtZQ',
+          },
+          password: {
+            type: 'string',
+            private: true,
+            hash: 'WzE2NDMzOTk3MzA4MjJddXNlcnMucGFzc3dvcmQ',
+          },
+          bio: {
+            type: 'string',
+            maxlength: 255,
+            hash: 'dXNlcnMuYmlv',
+          },
+          blocked: { type: 'boolean', default: false, hash: 'dXNlcnMuYmxvY2tlZA' },
+          avatar: { type: 'string', hash: 'dXNlcnMuYXZhdGFy' },
+          token: { type: 'text', private: true, hash: 'dXNlcnMudG9rZW4' },
+          refresh: { type: 'text', private: true, hash: 'dXNlcnMucmVmcmVzaA' },
+          updated_at: {
+            type: 'timestamp',
+            useTz: true,
+            precision: 6,
+            hash: 'dXNlcnMudXBkYXRlZF9hdA',
+          },
+          created_at: {
+            type: 'timestamp',
+            useTz: true,
+            precision: 6,
+            hash: 'dXNlcnMuY3JlYXRlZF9hdA',
+          },
+          hash: 'dXNlcnM',
+        },
         posts: {
           id: {
             type: 'increments',
@@ -202,8 +248,10 @@ module.exports = {
           user: {
             type: 'integer',
             constraints: ['notNullable'],
+            references: 'users.id', // this is the `id` property of the `users` model
+            onDelete: 'cascade', // if you delete a user, all his posts will be deleted
+            onUpdate: 'cascade', // if you update a user, all his posts will be updated
             comment: 'author',
-            references: 'users.id',
             hash: 'cG9zdHMudXNlcg',
           },
           community: {
@@ -245,15 +293,15 @@ module.exports = {
             constraints: ['notNullable'],
             hash: 'cG9zdHMubGFuZ3VhZ2U',
           },
+          // if type is a timestamp and the column name includes `update`, date will be updated automatically on every update
           updated_at: {
-            // if type is a timestamp and the column name includes `update`, date will be updated automatically on every update
             type: 'timestamp',
             useTz: true,
             precision: 6,
             hash: 'cG9zdHMudXBkYXRlZF9hdA',
           },
+          // if type is a timestamp and the column name includes `create`, date will be created automatically on creation
           created_at: {
-            // if type is a timestamp and the column name includes `create`, date will be created automatically on creation
             type: 'timestamp',
             useTz: true,
             precision: 6,
@@ -294,6 +342,7 @@ module.exports = {
           hash: 'dXBsb2Fkcw',
         },
       },
+      // Seeds are automatically inserted into your database
       seeds: {
         posts: [
           {
@@ -312,6 +361,8 @@ module.exports = {
           },
         ],
       },
+      // Populate configs are used in routes
+      // There are different types of populates but none of them are standard. Will explain when they are ready.
       populate: {
         user: {
           select: 'user',
@@ -375,10 +426,21 @@ module.exports = {
           returning: 'id', // '*' or spesific column
         },
       },
+      // Middlewares are used in routes
       middlewares: {
         greetings: function (req, res, next) {
           console.log('Hello from middleware!')
           next()
+        },
+      },
+      // Views are used in routes to extend controller methods.
+      // Views will give the ability to make custom queries and can be combined with controllers.
+      // Views are not intended to replace the actual views of the RDBMS (for now)
+      views: {
+        avg_user_age: (knex, params) => {
+          // refer to this doc for the usage of knex: https://knexjs.org/
+          // you can also return a raw sql string as well
+          return knex.avg('age').from('users')
         },
       },
     },
@@ -386,13 +448,6 @@ module.exports = {
 }
 ```
 
-The Object will generate the following entities:
-
-1. **[GET] /posts**: Get all the posts from `posts` table. Default limit is 10. Route will be public to everyone. Only the `columns` are selected and `exclude`ds are not. The `populate`s are used to populate different kind of relations (I will explain these relations when they are standardized). Populate options are defined in the `define.populate` object.
-2. **[GET] /posts/count**: Get post count.
-3. **[GET] /posts/:id**: Get one post by id.
-4. **[PUT] /posts/:id**: Update one post by id. Only the owner user can update the post because it uses `is-owner` middleware.
-5. **[DELETE] /posts/:id**: Delete one post by id. Only the owner user can delete the post because it uses `is-owner` middleware.
-6. **[POST] /posts**: Create a new post. Only the authenticated users can create a new post because it uses `authorization` middleware.
+The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc. There are more stuffs, I will mention each one of them, but that requires some time. You can use the latest version and give it a try to see what it does :) If you encounter any problem, please open an issue or email me directly i will be happy to help you.
 
 _this package is still in development_

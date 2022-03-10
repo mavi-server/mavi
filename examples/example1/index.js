@@ -51,6 +51,11 @@ module.exports = {
           populate: ['user'],
         },
         {
+          path: '/posts-from-view',
+          method: 'get',
+          view: 'example_view' // can be combined with the controller as well
+        },
+        {
           path: '/posts/count',
           method: 'get',
           controller: 'count',
@@ -171,12 +176,14 @@ module.exports = {
             constraints: ['notNullable'],
             hash: 'cG9zdHMubGFuZ3VhZ2U'
           },
+          // if type is a timestamp and the column name includes `update`, date will be updated automatically on every update
           updated_at: {
             type: 'timestamp',
             useTz: true,
             precision: 6,
             hash: 'cG9zdHMudXBkYXRlZF9hdA'
           },
+          // if type is a timestamp and the column name includes `create`, date will be created automatically on creation
           created_at: {
             type: 'timestamp',
             useTz: true,
@@ -252,7 +259,7 @@ module.exports = {
         ]
       },
       // Populate configs are used in routes
-      // There are different types of populates but none of them is standard. I will explain them when they are ready.
+      // There are different types of populates but none of them are standard. Will explain when they are ready.
       populate: {
         user: {
           select: 'user',
@@ -273,6 +280,16 @@ module.exports = {
           next()
         },
       },
+      // Views are used in routes to extend controller methods.
+      // Views will give the ability to make custom queries and can be combined with controllers.
+      // Views are not intended to replace the actual views of the RDBMS (for now)
+      views: {
+        example_view: (knex, params) => {
+          // refer to this doc for the usage of knex: https://knexjs.org/
+          // you can also return a raw sql string as well
+          return knex.select('*').from('users').where('id', params.id)
+        }
+      }
     },
     // Static path under api
     static: [

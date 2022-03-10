@@ -49,7 +49,7 @@ require('dotenv').config({ path: path.resolve('.env') });
 // Functionality
 var createDatabase = require('./database');
 var createRouter = require('./api/router');
-var controllers = require('./api/controllers');
+var controller = require('./api/controller');
 // Services
 var validateConfig = require('./api/services/validate-config');
 // Db instance
@@ -118,7 +118,7 @@ var initializer = function (config) { return function (req, res, next) {
     // set req.app properties
     req.app.$config = config;
     req.app.db = database;
-    req.app.controllers = controllers;
+    req.app.controller = controller;
     // app name
     res.set('X-Powered-By', config.poweredBy);
     // ready

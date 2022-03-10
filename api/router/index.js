@@ -148,7 +148,7 @@ const createRouter = ({ routes, define }, options) => {
             }
 
             // execute default controller
-            return await req.app.controllers(req, res)[config.controller](...$arguments)
+            return await req.app.controller(req, res)[config.controller](...$arguments)
           } else {
             // controller not found
             return res.status(500).send('Controller not found')

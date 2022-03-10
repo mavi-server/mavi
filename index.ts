@@ -15,7 +15,7 @@ require('dotenv').config({ path: path.resolve('.env') })
 // Functionality
 const createDatabase = require('./database')
 const createRouter = require('./api/router')
-const controllers = require('./api/controllers')
+const controller = require('./api/controller')
 
 // Services
 const validateConfig = require('./api/services/validate-config')
@@ -92,7 +92,7 @@ const initializer = (config) => (req, res, next) => {
   // set req.app properties
   req.app.$config = config
   req.app.db = database
-  req.app.controllers = controllers
+  req.app.controller = controller
 
   // app name
   res.set('X-Powered-By', config.poweredBy)

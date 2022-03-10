@@ -26,16 +26,15 @@ module.exports = (req, res) => {
   const { $config } = req.app // request config
   const { model, populate, columns, view /*exclude*/ /*schema*/ } = req.config
 
-  // knex query builder
-  let queryBuilder = req.app.db(model)
-
-  // double check the columns type
-  if (!(columns && Array.isArray(columns))) {
+  // Double check the `columns` type before dive in:
+  if (!Array.isArray(columns)) {
     return res.status(500).send('[controller] req.config.columns should be an array')
   }
 
+  // SQL Query Builder
+  let queryBuilder = req.app.db(model)
 
-  // Query builder
+  // Req Query builder
   // If req.config.query is set to 'off', then req.query will not be used at all
   if (req.config.query !== 'off') {
     // Check if there is a pre-configured query
@@ -221,18 +220,21 @@ module.exports = (req, res) => {
   // *view feature needs improvements*
   // "views" can be defined inside of the "api.define.view" config
   // this will give the ability to make custom queries
-  if (view && $config.api.define && $config.api.define.views) {
+  // they are not intended to replace the actual view of the RDBMS (for now)
+  // *
+  if (view && $config.api.define && $config.api.define.views && typeof $config.api.define.views === 'object') {
     // if view is defined
-    if (!req.params.id) return res.status(500).send('[controller] parameter id is required')
-    try {
-      req.params.id = Number(req.params.id)
-    } catch (err) {
-      return res.status(500).send('[controller] parameter id should be a number')
-    }
-
     queryBuilder = req.app.db
 
-    const selectRaw = `(${$config.api.define.views[view](req.app.db, req.params.id).toString()}) as ${view}`
+
+    // Be sure id parameter is number
+    if (req.params.id) {
+      req.params.id = Number(req.params.id)
+    }
+    // Other params are not checked
+    // a view function is gets `knex` and `params` as arguments
+
+    const selectRaw = `(${$config.api.define.views[view](req.app.db, req.params).toString()}) as ${view}`
     queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
 
     // console.log(queryBuilder.toString());
