@@ -29,35 +29,195 @@ module.exports = (req, res) => {
   // knex query builder
   let queryBuilder = req.app.db(model)
 
-  // queries can be defined inside of the "api.routes" config as well
-  if (req.config.query && typeof req.config.query === 'object') {
-    for (const key in req.config.query) {
-      // preconfigured queries will not overwrite the incoming URLs query properties
-      if (!query[key]) {
-        query[key] = req.config.query[key]
-      } else {
-        console.log(`[query] "${key}" already exists in the URL query`)
-      }
-    }
-  }
-
-  // "exclude" option can be defined inside of the "api.routes" config
-  // this will overwrite the existing "exclude" properties
-  if (query.exclude) {
-    const excludeColumns = query.exclude.split(':')
-    columns.forEach((col, i) => {
-      // exclude columns
-      if (excludeColumns.find((C) => col == C)) {
-        columns.splice(i, 1)
-      }
-    })
-  }
-
   // double check the columns type
   if (!(columns && Array.isArray(columns))) {
     return res.status(500).send('[controller] req.config.columns should be an array')
   }
 
+
+  // Query builder
+  // If req.config.query is set to 'off', then req.query will not be used at all
+  if (req.config.query !== 'off') {
+    // Check if there is a pre-configured query
+    // Pre-configured queries can be defined inside of the "api.routes"
+    // All pre-configured queries should be strings
+    if (req.config.query && typeof req.config.query === 'object') {
+      // example 1:
+      /*
+        ..
+        controler..
+        query: {
+          where: 'title-neq-null',  // overwritten to req.query url
+          limit: 10,                // overwritten to req.query url
+          sort: 'title-asc',        // overwritten to req.query url
+          start: 'off',             // restricted query
+          exclude: 'off',           // restricted query
+        },
+        populate..
+        ..
+      */
+
+      // example 2:
+      /* 
+        controler..
+        query: 'off', // restrict all the queries
+        populate..
+      */
+
+
+      for (const key in req.config.query) {
+        // Query keys can be restricted as well
+
+        // Overwrite if its not restricted
+        if (req.config.query[key] !== 'off') {
+          // This will overwrite the req.query:
+          query[key] = req.config.query[key]
+        }
+        // Remove if its restricted
+        else {
+          // This query will not be used in the SQL queries
+          delete query[key]
+        }
+      }
+    }
+
+    // Builder:
+    for (const key in query) {
+      switch (key) {
+        case 'limit': // (number)
+        case 'start': // (number)
+          query[key] = Number(query[key])
+          break
+        case 'sort': // (column|columns, direction, nulls)
+          // https://knexjs.org/#Builder-orderBy
+
+          // examples:
+          // simple sort: "name-asc"
+          // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
+
+          if (typeof query[key] === 'string') {
+            const Groups = query[key].split(':')
+            query[key] = []
+
+            for (const group of Groups) {
+              let [column, order /*nulls*/] = group.split('-')
+              column = column || 'id'
+              order = order || 'asc'
+              // nulls = nulls || 'last' // not works idk why
+
+              query[key].push({ column, order })
+            }
+          }
+          break
+        case 'where': // (column, operator, value|values)
+          // examples:
+          // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
+          if (typeof query[key] === 'string') {
+            const createParameters = (group) => {
+              if (!group || !group.part) return
+
+              let [column, condition, value] = group.part.split('-')
+              let operator = '=' // default
+              column = column || 'id'
+              condition = condition || 'eq'
+              value = value || false
+
+              // if condition is not specified, value would be false
+              if (!value) {
+                value = condition // condition is actually a value
+                condition = 'eq' // default condition
+              }
+
+              // convert the condition into operator so that knex can understand it
+              switch (condition) {
+                case 'like':
+                  operator = 'like'
+                  break
+                case 'not':
+                case 'neq':
+                  operator = '<>'
+                  break
+                case 'eq':
+                  operator = '='
+                  break
+                case 'lg':
+                  operator = '>'
+                  break
+                case 'lge':
+                  operator = '>='
+                  break
+                case 'sm':
+                  operator = '<'
+                  break
+                case 'sme':
+                  operator = '<='
+                  break
+                default:
+                  operator = '='
+                  break
+              }
+
+              return [column, operator, value]
+            }
+            // split the query into groups
+            const reg = /-and-|-or-/g
+            const groupCount = query[key].split(reg).length
+            const Groups = new Array(groupCount).fill({})
+
+            Groups[0] = {
+              exec: 'where',
+              part: query[key],
+              params: createParameters({ part: query[key] }),
+            }
+
+            if (groupCount > 1) {
+              let i = 1
+              const matches = [...query[key].matchAll(reg)]
+              for (const match of matches) {
+                const conjuctive = match[0].replace(/-/g, '')
+                const index = match.index + match[0].length
+                const nextIndex = matches[i] ? matches[i].index : undefined
+
+                Groups[i].exec = `${conjuctive}Where`
+                Groups[i].part = query[key].slice(index, nextIndex)
+                Groups[i].params = createParameters(Groups[i])
+                i++
+              }
+
+              // update first part
+              const firstIndex = matches[0].index
+              Groups[0].part = query[key].slice(0, firstIndex)
+              Groups[0].params = createParameters(Groups[0])
+            }
+
+            query[key] = Groups
+            // console.log(query[key])
+          }
+          break
+        case 'exclude':
+          // Normally "exclude" option is defined inside of the "api.routes" config
+          // This will overwrite the existing "exclude" properties
+
+          // example query is: ?exclude=id:updated_at:created_at
+          const excludeColumns = query.exclude.split(/[:,]/gi)
+          columns.forEach((col, i) => {
+            // exclude columns
+            if (excludeColumns.find((C) => col == C)) {
+              columns.splice(i, 1)
+            }
+          })
+          break;
+      }
+    }
+  }
+  // If req.config.query is set to 'off', then req.query will not be used at all
+  else {
+    // Destroyer:
+    for (const key in query) {
+      query[key] = false
+    }
+  }
+  // *
   // *view feature needs improvements*
   // "views" can be defined inside of the "api.define.view" config
   // this will give the ability to make custom queries
@@ -77,7 +237,8 @@ module.exports = (req, res) => {
 
     // console.log(queryBuilder.toString());
   }
-
+  // *
+  // Common error handler
   const handleControllerError = (err) => {
     const { status, /*message,*/ detail, code } = err
 
@@ -92,148 +253,6 @@ module.exports = (req, res) => {
       console.log('err.response:', err)
     }
     res.status(res.error.status).send(res.error)
-  }
-
-  // Query builder
-  for (const key in query) {
-    switch (key) {
-      case 'limit': // (number)
-      case 'start': // (number)
-        query[key] = Number(query[key])
-        break
-      case 'sort': // (column|columns, direction, nulls)
-        // https://knexjs.org/#Builder-orderBy
-
-        // examples:
-        // simple sort: "name-asc"
-        // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
-
-        if (typeof query[key] === 'string') {
-          const Groups = query[key].split(':')
-          query[key] = []
-
-          for (const group of Groups) {
-            let [column, order /*nulls*/] = group.split('-')
-            column = column || 'id'
-            order = order || 'asc'
-            // nulls = nulls || 'last' // not works idk why
-
-            query[key].push({ column, order })
-          }
-        }
-        break
-      case 'where': // (column, operator, value|values)
-        // examples:
-        // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
-        if (typeof query[key] === 'string') {
-          const createParameters = (group) => {
-            if (!group || !group.part) return
-
-            let [column, condition, value] = group.part.split('-')
-            let operator = '=' // default
-            column = column || 'id'
-            condition = condition || 'eq'
-            value = value || false
-
-            // if condition is not specified, value would be false
-            if (!value) {
-              value = condition // condition is actually a value
-              condition = 'eq' // default condition
-            }
-
-            // convert the condition into operator so that knex can understand it
-            switch (condition) {
-              case 'like':
-                operator = 'like'
-                break
-              case 'not':
-              case 'neq':
-                operator = '<>'
-                break
-              case 'eq':
-                operator = '='
-                break
-              case 'lg':
-                operator = '>'
-                break
-              case 'lge':
-                operator = '>='
-                break
-              case 'sm':
-                operator = '<'
-                break
-              case 'sme':
-                operator = '<='
-                break
-              default:
-                operator = '='
-                break
-            }
-
-            return [column, operator, value]
-          }
-          // split the query into groups
-          const reg = /-and-|-or-/g
-          const groupCount = query[key].split(reg).length
-          const Groups = new Array(groupCount).fill({})
-
-          Groups[0] = {
-            exec: 'where',
-            part: query[key],
-            params: createParameters({ part: query[key] }),
-          }
-
-          if (groupCount > 1) {
-            let i = 1
-            const matches = [...query[key].matchAll(reg)]
-            for (const match of matches) {
-              const conjuctive = match[0].replace(/-/g, '')
-              const index = match.index + match[0].length
-              const nextIndex = matches[i] ? matches[i].index : undefined
-
-              Groups[i].exec = `${conjuctive}Where`
-              Groups[i].part = query[key].slice(index, nextIndex)
-              Groups[i].params = createParameters(Groups[i])
-              i++
-            }
-
-            // update first part
-            const firstIndex = matches[0].index
-            Groups[0].part = query[key].slice(0, firstIndex)
-            Groups[0].params = createParameters(Groups[0])
-          }
-
-          query[key] = Groups
-          // console.log(query[key])
-        }
-        break
-      // case 'whereNull': // (column)
-      // case 'whereNotNull': // (column)
-      // case 'orWhereNull': // (column)
-      // case 'orWhereNotNull': // (column)
-      //   query[key] = String(query[key])
-      //   break;
-      // case 'whereIn': // (column|columns, array|callback|builder)
-      // case 'orWhereIn': // (column|columns, array|callback|builder)
-      // case 'whereNotIn': // (column|columns, array|callback|builder)
-      //   // examples:
-      //   // simple whereIn: whereIn=id-1,2,3,4
-      //   // whereIn: whereIn=id-6,7:community-eq-1 (meaning is id 6 and 7 & community = 1 is included)
-
-      //   // if (key.includes('In')) {
-      //   //   const values = query[key].split(':').map(n => Number(n)).slice(1)
-      //   //   query[key] = [column, values]
-      //   // }
-      //   break;
-      // case 'whereLike': // (column, string|builder|raw) case sensitive
-      // case 'whereILike': // (column, string|builder|raw) case insensitive
-      //   break;
-      // case 'whereBetween': // (column, range)
-      // case 'orWhereBetween': // (column, range)
-      // case 'whereNotBetween': // (column, range)
-      // case 'orWhereNotBetween': // (column, range)
-      //   break;
-    }
   }
 
   return {
