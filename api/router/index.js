@@ -116,7 +116,7 @@ const createRouter = ({ routes, define }, options) => {
           }
 
           // Use default controllers
-          else if (controllers.includes(config.controller)) {
+          else if (controllers.includes(config.controller) || config.view) {
             // params & datas
             const data = req.body
             const { id, folder } = req.params
@@ -147,9 +147,16 @@ const createRouter = ({ routes, define }, options) => {
                 $arguments = [req, res]
             }
 
-            // execute default controller
-            return await req.app.controller(req, res)[config.controller](...$arguments)
-          } else {
+            if (config.view && !config.controller) {
+              // execute controller with only view
+              return await req.app.controller(req, res).find()
+            }
+            else {
+              // execute controller
+              return await req.app.controller(req, res)[config.controller](...$arguments)
+            }
+          }
+          else {
             // controller not found
             return res.status(500).send('Controller not found')
           }

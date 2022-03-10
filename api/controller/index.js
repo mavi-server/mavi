@@ -24,7 +24,23 @@ const firestore = firebase.firestore()
 module.exports = (req, res) => {
   const { query } = req // request query
   const { $config } = req.app // request config
-  const { model, populate, columns, view /*exclude*/ /*schema*/ } = req.config
+  const { model, populate, columns, view, controller /*exclude*/ /*schema*/ } = req.config
+  const handleControllerError = (err) => {
+    // Common error handler
+    const { status, /*message,*/ detail, code } = err
+
+    res.error = {
+      status: status || 500,
+      message: code,
+      detail,
+      code,
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('err.response:', err)
+    }
+    res.status(res.error.status).send(res.error)
+  }
 
   // Double check the `columns` type before dive in:
   if (!Array.isArray(columns)) {
@@ -238,23 +254,19 @@ module.exports = (req, res) => {
     queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
 
     // console.log(queryBuilder.toString());
-  }
-  // *
-  // Common error handler
-  const handleControllerError = (err) => {
-    const { status, /*message,*/ detail, code } = err
 
-    res.error = {
-      status: status || 500,
-      message: code,
-      detail,
-      code,
-    }
+    // if there is no controller defined, then use the default view controller
+    // if (!controller) {
+    //   return async (populateIt = true) => {
+    //     let data = await queryBuilder.catch(handleControllerError)
+    //     // populate options
+    //     if (populateIt && data && data.length && populate && Array.isArray(populate)) {
+    //       data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
+    //     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('err.response:', err)
-    }
-    res.status(res.error.status).send(res.error)
+    //     return res.status(200).send(data)
+    //   }
+    // }
   }
 
   return {
