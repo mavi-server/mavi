@@ -205,7 +205,7 @@ module.exports = {
           age: {
             type: 'integer',
             hash: 'WzENDMjA4Nzg4MDdddXNlcnMuYWdl',
-          }
+          },
           fullname: {
             type: 'string',
             maxlength: 100,
