@@ -251,10 +251,16 @@ module.exports = (req, res) => {
     // a view function is gets `knex` and `params` as arguments
 
     // Expecting to return knex object
+    // On some url queries you may need to refer your columns with alias_table_name.column_name
+    // (e.g. ?where=id=users.id)
     queryBuilder = $config.api.define.views[view](req.app.db, req.params)
 
     // If not, assume that view function is an sql query:
     if (typeof queryBuilder === 'string') {
+      // String sql views have some obstacles.
+      // Some url queries may not be supported.
+      // Like where, orderBy, etc.
+
       const sql = `(${queryBuilder}) as ${view}`
       queryBuilder = req.app.db.from(req.app.db.raw(sql))
     }

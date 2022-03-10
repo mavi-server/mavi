@@ -10,16 +10,18 @@ This module aims to lift repetitive works that you have made every time building
 
 There are two ways to use this module.
 
-## NPM module usage
+## NPM
 
 `npm i mavi`
 
 With the npm usage, you just have to define your server config inside of the `./index.js` and use `mavi start` script then you ready to go!
 
-## Sub module usage
+## Sub module
 
-Clone this repository `https://github.com/m-emre-yalcin/mavi`
-then `npm install` all the dependencies and `npm run build` to create the `dist` folder. Then in your `index.js` file, you can create the server with `require('./dist/index').createServer(serverConfig)` function. Then start your app with `nodemon index.js`.
+1. Clone this repository `https://github.com/m-emre-yalcin/mavi`
+2. Install dependencies `npm install`
+3. Define your server config inside of the `./index.js`
+4. Start your app with `nodemon -e js,ts,json ./mavi/cli/bin/mavi.js`
 
 ---
 
