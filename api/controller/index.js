@@ -240,7 +240,7 @@ module.exports = (req, res) => {
   // *
   if (view && $config.api.define && $config.api.define.views && typeof $config.api.define.views === 'object') {
     // if view is defined
-    queryBuilder = req.app.db
+    // queryBuilder = req.app.db
 
 
     // Be sure id parameter is number
@@ -250,8 +250,14 @@ module.exports = (req, res) => {
     // Other params are not checked
     // a view function is gets `knex` and `params` as arguments
 
-    const selectRaw = `(${$config.api.define.views[view](req.app.db, req.params).toString()}) as ${view}`
-    queryBuilder = queryBuilder.from(queryBuilder.raw(selectRaw))
+    // Expecting to return knex object
+    queryBuilder = $config.api.define.views[view](req.app.db, req.params)
+
+    // If not, assume that view function is an sql query:
+    if (typeof queryBuilder === 'string') {
+      const sql = `(${queryBuilder}) as ${view}`
+      queryBuilder = req.app.db.from(req.app.db.raw(sql))
+    }
 
     // console.log(queryBuilder.toString());
 
