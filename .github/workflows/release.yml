@@ -2,9 +2,9 @@ name: Release new version
 
 on:
   push:
-    branches: [master]
+    branches: [test-CI]
   pull_request:
-    branches: [master]
+    branches: [test-CI]
 
 jobs:
   release:
@@ -19,9 +19,9 @@ jobs:
       # About Semantic Release: https://github.com/semantic-release/semantic-release#commit-message-format
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v2
-         with:
+        with:
           semantic_version: 15.13.28  # version range for semantic-release
-          branch: master
+          branch: test-CI
           env:
             GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
             NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
