@@ -1,4 +1,4 @@
-name: Release new version
+name: Release
 
 on:
   push:
@@ -7,26 +7,138 @@ on:
     branches: [test-CI]
 
 jobs:
+  # test:
+  #   name: Test application
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: '☁️ checkout repository'
+  #       uses: actions/checkout@v3
+
+  #     - name: '🔧 setup node'
+  #       uses: actions/setup-node@v2.1.5
+  #       with:
+  #         node-version: 16
+
+  #     - name: '🔧 install npm@latest'
+  #       run: npm i -g npm@latest
+
+  #     - name: '📦 install dependencies'
+  #       uses: bahmutov/npm-install@v1
+
+  #     - name: '🔍 run tests'
+  #       run: npm run test --if-present
+
+  # lint:
+  #   name: Code standards
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: '☁️ checkout repository'
+  #       uses: actions/checkout@v3
+
+  #     - name: '🔧 setup node'
+  #       uses: actions/setup-node@v2.1.5
+  #       with:
+  #         node-version: 16
+
+  #     - name: '🔧 install npm@latest'
+  #       run: npm i -g npm@latest
+
+  #     - name: '📦 install dependencies'
+  #       uses: bahmutov/npm-install@v1
+
+  #     - name: '🔍 lint code'
+  #       run: npm run lint --if-present
+
+   build:
+    name: Build application
+    runs-on: ubuntu-latest
+    steps:
+      - name: "☁️ checkout repository"
+        uses: actions/checkout@v2
+
+      - name: "🔧 setup node"
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 16
+
+      - name: "🔧 install npm@latest"
+        run: npm i -g npm@latest
+
+      - name: "📦 install dependencies"
+        uses: bahmutov/npm-install@v1
+
+      - name: "📊 repository visualizer"
+        id: diagram
+        uses: githubocto/repo-visualizer@0.7.1
+        with:
+          excluded_paths: ".github,.vscode,node_modules,dist,build,"
+          output_file: "public/diagram.svg"
+          should_push: false
+          root_path: "/"
+
+      - name: "📊 visualiser artifacts"
+        uses: actions/upload-artifact@v2
+        with:
+          name: diagram
+          path: public/diagram.svg
+
+      - name: "🚀 static app"
+        run: npm run build
+
+      - name: "📂 production artifacts"
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: dist/
+
   release:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # https://nodejs.org/en/about/releases/
-        node-version: [16.x]
+    environment:
+      name: production
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
+    name: Semantic release
+    needs:
+      # - test
+      # - lint
+      - build
     steps:
-      - uses: actions/checkout@v3
-      - name: Semantic Release # https://github.com/semantic-release/semantic-release#commit-message-format
-        uses: cycjimmy/semantic-release-action@v2
+       name: "☁️ checkout repository"
+        uses: actions/checkout@v2
         with:
-          semantic_version: 15.13.28 # version range for semantic-release
-          branch: test-CI
-        env:
-          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Do something when a new release published
-        if: steps.semantic.outputs.new_release_published == 'true'
+          fetch-depth: 0
+
+      - name: "♻️ clean up artifact paths"
         run: |
-          echo ${{ steps.semantic.outputs.new_release_version }}
-          echo ${{ steps.semantic.outputs.new_release_major_version }}
-          echo ${{ steps.semantic.outputs.new_release_minor_version }}
-          echo ${{ steps.semantic.outputs.new_release_patch_version }}
+          rm -rf public/diagram.svg
+          rm -rf supabase/diagrams/
+
+      - name: "📂 download build artifacts"
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: dist/
+
+      - name: "📂 download diagram artifacts"
+        uses: actions/download-artifact@v2
+        with:
+          name: diagram
+          path: public/
+
+      - name: "🚀 release"
+        id: semantic-release
+        uses: open-sauced/release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+   cleanup:
+    name: Cleanup actions
+    needs:
+      - release
+    runs-on: ubuntu-latest
+    steps:
+      - name: "♻️ remove build artifacts"
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            dist
+            diagram
