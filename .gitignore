@@ -8,6 +8,8 @@ dist-ssr
 .env.production
 types/*.js
 
+.vscode
+
 # remove later
 features.md
 tests/*
