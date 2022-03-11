@@ -20,7 +20,7 @@ jobs:
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v2
         with:
-          semantic_version: 15.13.28  # version range for semantic-release
+          semantic_version: 15.13.28 # version range for semantic-release
           branch: test-CI
           env:
             GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
@@ -31,8 +31,8 @@ jobs:
             @semantic-release/changelog
       - name: Do something when a new release published
         if: steps.semantic.outputs.new_release_published == 'true'
-          run: |
-            echo ${{ steps.semantic.outputs.new_release_version }}
-            echo ${{ steps.semantic.outputs.new_release_major_version }}
-            echo ${{ steps.semantic.outputs.new_release_minor_version }}
-            echo ${{ steps.semantic.outputs.new_release_patch_version }}
+        run: |
+          echo ${{ steps.semantic.outputs.new_release_version }}
+          echo ${{ steps.semantic.outputs.new_release_major_version }}
+          echo ${{ steps.semantic.outputs.new_release_minor_version }}
+          echo ${{ steps.semantic.outputs.new_release_patch_version }}
