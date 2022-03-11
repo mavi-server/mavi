@@ -54,18 +54,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "☁️ checkout repository"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: "🔧 setup node"
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 16
+          cache: npm
 
       - name: "🔧 install npm@latest"
         run: npm i -g npm@latest
 
       - name: "📦 install dependencies"
-        uses: bahmutov/npm-install@v1
+        run: nom ci
 
       - name: "📊 repository visualizer"
         id: diagram
@@ -82,7 +83,7 @@ jobs:
           name: diagram
           path: public/diagram.svg
 
-      - name: "🚀 static app"
+      - name: "🚀 build app"
         run: npm run build
 
       - name: "📂 production artifacts"
@@ -103,7 +104,7 @@ jobs:
       - build
     steps:
       - name: "☁️ checkout repository"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
