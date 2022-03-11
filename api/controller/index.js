@@ -4,7 +4,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const { existsSync, mkdirSync } = require('fs')
-const queryPopulateRelations = require('../services/knex-populate')
+const UrlQueryBuilder = require('../services/url-query-builder')
+const SubController = require('../services/sub-controller')
 
 /*
 // Disabled now. Can be optional or completely removed.
@@ -97,133 +98,7 @@ module.exports = (req, res) => {
     }
 
     // Builder:
-    for (const key in query) {
-      switch (key) {
-        case 'limit': // (number)
-        case 'start': // (number)
-          query[key] = Number(query[key])
-          break
-        case 'sort': // (column|columns, direction, nulls)
-          // https://knexjs.org/#Builder-orderBy
-
-          // examples:
-          // simple sort: "name-asc"
-          // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
-
-          if (typeof query[key] === 'string') {
-            const Groups = query[key].split(':')
-            query[key] = []
-
-            for (const group of Groups) {
-              let [column, order /*nulls*/] = group.split('-')
-              column = column || 'id'
-              order = order || 'asc'
-              // nulls = nulls || 'last' // not works idk why
-
-              query[key].push({ column, order })
-            }
-          }
-          break
-        case 'where': // (column, operator, value|values)
-          // examples:
-          // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
-          if (typeof query[key] === 'string') {
-            const createParameters = (group) => {
-              if (!group || !group.part) return
-
-              let [column, condition, value] = group.part.split('-')
-              let operator = '=' // default
-              column = column || 'id'
-              condition = condition || 'eq'
-              value = value || false
-
-              // if condition is not specified, value would be false
-              if (!value) {
-                value = condition // condition is actually a value
-                condition = 'eq' // default condition
-              }
-
-              // convert the condition into operator so that knex can understand it
-              switch (condition) {
-                case 'like':
-                  operator = 'like'
-                  break
-                case 'not':
-                case 'neq':
-                  operator = '<>'
-                  break
-                case 'eq':
-                  operator = '='
-                  break
-                case 'lg':
-                  operator = '>'
-                  break
-                case 'lge':
-                  operator = '>='
-                  break
-                case 'sm':
-                  operator = '<'
-                  break
-                case 'sme':
-                  operator = '<='
-                  break
-                default:
-                  operator = '='
-                  break
-              }
-
-              return [column, operator, value]
-            }
-            // split the query into groups
-            const reg = /-and-|-or-/g
-            const groupCount = query[key].split(reg).length
-            const Groups = new Array(groupCount).fill({})
-
-            Groups[0] = {
-              exec: 'where',
-              part: query[key],
-              params: createParameters({ part: query[key] }),
-            }
-
-            if (groupCount > 1) {
-              let i = 1
-              const matches = [...query[key].matchAll(reg)]
-              for (const match of matches) {
-                const conjuctive = match[0].replace(/-/g, '')
-                const index = match.index + match[0].length
-                const nextIndex = matches[i] ? matches[i].index : undefined
-
-                Groups[i].exec = `${conjuctive}Where`
-                Groups[i].part = query[key].slice(index, nextIndex)
-                Groups[i].params = createParameters(Groups[i])
-                i++
-              }
-
-              // update first part
-              const firstIndex = matches[0].index
-              Groups[0].part = query[key].slice(0, firstIndex)
-              Groups[0].params = createParameters(Groups[0])
-            }
-
-            query[key] = Groups
-            // console.log(query[key])
-          }
-          break
-        case 'exclude':
-          // Normally "exclude" option is defined inside of the "api.routes" config
-          // This will overwrite the existing "exclude" properties
-
-          // example query is: ?exclude=id:updated_at:created_at
-          const excludeColumns = query.exclude.split(/[:,]/gi)
-          columns.forEach((col, i) => {
-            // exclude columns
-            if (excludeColumns.find((C) => col == C)) {
-              columns.splice(i, 1)
-            }
-          })
-          break;
-      }
-    }
+    UrlQueryBuilder(query, columns)
   }
   // If req.config.query is set to 'off', then req.query will not be used at all
   else {
@@ -256,11 +131,12 @@ module.exports = (req, res) => {
     queryBuilder = $config.api.define.views[view](req.app.db, req.params)
 
     // If not, assume that view function is an sql query:
-    if (typeof queryBuilder === 'string') {
+    if (typeof queryBuilder === 'string' || controller === 'count') {
       // String sql views have some obstacles.
       // Some url queries may not be supported.
       // Like where, orderBy, etc.
 
+      // wrap the query string and convert into knex object
       const sql = `(${queryBuilder}) as ${view}`
       queryBuilder = req.app.db.from(req.app.db.raw(sql))
     }
@@ -273,7 +149,7 @@ module.exports = (req, res) => {
     //     let data = await queryBuilder.catch(handleControllerError)
     //     // populate options
     //     if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-    //       data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
+    //       data = await SubController(req, { populate, data }).catch(handleControllerError)
     //     }
 
     //     return res.status(200).send(data)
@@ -283,21 +159,17 @@ module.exports = (req, res) => {
 
   return {
     count: async () => {
+      // is-owner
+      if (req.owner) {
+        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
+        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] })
+      }
+
+      // append where queries
       if (query.where) {
         for (const group of query.where) {
           queryBuilder[group.exec](...group.params)
         }
-      }
-
-      // is-owner
-      if (req.owner) {
-        const where = {}
-
-        if (model === 'users') where.id = req.owner.id
-        else where.user = req.owner.id
-
-        if (query.where) queryBuilder.andWhere(where)
-        else queryBuilder.where(where)
       }
 
       let [data] = await queryBuilder.count('*').catch(handleControllerError)
@@ -317,26 +189,26 @@ module.exports = (req, res) => {
       if (query.limit || !query.limit) {
         queryBuilder.limit(query.limit || 10)
       }
+      // Handle where queries:
+      if (!query.where) query.where = []
+
+      // is-owner
+      if (req.owner) {
+        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
+        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] })
+      }
+
+      // append where queries
       if (query.where) {
         for (const group of query.where) {
           queryBuilder[group.exec](...group.params)
         }
       }
-      // is-owner
-      if (req.owner) {
-        const where = {}
-
-        if (model === 'users') where.id = req.owner.id
-        else where.user = req.owner.id
-
-        if (query.where) queryBuilder.andWhere(where)
-        else queryBuilder.where(where)
-      }
 
       let data = await queryBuilder.catch(handleControllerError)
       // populate options
       if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data }).catch(handleControllerError)
       }
 
       return res.status(200).send(data)
@@ -356,7 +228,7 @@ module.exports = (req, res) => {
       let data = await queryBuilder.catch(handleControllerError)
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data }).catch(handleControllerError)
       }
       if (Array.isArray(data)) data = data[0] || null
 
@@ -368,7 +240,7 @@ module.exports = (req, res) => {
       let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError)
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data }).catch(handleControllerError)
       }
 
       if (Array.isArray(data)) data = data[0] || null
@@ -422,7 +294,7 @@ module.exports = (req, res) => {
 
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await queryPopulateRelations(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data }).catch(handleControllerError)
       }
 
       if (Array.isArray(data)) data = data[0] || null
