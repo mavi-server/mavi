@@ -15,9 +15,7 @@ jobs:
         node-version: [16.x]
     steps:
       - uses: actions/checkout@v3
-
-      # About Semantic Release: https://github.com/semantic-release/semantic-release#commit-message-format
-      - name: Semantic Release
+      - name: Semantic Release # https://github.com/semantic-release/semantic-release#commit-message-format
         uses: cycjimmy/semantic-release-action@v2
         with:
           semantic_version: 15.13.28 # version range for semantic-release
