@@ -149,4 +149,4 @@ jobs:
           echo "🐳 new version released"
           echo ${{ steps.semantic.outputs.new_release_version }}
         else:
-        ren: echo ${{ steps.semantic.outputs.current_version }}
+        run: echo ${{ steps.semantic.outputs.current_version }}
