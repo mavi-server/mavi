@@ -143,7 +143,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-        if: steps.semantic.outputs.new_release_published == 'true'
-      - name: '🐳 new version released'
-        run: |
-          echo ${{ steps.semantic.outputs.new_release_version }}
+      if: steps.semantic.outputs.new_release_published == 'true'
+      run: |
+        echo "🐳 new version released"
+        echo ${{ steps.semantic.outputs.new_release_version }}
