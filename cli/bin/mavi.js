@@ -17,6 +17,9 @@ const mode = process.env.NODE_ENV || 'development'
 config.__dirname = path.join(__dirname, '../../config')
 
 switch (command) {
+  case "-v":
+    console.log(`mavi v${version}`)
+    break;
   case "dev":
     console.log(`\x1b[36mStarting Sub-module Mavi ${version} ${mode}...\x1b[0m`)
     script = path.join(__dirname, `../../index.js`)
