@@ -26,16 +26,12 @@
   ],
   "homepage": "https://github.com/m-emre-yalcin/mavi",
   "scripts": {
-    "dev": "nodemon ./index --dev",
-    "start": "tsc index && node ./index --dev",
     "build": "webpack --config webpack.config.js",
-    "test": "jest"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m-emre-yalcin/mavi.git"
   },
-  "author": "M. Emre Yalcin <emrreyalcin@gmail.com>",
   "contributors": [
     {
       "name": "M. Emre Yalcin",
