@@ -96,7 +96,7 @@ jobs:
     name: Semantic release
     runs-on: ubuntu-latest
     environment:
-      name: production
+      name: development
       url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
     needs:
       # - test
@@ -105,8 +105,6 @@ jobs:
     steps:
       - name: '☁️ checkout repository'
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: '♻️ clean up artifact paths'
         run: |
@@ -126,10 +124,26 @@ jobs:
           path: public/
 
       - name: '🚀 semantic release'
-        uses: cycjimmy/semantic-release-action@v3
+        uses: cycjimmy/semantic-release-action@v3 # https://github.com/marketplace/actions/action-for-semantic-release
         with:
           branch: test-CI
           semantic_version: 15.13.28 # version range
+          ## https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format
+          ## Commit prefixes and effects:
+          # build: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+          # ci: Changes to our CI configuration files and scripts (examples: CircleCi, SauceLabs)
+          # docs: Documentation only changes
+          # perf: A code change that improves performance
+          # test: Adding missing tests or correcting existing tests
+          # refactor: A code change that neither fixes a bug nor adds a feature
+          # feat: A new feature (triggers minor release)
+          # fix: A bug fix (triggers patch relase)
+          # BREAKING CHANGE: Breaking changes (triggers major release)
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+        if: steps.semantic.outputs.new_release_published == 'true'
+      - name: '🐳 new version released'
+        run: |
+          echo ${{ steps.semantic.outputs.new_release_version }}
