@@ -2,9 +2,9 @@ name: Release
 
 on:
   push:
-    branches: [test-CI]
+    branches: [master]
   pull_request:
-    branches: [test-CI]
+    branches: [master]
 
 jobs:
   # test:
@@ -126,7 +126,7 @@ jobs:
       - name: '🚀 semantic release'
         uses: cycjimmy/semantic-release-action@v3 # https://github.com/marketplace/actions/action-for-semantic-release
         with:
-          branch: test-CI
+          branch: master
           semantic_version: 15.13.28 # version range
           ## https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format
           ## Commit prefixes and effects:
