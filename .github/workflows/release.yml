@@ -49,7 +49,7 @@ jobs:
   #     - name: '🔍 lint code'
   #       run: npm run lint --if-present
 
-   build:
+  build:
     name: Build application
     runs-on: ubuntu-latest
     steps:
