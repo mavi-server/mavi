@@ -92,17 +92,17 @@ jobs:
           path: dist/
 
   release:
+    name: Semantic release
     runs-on: ubuntu-latest
     environment:
       name: production
       url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
-    name: Semantic release
     needs:
       # - test
       # - lint
       - build
     steps:
-       name: "☁️ checkout repository"
+      - name: "☁️ checkout repository"
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
