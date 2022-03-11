@@ -16,6 +16,7 @@
     "cli",
     "database",
     "config",
+    "interface",
     "public",
     "dist",
     "LICENSE",
@@ -39,6 +40,9 @@
       "author": true
     }
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
@@ -66,13 +70,12 @@
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.4",
     "webpack": "^5.65.0",
-    "webpack-cli": "^4.9.1",
+    "webpack-cli": "^4.9.2",
     "webpack-node-externals": "^3.0.0"
   },
   "keywords": [
-    "generate-api",
-    "generate-server",
-    "generate-database",
-    "back-end"
+    "api generator",
+    "rdb generator",
+    "no code"
   ]
 }
