@@ -27,7 +27,7 @@
   ],
   "homepage": "https://github.com/m-emre-yalcin/mavi",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -40,9 +40,6 @@
       "author": true
     }
   ],
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
