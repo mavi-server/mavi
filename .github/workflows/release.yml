@@ -1,4 +1,4 @@
-name: Release new version
+name: Release
 
 on:
   push:
@@ -7,26 +7,144 @@ on:
     branches: [test-CI]
 
 jobs:
-  release:
+  # test:
+  #   name: Test application
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: '☁️ checkout repository'
+  #       uses: actions/checkout@v3
+
+  #     - name: '🔧 setup node'
+  #       uses: actions/setup-node@v2.1.5
+  #       with:
+  #         node-version: 16
+
+  #     - name: '🔧 install npm@latest'
+  #       run: npm i -g npm@latest
+
+  #     - name: '📦 install dependencies'
+  #       uses: bahmutov/npm-install@v1
+
+  #     - name: '🔍 run tests'
+  #       run: npm run test --if-present
+
+  # lint:
+  #   name: Code standards
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: '☁️ checkout repository'
+  #       uses: actions/checkout@v3
+
+  #     - name: '🔧 setup node'
+  #       uses: actions/setup-node@v2.1.5
+  #       with:
+  #         node-version: 16
+
+  #     - name: '🔧 install npm@latest'
+  #       run: npm i -g npm@latest
+
+  #     - name: '📦 install dependencies'
+  #       uses: bahmutov/npm-install@v1
+
+  #     - name: '🔍 lint code'
+  #       run: npm run lint --if-present
+
+  build:
+    name: Build application
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # https://nodejs.org/en/about/releases/
-        node-version: [16.x]
     steps:
-      - uses: actions/checkout@v3
-      - name: Semantic Release # https://github.com/semantic-release/semantic-release#commit-message-format
-        uses: cycjimmy/semantic-release-action@v2
+      - name: '☁️ checkout repository'
+        uses: actions/checkout@v3
+
+      - name: '🔧 setup node'
+        uses: actions/setup-node@v2.1.5
         with:
-          semantic_version: 15.13.28 # version range for semantic-release
+          node-version: 16
+          cache: npm
+
+      - name: '🔧 install npm@latest'
+        run: npm i -g npm@latest
+
+      - name: '📦 install dependencies'
+        run: npm ci
+
+      - name: '📊 repository visualizer'
+        id: diagram
+        uses: githubocto/repo-visualizer@0.7.1
+        with:
+          excluded_paths: '.github,.vscode,node_modules,dist,build,'
+          output_file: 'public/diagram.svg'
+          should_push: false
+          root_path: '/'
+
+      - name: '📊 visualiser artifacts'
+        uses: actions/upload-artifact@v2
+        with:
+          name: diagram
+          path: public/diagram.svg
+
+      - name: '🚀 build app'
+        run: npm run build
+
+      - name: '📂 production artifacts'
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: dist/
+
+  release:
+    name: Semantic release
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
+    needs:
+      # - test
+      # - lint
+      - build
+    steps:
+      - name: '☁️ checkout repository'
+        uses: actions/checkout@v3
+
+      - name: '♻️ clean up artifact paths'
+        run: |
+          rm -rf public/diagram.svg
+          rm -rf supabase/diagrams/
+
+      - name: '📂 download build artifacts'
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: dist/
+
+      - name: '📂 download diagram artifacts'
+        uses: actions/download-artifact@v2
+        with:
+          name: diagram
+          path: public/
+
+      - name: '🚀 semantic release'
+        uses: cycjimmy/semantic-release-action@v3 # https://github.com/marketplace/actions/action-for-semantic-release
+        with:
           branch: test-CI
+          semantic_version: 15.13.28 # version range
+          ## https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format
+          ## Commit prefixes and effects:
+          # build: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+          # ci: Changes to our CI configuration files and scripts (examples: CircleCi, SauceLabs)
+          # docs: Documentation only changes
+          # perf: A code change that improves performance
+          # test: Adding missing tests or correcting existing tests
+          # refactor: A code change that neither fixes a bug nor adds a feature
+          # feat: A new feature (triggers minor release)
+          # fix: A bug fix (triggers patch relase)
+          # BREAKING CHANGE: Breaking changes (triggers major release)
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Do something when a new release published
+
+      - name: '📊 app version'
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
+          echo "🐳 new version released"
           echo ${{ steps.semantic.outputs.new_release_version }}
-          echo ${{ steps.semantic.outputs.new_release_major_version }}
-          echo ${{ steps.semantic.outputs.new_release_minor_version }}
-          echo ${{ steps.semantic.outputs.new_release_patch_version }}
