@@ -129,13 +129,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v3
         with:
           branch: test-CI
-          working_directory: dist
           semantic_version: 15.13.28 # version range
-          # extra_plugins: |
-          #   @semantic-release/commit-analyzer
-          #   @semantic-release/release-notes-generator
-          #   @semantic-release/git
-          #   @semantic-release/github
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
