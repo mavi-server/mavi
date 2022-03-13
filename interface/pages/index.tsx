@@ -54,13 +54,36 @@ const initialState = {
   },
 }
 
-const defaultWhitelist = [
-  { title: 'http:localhost:3000' },
-  { title: 'http:localhost:8080' },
-  { title: 'process.env.CLIENT_URL' },
-  { title: 'process.env.SERVER_URL' },
-  { title: 'https://fonts.googleapis.com' },
+const defaultCorsWhitelist: AutocompleteOption[] = [
+  { value: 'http:localhost:3000' },
+  { value: 'process.env.CLIENT_URL' },
+  { value: 'process.env.SERVER_URL' },
+  { value: 'https://fonts.googleapis.com' },
 ]
+
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
+const httpRequestMethods: AutocompleteOption[] = [
+  { value: 'GET' },
+  { value: 'HEAD' },
+  { value: 'POST' },
+  { value: 'PUT' },
+  { value: 'DELETE' },
+  { value: 'CONNECT' },
+  { value: 'OPTIONS' },
+  { value: 'TRACE' },
+  { value: 'PATCH' },
+]
+const defaultAllowedHeaders: AutocompleteOption[] = [
+  { value: 'x-access-token', readonly: true }, // required for authorization middlewares
+  { value: 'x-refresh-token', readonly: true }, // required for authorization middlewares
+  { value: 'token', readonly: true }, // required for authorization middlewares. used for cookies
+  { value: 'content-type', readonly: true }, // required for some requests
+  { value: 'accept', readonly: false }, //
+]
+type AutocompleteOption = {
+  value: string
+  readonly?: boolean
+}
 
 const reducer = (state: any, action: any) => {
   switch (action.type) {
@@ -102,8 +125,8 @@ const Settings: NextPage = () => {
           <p>These settings are used to configure the server.</p>
         </Grid>
 
-        <Grid container className={styles.HeaderInputContainer}>
-          <div className={styles.HeaderInputBox}>
+        <Grid container className={styles.InputContainer}>
+          <Grid xs={12} sm={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.host}
@@ -126,8 +149,8 @@ const Settings: NextPage = () => {
               id="input-host"
               helperText="The location of the Node.js thread"
             />
-          </div>
-          <div className={styles.HeaderInputBox}>
+          </Grid>
+          <Grid xs={12} sm={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.port}
@@ -151,8 +174,8 @@ const Settings: NextPage = () => {
               type="number"
               helperText="Be sure that the port is not used by other processes"
             />
-          </div>
-          <div className={styles.HeaderInputBox}>
+          </Grid>
+          <Grid xs={12} sm={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.poweredBy}
@@ -176,13 +199,13 @@ const Settings: NextPage = () => {
               type="text"
               helperText="This will be exposed on the response header"
             />
-          </div>
+          </Grid>
         </Grid>
       </Grid>
 
       <Grid container>
         {/* cors settings */}
-        <Grid className={[styles.HeaderContainer, styles.MainPad]} md={6}>
+        <Grid className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
           <Grid className={styles.HeaderTextBox} md={12}>
             <h2>Cors</h2>
             <p>
@@ -191,36 +214,130 @@ const Settings: NextPage = () => {
             </p>
           </Grid>
 
-          <Grid container>
+          <Grid container rowSpacing={5}>
             <Grid item md={12}>
               <Autocomplete
                 fullWidth
                 multiple
                 id="cors-origin"
-                options={defaultWhitelist.map((option) => option.title)}
-                defaultValue={[defaultWhitelist[2].title]}
+                options={defaultCorsWhitelist.map((option) => option.value)}
+                defaultValue={defaultCorsWhitelist.map((option) => option.value)}
                 freeSolo
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => <Chip variant="standard" label={option} {...getTagProps({ index })} />)
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip label={option} {...getTagProps({ index })} disabled={defaultCorsWhitelist[index].readonly} />
+                  ))
                 }
                 renderInput={(params) => (
-                  <TextField {...params} variant="standard" label="Origins" required placeholder="Whitelist" />
+                  <TextField {...params} variant="standard" label="Origins" placeholder="Whitelist" />
                 )}
               />
-              <FormHelperText>Cors Whitelist</FormHelperText>
+              <FormHelperText>Configures the Access-Control-Allow-Origin CORS header</FormHelperText>
+            </Grid>
+            <Grid item md={12}>
+              <Autocomplete
+                fullWidth
+                multiple
+                id="cors-methods"
+                options={httpRequestMethods.map((option) => option.value)}
+                defaultValue={httpRequestMethods.map((option) => option.value)}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip label={option} {...getTagProps({ index })} disabled={httpRequestMethods[index].readonly} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} variant="standard" label="Methods" placeholder="Allowed Methods" />
+                )}
+              />
+              <FormHelperText>Configures the Access-Control-Allow-Methods CORS header</FormHelperText>
+            </Grid>
+            <Grid item md={12}>
+              <Autocomplete
+                fullWidth
+                multiple
+                id="cors-allowed-headers"
+                options={defaultAllowedHeaders.filter((option) => !option.readonly).map((option) => option.value)}
+                defaultValue={defaultAllowedHeaders.map((option) => option.value)}
+                freeSolo
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip
+                      label={option}
+                      {...getTagProps({ index })}
+                      disabled={defaultAllowedHeaders[index] && defaultAllowedHeaders[index].readonly}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} variant="standard" label="Allowed Headers" placeholder="Allowed Headers" />
+                )}
+              />
+              <FormHelperText>Configures the Access-Control-Allow-Headers CORS header</FormHelperText>
+            </Grid>
+            <Grid item md={12}>
+              <Autocomplete
+                fullWidth
+                multiple
+                id="cors-expose-headers"
+                options={defaultAllowedHeaders.filter((option) => !option.readonly).map((option) => option.value)}
+                defaultValue={defaultAllowedHeaders.map((option) => option.value)}
+                freeSolo
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip
+                      label={option}
+                      {...getTagProps({ index })}
+                      disabled={defaultAllowedHeaders[index] && defaultAllowedHeaders[index].readonly}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} variant="standard" label="Exposed Headers" placeholder="Exposed Headers" />
+                )}
+              />
+              <FormHelperText>Configures the Access-Control-Expose-Headers CORS header</FormHelperText>
+            </Grid>
+            <Grid container item md={12} className={styles.InputContainer} justifyContent="center">
+              <Grid item className={styles.InputBox} md={5}>
+                <FormControlLabel
+                  control={
+                    <Checkbox required value={settings.cors.credentials} size="medium" id="input-cors-credentials" />
+                  }
+                  label="Credentials"
+                />
+                <FormHelperText>
+                  Configures the Access-Control-Allow-Credentials CORS header. Set to true to pass the header, otherwise
+                  it is omitted
+                </FormHelperText>
+              </Grid>
+              <Grid item className={styles.InputBox} md={5}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      required
+                      value={settings.cors.preflightContinue}
+                      size="medium"
+                      id="input-cors-credentials"
+                    />
+                  }
+                  label="Preflight Continue"
+                />
+                <FormHelperText>Pass the CORS preflight response to the next handler</FormHelperText>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
 
         {/* other settings */}
-        <Grid className={[styles.HeaderContainer, styles.MainPad]} md={6}>
-          <Grid className={styles.HeaderTextBox} md={12}>
+        <Grid item className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={4}>
+          <Grid item className={styles.HeaderTextBox} md={12}>
             <h2>Other</h2>
             <p>These settings are used to configure the server.</p>
           </Grid>
 
-          <Grid container spacing={2}>
-            <Grid item>
+          <Grid container spacing={2} className={styles.InputContainer} marginTop={2} marginLeft={0}>
+            <Grid item className={styles.InputBox}>
               <FormGroup>
                 <FormControlLabel
                   control={<Checkbox required value={settings.timer} size="small" id="input-timer" />}

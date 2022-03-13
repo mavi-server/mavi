@@ -5,8 +5,8 @@
   right: 0;
   left: var(--aside-width);
   height: var(--header-height);
-  background-color: rgba(var(--primary), 0.5);
-  backdrop-filter: blur(6px);
+  background-color: hsla(var(--primary-hsl), 0.6);
+  backdrop-filter: blur(10px);
   padding: var(--sm) var(--sm) var(--sm) var(--xl);
   display: flex;
   align-items: center;
