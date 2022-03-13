@@ -147,7 +147,6 @@ jobs:
       - name: '📊 app version'
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          npm version ${{ steps.semantic.outputs.new_release_version }} --no-git-tag-version
           git.config user.email "release@github.com"
           git.config user.name "Release Bot"
           git add package.json
@@ -156,3 +155,5 @@ jobs:
 
           echo "🐳 new version released"
           echo ${{ steps.semantic.outputs.new_release_version }}
+        if: steps.semantic.outputs.new_release_published == 'false'
+          echo "not published"
