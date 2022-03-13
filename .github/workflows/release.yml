@@ -155,5 +155,6 @@ jobs:
 
           echo "🐳 new version released"
           echo ${{ steps.semantic.outputs.new_release_version }}
+      - name: 'is published'
         if: steps.semantic.outputs.new_release_published == 'false'
         run: echo "not published"
