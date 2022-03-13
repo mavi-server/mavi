@@ -2,9 +2,9 @@ name: Release
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   # test:
@@ -126,7 +126,7 @@ jobs:
       - name: '🚀 semantic release'
         uses: cycjimmy/semantic-release-action@v3 # https://github.com/marketplace/actions/action-for-semantic-release
         with:
-          branch: master
+          branch: main
           semantic_version: 15.13.28 # version range
           ## https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format
           ## Commit prefixes and effects:
@@ -151,7 +151,7 @@ jobs:
           git.config user.name "Release Bot"
           git add package.json
           git commit -m "🐳 new version ${{ steps.semantic.outputs.new_release_version }}"
-          git push origin master
+          git push origin main
 
           echo "🐳 new version released"
           echo ${{ steps.semantic.outputs.new_release_version }}
