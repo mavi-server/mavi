@@ -6,6 +6,8 @@
   width: var(--aside-width);
   overflow-y: auto;
   transition: width 0.25s ease;
+  display: flex;
+  flex-direction: column;
   position: fixed;
   top: 0;
   left: 0;
@@ -22,6 +24,7 @@
   }
   .body {
     font-size: 1.2rem;
+    flex: 1;
     li {
       .MuiButton {
         color: var(--primary);
@@ -56,6 +59,14 @@
     }
   }
   .foot {
-    background-color: green;
+    display: flex;
+    justify-content: flex-end;
+    color: var(--primary);
+    .VersionText {
+      padding-right: var(--md);
+      padding-bottom: var(--xs);
+      font-size: smaller;
+      font-weight: 300;
+    }
   }
 }

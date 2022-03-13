@@ -9,6 +9,9 @@ import IconSettings from '../../assets/icons/settings.svg'
 import IconLayers from '../../assets/icons/layers.svg'
 import IconDatabase from '../../assets/icons/database.svg'
 
+// Mavi version
+import { version } from '../../../package.json'
+
 const ListItems = [
   {
     title: 'Settings',
@@ -56,7 +59,12 @@ const AppAside = ({ onNavigationChange }: Aside) => {
         })}
       </ul>
 
-      <div className={styles.foot}></div>
+      <div className={styles.foot}>
+        <div className={styles.VersionText}>
+          <span style={{ marginRight: 2 }}>Mavi</span>
+          <b> v{version}</b>
+        </div>
+      </div>
     </aside>
   )
 }

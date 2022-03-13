@@ -144,9 +144,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: '📦 package version'
-        if:
+      - name: '📊 package version'
+        if: ${{ steps.semantic.outputs.new_release_published == true }}
         run: |
+          echo "is published: ${{ steps.semantic.outputs.new_release_published }}"
+
           git config user.name "Release Bot"
           git config user.email "release@github.com"
 

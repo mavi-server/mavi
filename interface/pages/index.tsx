@@ -15,44 +15,7 @@ import {
   Autocomplete,
 } from '@mui/material'
 import styles from './index.module.css'
-
-const initialState = {
-  host: 'localhost',
-  port: 3001,
-  poweredBy: 'Mavi',
-  timer: true,
-  cors: {
-    origin: ['*'],
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    allowedHeaders: ['x-access-token', 'x-refresh-token', 'token', 'content-type', 'accept'],
-  },
-  static: {
-    base: '/',
-    folder: '../public',
-    options: {
-      dotfiles: 'ignore',
-      etag: false,
-      extensions: [
-        'html',
-        'htm',
-        'css',
-        'js',
-        'png',
-        'jpg',
-        'jpeg',
-        'gif',
-        'ico',
-        'svg',
-        'eot',
-        'ttf',
-        'woff',
-        'woff2',
-        'otf',
-      ],
-      maxAge: '1d',
-    },
-  },
-}
+import initialState from '../states/mavi-config'
 
 const defaultCorsWhitelist: AutocompleteOption[] = [
   { value: 'http:localhost:3000' },
@@ -121,12 +84,12 @@ const Settings: NextPage = () => {
       {/* general settings */}
       <Grid container className={[styles.HeaderContainer, styles.Dark, styles.MainPad]} md={12}>
         <Grid className={styles.HeaderTextBox} md={4}>
-          <h2>General</h2>
-          <p>These settings are used to configure the server.</p>
+          <h2>Server</h2>
+          <p>Base settings for the server.</p>
         </Grid>
 
         <Grid container className={styles.InputContainer}>
-          <Grid xs={12} sm={1} className={styles.InputBox}>
+          <Grid xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.host}
@@ -150,7 +113,7 @@ const Settings: NextPage = () => {
               helperText="The location of the Node.js thread"
             />
           </Grid>
-          <Grid xs={12} sm={1} className={styles.InputBox}>
+          <Grid xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.port}
@@ -175,7 +138,7 @@ const Settings: NextPage = () => {
               helperText="Be sure that the port is not used by other processes"
             />
           </Grid>
-          <Grid xs={12} sm={1} className={styles.InputBox}>
+          <Grid xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.poweredBy}

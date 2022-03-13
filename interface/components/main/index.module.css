@@ -1,11 +1,13 @@
 .AppMain {
   z-index: 0;
-  background-color: var(--primary);
+  background-color: var(--primary-lighter);
   padding-top: calc(var(--header-height));
-  width: calc(100% - var(--aside-width));
   margin-left: var(--aside-width);
+  width: calc(100% - var(--aside-width));
   min-height: 100%;
+  height: max-content;
   display: grid;
+  background-size: 50px;
 }
 .GroupBox {
   background-color: var(--primary-lighter);
