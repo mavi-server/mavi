@@ -146,8 +146,9 @@ jobs:
 
       - name: '📊 package version'
         run: |
-          git.config.user.email "release@github.com"
-          git.config.user.name "Release Bot"
+          git config user.name "Release Bot"
+          git config user.email "release@github.com"
+
           git add package.json
           git commit -m "🐳 new version ${{ steps.semantic.outputs.new_release_version }}"
           git push origin main
