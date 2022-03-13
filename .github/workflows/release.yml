@@ -128,9 +128,6 @@ jobs:
         with:
           branch: main
           semantic_version: 15.13.28 # version range
-          extra_plugins: |
-            @semantic-release/changelog@3.0.0
-            @semantic-release/git
 
           ## https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format
           ## Commit prefixes and effects:
@@ -150,5 +147,12 @@ jobs:
       - name: '📊 app version'
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
+          npm version ${{ steps.semantic.outputs.new_release_version }} --no-git-tag-version
+          git.config user.email "release@github.com"
+          git.config user.name "Release Bot"
+          git add package.json
+          git commit -m "🐳 new version ${{ steps.semantic.outputs.new_release_version }}"
+          git push origin main
+
           echo "🐳 new version released"
           echo ${{ steps.semantic.outputs.new_release_version }}
