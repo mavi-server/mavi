@@ -144,7 +144,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: '📊 package version'
+      - name: '📦 package version'
+        if:
         run: |
           git config user.name "Release Bot"
           git config user.email "release@github.com"

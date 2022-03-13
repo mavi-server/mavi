@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+require('dotenv').config()
 const { join } = require('path');
 const nextConfig = {
   reactStrictMode: true,

@@ -13,6 +13,6 @@
   transition: height 0.25s ease;
 }
 .AppHeader.collapsed {
-  box-shadow: 0 0 10px var(--primary-darkest);
+  box-shadow: 0 0 10px var(--primary-darker);
   height: var(--header-height-collapsed);
 }
