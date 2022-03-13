@@ -144,8 +144,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: '📊 app version'
-        if: steps.semantic.outputs.new_release_published == 'true'
+      - name: '📊 package version'
         run: |
           git.config user.email "release@github.com"
           git.config user.name "Release Bot"
@@ -155,6 +154,3 @@ jobs:
 
           echo "🐳 new version released"
           echo ${{ steps.semantic.outputs.new_release_version }}
-      - name: 'is published'
-        if: steps.semantic.outputs.new_release_published == 'false'
-        run: echo "not published..."
