@@ -8,6 +8,8 @@ import AppAside from '../components/aside'
 import AppHeader from '../components/header'
 import AppMain from '../components/main'
 
+import CreateButton from '../components/CreateButton'
+
 import '../assets/styles/globals.scss'
 
 function App({ Component, pageProps }: AppProps) {
@@ -37,6 +39,8 @@ function App({ Component, pageProps }: AppProps) {
       <AppMain>
         <Component {...pageProps} />
       </AppMain>
+
+      <CreateButton />
     </ThemeProvider>
   )
 }

@@ -11,13 +11,13 @@ const Routes: NextPage = () => {
         md={12}
         style={{ borderBottom: 'none' }}
       >
-        <Grid className={styles.HeaderTextBox} md={4}>
+        <Grid item className={styles.HeaderTextBox} md={4}>
           <h2>Routes</h2>
           <p>Base API route configurations.</p>
         </Grid>
 
         <Grid container className={styles.InputContainer}>
-          <Grid xs={12} sm={6} xl={3}>
+          <Grid item xs={12} sm={6} xl={3}>
             <h2>API configuration has these inputs:</h2>
             <ul>
               <li>base: string</li>

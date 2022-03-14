@@ -89,7 +89,7 @@ const Settings: NextPage = () => {
         </Grid>
 
         <Grid container className={styles.InputContainer}>
-          <Grid xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
+          <Grid item xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.host}
@@ -113,7 +113,7 @@ const Settings: NextPage = () => {
               helperText="The location of the Node.js thread"
             />
           </Grid>
-          <Grid xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
+          <Grid item xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.port}
@@ -138,7 +138,7 @@ const Settings: NextPage = () => {
               helperText="Be sure that the port is not used by other processes"
             />
           </Grid>
-          <Grid xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
+          <Grid item xs={12} md={2} sm={4} xl={1} className={styles.InputBox}>
             <TextField
               required
               value={settings.poweredBy}
@@ -168,8 +168,8 @@ const Settings: NextPage = () => {
 
       <Grid container>
         {/* cors settings */}
-        <Grid className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
-          <Grid className={styles.HeaderTextBox} md={12}>
+        <Grid item className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
+          <Grid item className={styles.HeaderTextBox} md={12}>
             <h2>Cors</h2>
             <p>
               Cross-Origin Resource Sharing (CORS) is a mechanism that allows restricted resources to be requested from

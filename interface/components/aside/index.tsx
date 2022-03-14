@@ -10,7 +10,7 @@ import IconLayers from '../../assets/icons/layers.svg'
 import IconDatabase from '../../assets/icons/database.svg'
 
 // Mavi version
-import { version } from '../../../package.json'
+import $package from '../../../package.json'
 
 const ListItems = [
   {
@@ -62,7 +62,7 @@ const AppAside = ({ onNavigationChange }: Aside) => {
       <div className={styles.foot}>
         <div className={styles.VersionText}>
           <span style={{ marginRight: 2 }}>Mavi</span>
-          <b> v{version}</b>
+          <b> v{$package.version}</b>
         </div>
       </div>
     </aside>

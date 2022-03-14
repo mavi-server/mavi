@@ -92,7 +92,7 @@ const Database: NextPage = () => {
         </Grid>
 
         <Grid container className={styles.InputContainer}>
-          <Grid xs={12} md={2} sm={6} xl={1.5} className={styles.InputBox}>
+          <Grid item xs={12} md={2} sm={6} xl={1.5} className={styles.InputBox}>
             <Autocomplete
               fullWidth
               id="cors-origin"
@@ -107,7 +107,7 @@ const Database: NextPage = () => {
             />
             <FormHelperText>Database management system</FormHelperText>
           </Grid>
-          <Grid xs={12} sm={6} md={4} xl={2} className={styles.InputBox}>
+          <Grid item xs={12} sm={6} md={4} xl={2} className={styles.InputBox}>
             <TextField
               required
               value={settings.database.development.connection.database}
@@ -120,7 +120,7 @@ const Database: NextPage = () => {
               helperText="Database name"
             />
           </Grid>
-          <Grid xs={12} sm={6} md={4} xl={2} className={styles.InputBox}>
+          <Grid item xs={12} sm={6} md={4} xl={2} className={styles.InputBox}>
             <TextField
               required
               value={settings.database.development.connection.user}
@@ -133,7 +133,7 @@ const Database: NextPage = () => {
               helperText="Database user"
             />
           </Grid>
-          <Grid xs={12} sm={6} md={4} xl={2} className={styles.InputBox}>
+          <Grid item xs={12} sm={6} md={4} xl={2} className={styles.InputBox}>
             <TextField
               required
               value={settings.database.development.connection.password}
@@ -168,7 +168,7 @@ const Database: NextPage = () => {
 
       <Grid container>
         {/* pool settings */}
-        <Grid className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
+        <Grid item className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
           <Grid className={styles.HeaderTextBox} md={12}>
             <h2>Pool</h2>
             <p>
