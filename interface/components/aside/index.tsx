@@ -8,7 +8,6 @@ import MaviLogo from '../../public/mavi.svg'
 import SettingsIcon from '../../assets/icons/settings.svg'
 import LayersIcon from '../../assets/icons/layers.svg'
 import DatabaseIcon from '../../assets/icons/database.svg'
-import TerminalIcon from '@mui/icons-material/Terminal'
 
 // Mavi version
 import $package from '../../../package.json'
@@ -28,11 +27,6 @@ const ListItems = [
     title: 'Routes',
     href: '/routes',
     icon: <LayersIcon />,
-  },
-  {
-    title: 'CLI',
-    href: '/cli',
-    icon: <TerminalIcon />,
   },
 ]
 
