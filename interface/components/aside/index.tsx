@@ -5,9 +5,10 @@ import Link from 'next/link'
 import styles from './index.module.scss'
 import MaviLogo from '../../public/mavi.svg'
 
-import IconSettings from '../../assets/icons/settings.svg'
-import IconLayers from '../../assets/icons/layers.svg'
-import IconDatabase from '../../assets/icons/database.svg'
+import SettingsIcon from '../../assets/icons/settings.svg'
+import LayersIcon from '../../assets/icons/layers.svg'
+import DatabaseIcon from '../../assets/icons/database.svg'
+import TerminalIcon from '@mui/icons-material/Terminal'
 
 // Mavi version
 import $package from '../../../package.json'
@@ -16,17 +17,22 @@ const ListItems = [
   {
     title: 'Settings',
     href: '/',
-    icon: <IconSettings />,
+    icon: <SettingsIcon />,
   },
   {
     title: 'Database',
     href: '/database',
-    icon: <IconDatabase />,
+    icon: <DatabaseIcon />,
   },
   {
     title: 'Routes',
     href: '/routes',
-    icon: <IconLayers />,
+    icon: <LayersIcon />,
+  },
+  {
+    title: 'CLI',
+    href: '/cli',
+    icon: <TerminalIcon />,
   },
 ]
 

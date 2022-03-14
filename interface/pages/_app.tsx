@@ -8,7 +8,7 @@ import AppAside from '../components/aside'
 import AppHeader from '../components/header'
 import AppMain from '../components/main'
 
-import CreateButton from '../components/CreateButton'
+import AddButton from '../components/AddButton'
 
 import '../assets/styles/globals.scss'
 
@@ -40,7 +40,7 @@ function App({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
       </AppMain>
 
-      <CreateButton />
+      <AddButton />
     </ThemeProvider>
   )
 }
