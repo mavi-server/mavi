@@ -41,21 +41,23 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
   app.use(cookieParser())
   app.use(cors(config.cors))
   app.use(initializer(config)) // Set req.app properties  
-  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'api', debug: true })) // Primary router is api
 
+  // Mavi - Primary router
+  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'Mavi', debug: true }))
 
-  // mavi base static folders
-  if (config.static) {
-    for (const Static of config.static) {
-      // virtual path
-      const Base = Static.base || Static.folder.replace(/../g, '') || '/'
+  // Mavi - Interface Router
+  if (config.page) {
+    // user can't/shouldn't define config.page but can deactivate it
 
-      // physical path
-      const Path = path.join(config.__dirname, Static.folder)
+    const routes = {}
 
-      // set static folder
-      app.use(Base, timer, express.static(Path, Static.options)) // Primary static folders
+    // if its a string, it can be one of the predefined static paths: interface, welcome
+    if (typeof config.page === 'string') {
+      routes['/'] = require(`./config/static/${config.page}`)
     }
+    const conf = { routes, define: { models: {} } }
+
+    app.use(createRouter(conf, { name: 'UI', debug: true }))
   }
 
   app.listen(PORT, HOST, () => {

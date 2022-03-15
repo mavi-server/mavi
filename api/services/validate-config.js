@@ -9,7 +9,7 @@ module.exports = function (config) {
 
     // assign default configs if not provided
     for (const key in $config) {
-      if (!config[key]) config[key] = $config[key]
+      if (!(key in config)) config[key] = $config[key]
     }
 
     // Check missing configs:
@@ -30,13 +30,6 @@ module.exports = function (config) {
             if (config["base"].endsWith('/')) config["base"] = config["base"].slice(0, -1)
           }
           break
-        case 'static':
-          // include default static path by default
-          // *default static path includes a welcome screen
-          if (config["static"]) {
-            config["static"] = $config["static"].concat(config["static"])
-            break
-          }
         default:
           // assign default api configs if not provided
           if (!config.api[key]) config.api[key] = $config.api[key]
@@ -59,16 +52,6 @@ module.exports = function (config) {
 
     if (!config.api.define) {
       reject(Error('config.api.define is not defined'))
-    }
-
-    if (!config.api.static) {
-      reject(Error('config.api.static is not defined'))
-    }
-
-    for (const Static of config.api.static) {
-      if (!(Static.fullpath || Static.folder)) {
-        reject(Error('config.api.static > invalid static options'))
-      }
     }
 
     if (!config.database) {

@@ -56,15 +56,15 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, _i, _a, Static, Base, Path;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    var config, HOST, PORT, routes, conf;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
                     console.error('[validateConfig]', err);
                     process.exit(1);
                 })];
             case 1:
-                config = _b.sent();
+                config = _a.sent();
                 HOST = config.host || 'localhost';
                 PORT = config.port || 3000;
                 // Connect to the database
@@ -75,16 +75,17 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 app.use(cookieParser());
                 app.use(cors(config.cors));
                 app.use(initializer(config)); // Set req.app properties  
-                app.use("" + config.api.base, timer, createRouter(config.api, { name: 'api', debug: true })); // Primary router is api
-                // mavi base static folders
-                if (config.static) {
-                    for (_i = 0, _a = config.static; _i < _a.length; _i++) {
-                        Static = _a[_i];
-                        Base = Static.base || Static.folder.replace(/../g, '') || '/';
-                        Path = path.join(config.__dirname, Static.folder);
-                        // set static folder
-                        app.use(Base, timer, express.static(Path, Static.options)); // Primary static folders
+                // Mavi - Primary router
+                app.use("" + config.api.base, timer, createRouter(config.api, { name: 'Mavi', debug: true }));
+                // Mavi - Interface Router
+                if (config.page) {
+                    routes = {};
+                    // if its a string, it can be one of the predefined static paths: interface, welcome
+                    if (typeof config.page === 'string') {
+                        routes['/'] = require("./config/static/" + config.page);
                     }
+                    conf = { routes: routes, define: { models: {} } };
+                    app.use(createRouter(conf, { name: 'UI', debug: true }));
                 }
                 app.listen(PORT, HOST, function () {
                     console.log("\u001B[34m" + config.poweredBy + " is running\u001B[0m");

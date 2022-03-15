@@ -3,7 +3,6 @@ const express = require('express')
 const hydrateRoutes = require('./utils/hydrate-routes')
 const $router = express.Router()
 const { join } = require('path')
-const routers = { api: 0, static: 0 }
 
 // Default middlewares
 const middlewares = {
@@ -29,6 +28,8 @@ const setMiddlewares = (fn) => {
 
 
 const createRouter = ({ routes, define, static, plugins }, options) => {
+  const routers = { api: 0, static: 0 }
+
   if (!routes) throw Error('Please define mavi routes')
   else if (!define) throw Error('Please define mavi define object')
 
@@ -193,10 +194,12 @@ const createRouter = ({ routes, define, static, plugins }, options) => {
   }
 
   // colorful log:
-  console.log(
-    `\x1b[36mRouter is ready: \x1b[32m${routers.api + routers.static} route ${routers.api + routes.static ? 'is' : 'are'
-    } created \x1b[33m${routers.static} ${routers.static ? 'is' : 'are'} serving as a static path\x1b[0m`,
-  )
+  if (options.debug) {
+    console.log(
+      `\x1b[36m${options.name || 'Router'} is ready: \x1b[32m${routers.api} route ${routers.api ? 'is' : 'are'
+      } created \x1b[33m${routers.static} ${routers.static ? 'is' : 'are'} serving as a static path\x1b[0m`,
+    )
+  }
 
   // Router is ready
   return $router

@@ -12,9 +12,12 @@ module.exports = ({ routes, define }, options) => {
 
         // set default model as `parent path name` if not defined
         if (!route.model) {
+          // auth controllers needs 'users' model
           if (['login', 'logout', 'register'].includes(route.controller)) {
             route.model = 'users'
-          } else {
+          }
+          // use parent path name as model
+          else {
             route.model = path.replace(/\/+/g, '')
           }
         }
@@ -81,7 +84,8 @@ module.exports = ({ routes, define }, options) => {
           // set schema columns:
           if (define.models[route.model]) {
             route.schema = Object.keys(define.models[route.model]).filter(column => column !== 'hash')
-          } else if (route.controller) {
+          }
+          else if (route.controller) {
             throw Error(`Please define mavi model for '${route.model}'`)
           }
         }

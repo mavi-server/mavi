@@ -46,18 +46,18 @@ export declare interface MaviConfig {
    * See details: https://knexjs.org/#Installation-client
    */
   database: any // I will define this later.
+  /**
+   * You can serve one static path as default page. Set false if you want to disable.
+   *
+   * See details about static serving: https://expressjs.com/en/4x/api.html#express.static
+   */
+  page: 'interface' | 'welcome' | Static
   poweredBy?: string
   timer: boolean
   [any: string]: any
 }
 export declare interface MaviApi {
   base: string
-  /**
-   * You can serve multiple static folders from the api.
-   *
-   * See details: https://expressjs.com/en/4x/api.html#express.static
-   */
-  static: Static[]
   /**
     - Used by req.config
     - Generates the api with the given config
