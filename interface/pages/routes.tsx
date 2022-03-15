@@ -1,13 +1,16 @@
 import type { NextPage } from 'next'
+import { useState } from 'react'
 import { Grid, gridClasses } from '@mui/material'
 import styles from './index.module.css'
+import initialState from '../states/mavi-config'
 
 const Routes: NextPage = () => {
+  const [settings, setSettings] = useState(initialState)
   return (
     <Grid>
       <Grid
         container
-        className={[styles.HeaderContainer, styles.Dark, styles.MainPad]}
+        className={`${styles.HeaderContainer} ${styles.Dark} ${styles.MainPad}`}
         md={12}
         style={{ borderBottom: 'none' }}
       >
@@ -25,6 +28,9 @@ const Routes: NextPage = () => {
               <li>static: object[]</li>
               {/* <li>plugins?: object</li> */}
             </ul>
+          </Grid>
+          <Grid item xs={12} sm={6} xl={3}>
+            Model count: {Object.keys(settings.api.define.models)}
           </Grid>
         </Grid>
       </Grid>

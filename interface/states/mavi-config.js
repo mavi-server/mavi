@@ -1,3 +1,6 @@
+// import {join} from 'path'
+// const settings = require(join(process.cwd(), './index.js'))
+
 export default {
   host: 'localhost',
   port: 3001,
@@ -11,28 +14,7 @@ export default {
   static: {
     base: '/',
     folder: '../public',
-    options: {
-      dotfiles: 'ignore',
-      etag: false,
-      extensions: [
-        'html',
-        'htm',
-        'css',
-        'js',
-        'png',
-        'jpg',
-        'jpeg',
-        'gif',
-        'ico',
-        'svg',
-        'eot',
-        'ttf',
-        'woff',
-        'woff2',
-        'otf',
-      ],
-      maxAge: '1d',
-    },
+    options: {},
   },
   database: {
     development: {
@@ -61,5 +43,10 @@ export default {
       },
       debug: false,
     },
+  },
+  api: {
+    define: {
+      models: {}
+    }
   }
 }

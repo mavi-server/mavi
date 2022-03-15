@@ -16,17 +16,6 @@ import {
 import styles from './index.module.css'
 import initialState from '../states/mavi-config'
 
-const defaultDatabaseEnvironments = [
-  {
-    value: 'development',
-  },
-  {
-    value: 'production',
-  },
-  {
-    value: 'process.env.NODE_ENV',
-  },
-]
 const supportedClients = [
   {
     label: 'PostgreSQL',
@@ -53,7 +42,7 @@ const Database: NextPage = () => {
       <Divider></Divider>
       <Grid
         container
-        className={[styles.HeaderContainer, styles.Dark, styles.MainPad]}
+        className={`${styles.HeaderContainer} ${styles.Dark} ${styles.MainPad}`}
         md={12}
         style={{ borderBottom: 'none' }}
       >
@@ -68,7 +57,8 @@ const Database: NextPage = () => {
               fullWidth
               id="input-database-environment"
               size="medium"
-              options={defaultDatabaseEnvironments.map((option) => option.value)}
+              freeSolo
+              options={[...Object.keys(settings.database), 'process.env.NODE_ENV']}
               defaultValue={Object.keys(settings.database)[0]}
               renderInput={(params) => (
                 <TextField
@@ -85,7 +75,7 @@ const Database: NextPage = () => {
         </Grid>
       </Grid>
 
-      <Grid container className={[styles.HeaderContainer, styles.Dark, styles.MainPad]} md={12}>
+      <Grid container className={`${styles.HeaderContainer} ${styles.Dark} ${styles.MainPad}`} md={12}>
         <Grid className={styles.HeaderTextBox} md={4}>
           <h2>Connection</h2>
           <p>These settings are used to connect to the database.</p>
@@ -98,9 +88,9 @@ const Database: NextPage = () => {
               id="cors-origin"
               size="small"
               options={supportedClients}
-              defaultValue={supportedClients.filter(({ value }) => value === 'pg')}
+              defaultValue={supportedClients.filter(({ value }) => value === 'pg')[0]}
               getOptionLabel={(option) => option.label}
-              getOptionDisabled={(option) => option.readonly}
+              // getOptionDisabled={(option) => option.readonly}
               renderInput={(params) => (
                 <TextField {...params} required variant="standard" label="Client" placeholder="Client" />
               )}
@@ -168,7 +158,7 @@ const Database: NextPage = () => {
 
       <Grid container>
         {/* pool settings */}
-        <Grid item className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
+        <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} sm={12} md={8} xl={4}>
           <Grid className={styles.HeaderTextBox} md={12}>
             <h2>Pool</h2>
             <p>
@@ -214,7 +204,7 @@ const Database: NextPage = () => {
         </Grid>
 
         {/* other settings */}
-        <Grid item className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
+        <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} sm={12} md={8} xl={4}>
           <Grid item className={styles.HeaderTextBox} md={12}>
             <h2>Other</h2>
             <p>Other settings.</p>

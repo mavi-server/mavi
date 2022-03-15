@@ -82,7 +82,7 @@ const Settings: NextPage = () => {
   return (
     <Grid>
       {/* general settings */}
-      <Grid container className={[styles.HeaderContainer, styles.Dark, styles.MainPad]} md={12}>
+      <Grid container className={`${styles.HeaderContainer} ${styles.Dark} ${styles.MainPad}`} md={12}>
         <Grid className={styles.HeaderTextBox} md={4}>
           <h2>Server</h2>
           <p>Base settings for the server.</p>
@@ -168,7 +168,7 @@ const Settings: NextPage = () => {
 
       <Grid container>
         {/* cors settings */}
-        <Grid item className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={8} xl={4}>
+        <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} sm={12} md={8} xl={4}>
           <Grid item className={styles.HeaderTextBox} md={12}>
             <h2>Cors</h2>
             <p>
@@ -293,7 +293,7 @@ const Settings: NextPage = () => {
         </Grid>
 
         {/* other settings */}
-        <Grid item className={[styles.HeaderContainer, styles.MainPad]} sm={12} md={4}>
+        <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} sm={12} md={4}>
           <Grid item className={styles.HeaderTextBox} md={12}>
             <h2>Other</h2>
             <p>These settings are used to configure the server.</p>

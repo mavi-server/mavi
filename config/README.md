@@ -1,0 +1,1 @@
+Default configurations of mavi.

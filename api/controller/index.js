@@ -1,31 +1,18 @@
 const { IncomingForm } = require('formidable')
 const { v4: uuidv4 } = require('uuid')
+const { existsSync, mkdirSync } = require('fs')
+const { join } = require('path')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const path = require('path')
-const { existsSync, mkdirSync } = require('fs')
 const UrlQueryBuilder = require('../services/url-query-builder')
 const SubController = require('../services/sub-controller')
-
-/*
-// Disabled now. Can be optional or completely removed.
-
-const firebase = require('firebase')
-require("firebase/firestore");
-firebase.initializeApp({
-  apiKey: process.env.apiKey,
-  authDomain: process.env.authDomain,
-  projectId: process.env.projectId
-})
-const firestore = firebase.firestore()
-*/
 
 // this file needs to be separated into pieces.
 
 module.exports = (req, res) => {
   const { query } = req // request query
-  const { $config } = req.app // request config
-  const { model, populate, columns, view, controller /*exclude*/ /*schema*/ } = req.config
+  const { $config, db } = req.app // request config
+  const { model, populate, columns, view, controller, /*schema, exclude*/ } = req.config
   const handleControllerError = (err) => {
     // Common error handler
     const { status, /*message,*/ detail, code } = err
@@ -43,13 +30,14 @@ module.exports = (req, res) => {
     res.status(res.error.status).send(res.error)
   }
 
+
   // Double check the `columns` type before dive in:
   if (!Array.isArray(columns)) {
     return res.status(500).send('[controller] req.config.columns should be an array')
   }
 
   // SQL Query Builder
-  let queryBuilder = req.app.db(model)
+  let queryBuilder = db(model)
 
   // Req Query builder
   // If req.config.query is set to 'off', then req.query will not be used at all
@@ -115,7 +103,7 @@ module.exports = (req, res) => {
   // *
   if (view && $config.api.define && $config.api.define.views && typeof $config.api.define.views === 'object') {
     // if view is defined
-    // queryBuilder = req.app.db
+    // queryBuilder = db
 
 
     // Be sure id parameter is number
@@ -128,7 +116,7 @@ module.exports = (req, res) => {
     // Expecting to return knex object
     // On some url queries you may need to refer your columns with alias_table_name.column_name
     // (e.g. ?where=id=users.id)
-    queryBuilder = $config.api.define.views[view](req.app.db, req.params)
+    queryBuilder = $config.api.define.views[view](db, req.params)
 
     // If not, assume that view function is an sql query:
     if (typeof queryBuilder === 'string' || controller === 'count') {
@@ -138,7 +126,7 @@ module.exports = (req, res) => {
 
       // wrap the query string and convert into knex object
       const sql = `(${queryBuilder}) as ${view}`
-      queryBuilder = req.app.db.from(req.app.db.raw(sql))
+      queryBuilder = db.from(db.raw(sql))
     }
 
     // console.log(queryBuilder.toString());
@@ -322,7 +310,7 @@ module.exports = (req, res) => {
         const $options = {
           multiples: false,
           keepExtensions: true,
-          uploadDir: path.join(process.cwd(), `/uploads/${childFolder}/`),
+          uploadDir: join(process.cwd(), `/uploads/${childFolder}/`),
           maxFileSize: 5242880, // bytes = 5mb
           allowEmptyFiles: false,
           filter: function ({ name, originalFilename, mimetype }) {
@@ -404,8 +392,7 @@ module.exports = (req, res) => {
 
         // check if user already exist
         // Validate if user exist in our database
-        const [{ count }] = await req.app
-          .db('users')
+        const [{ count }] = await queryBuilder
           .count('*')
           .where({ username })
           .orWhere({ email })
@@ -427,8 +414,7 @@ module.exports = (req, res) => {
         }
 
         // Get new user id
-        const [user] = await req.app
-          .db('users')
+        const [user] = await queryBuilder
           .insert(data)
           .returning(['id', 'email', 'fullname', 'username', 'avatar', 'token', 'refresh'])
           .catch(handleControllerError)
@@ -449,8 +435,7 @@ module.exports = (req, res) => {
         user.refresh = refresh
 
         // Update user access tokens:
-        await req.app
-          .db('users')
+        await queryBuilder
           .update({ token, refresh })
           .where({ username })
           .orWhere({ email })
@@ -478,8 +463,7 @@ module.exports = (req, res) => {
         }
 
         // Validate if user exist in our database
-        const user = await req.app
-          .db('users')
+        const user = await queryBuilder
           .first()
           .where(email ? { email } : { username })
           .catch(handleControllerError)
@@ -516,7 +500,7 @@ module.exports = (req, res) => {
           })
 
           // save new tokens for consistency
-          await req.app.db('users').update({ token, refresh }).where({ id: user.id })
+          await queryBuilder.update({ token, refresh }).where({ id: user.id })
 
           // assign access token for the response
           payload.token = token

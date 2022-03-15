@@ -9,9 +9,5 @@ module.exports = {
     middlewares: {},
     controllers: {},
   },
-  plugins: {
-    // auth: {},
-    // ipx: {},
-    // upload: {},
-  },
+  plugins: {},
 }

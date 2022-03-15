@@ -43,25 +43,8 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
   app.use(initializer(config)) // Set req.app properties  
   app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'api', debug: true })) // Primary router is api
 
-  // Set plugins
-  if (config.api.plugins) {
-    // Check plugins configuration
-    for (const plugin in config.api.plugins) {
-      const $plugin = {
-        base: config.api.plugins[plugin].base || plugin,
-        routes: { [plugin]: config.api.plugins[plugin].routes },
-        define: config.api.define // uses the same `define` as the api (for now)
-      }
 
-      // Set plugin as Router
-      let slash = $plugin.base.startsWith('/') ? '' : '/'
-      app.use(`${config.api.base}${slash}${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true, debug: true }))
-    }
-  }
-
-
-
-  // mavi static folders
+  // mavi base static folders
   if (config.static) {
     for (const Static of config.static) {
       // virtual path
