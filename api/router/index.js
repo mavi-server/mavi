@@ -94,7 +94,7 @@ const createRouter = ({ routes, define, static, plugins }, options) => {
         const Base = route.path
 
         // physical path
-        const Path = (route.fullpath || join(process.cwd(), route.folder)).replace(/\\+/g, '/')
+        const Path = (route.fullpath || join(options.__dirname || process.cwd(), route.folder)).replace(/\\+/g, '/')
 
 
         // set static folder

@@ -55,10 +55,17 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
     if (typeof config.page === 'string') {
       routes['/'] = require(`./config/static/${config.page}`)
     }
-    const conf = { routes, define: { models: {} } }
 
-    app.use(createRouter(conf, { name: 'UI', debug: true }))
+    const settings = { routes, define: { models: {} } }
+    const options = {
+      name: 'UI',
+      __dirname: config.__dirname, // to use main files
+      debug: true
+    }
+
+    app.use(createRouter(settings, options))
   }
+
 
   app.listen(PORT, HOST, () => {
     console.log(`\x1b[34m${config.poweredBy} is running\x1b[0m`)

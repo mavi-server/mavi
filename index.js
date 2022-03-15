@@ -56,7 +56,7 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, routes, conf;
+    var config, HOST, PORT, routes, settings, options;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
@@ -84,8 +84,13 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                     if (typeof config.page === 'string') {
                         routes['/'] = require("./config/static/" + config.page);
                     }
-                    conf = { routes: routes, define: { models: {} } };
-                    app.use(createRouter(conf, { name: 'UI', debug: true }));
+                    settings = { routes: routes, define: { models: {} } };
+                    options = {
+                        name: 'UI',
+                        __dirname: config.__dirname,
+                        debug: true
+                    };
+                    app.use(createRouter(settings, options));
                 }
                 app.listen(PORT, HOST, function () {
                     console.log("\u001B[34m" + config.poweredBy + " is running\u001B[0m");
