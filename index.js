@@ -56,7 +56,7 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, routes, settings, options;
+    var config, HOST, PORT, settings, options;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
@@ -75,23 +75,31 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 app.use(cookieParser());
                 app.use(cors(config.cors));
                 app.use(initializer(config)); // Set req.app properties  
-                // Mavi - Primary router
-                app.use("" + config.api.base, timer, createRouter(config.api, { name: 'Mavi', debug: true }));
                 // Mavi - Interface Router
                 if (config.page) {
-                    routes = {};
-                    // if its a string, it can be one of the predefined static paths: interface, welcome
-                    if (typeof config.page === 'string') {
-                        routes['/'] = require("./config/static/" + config.page);
-                    }
-                    settings = { routes: routes, define: { models: {} } };
+                    settings = {
+                        base: '/',
+                        routes: {},
+                        define: {
+                            models: {}
+                        }
+                    };
                     options = {
                         name: 'UI',
                         __dirname: config.__dirname,
                         debug: true
                     };
+                    // if its a string, it can be one of the predefined static paths: interface, welcome
+                    if (typeof config.page === 'string') {
+                        settings.routes['/'] = require("./config/static/" + config.page);
+                    }
+                    else {
+                        settings.routes['/'] = [];
+                    }
                     app.use(createRouter(settings, options));
                 }
+                // Mavi - Primary router
+                app.use("" + config.api.base, timer, createRouter(config.api, { name: 'Mavi', debug: true }));
                 app.listen(PORT, HOST, function () {
                     console.log("\u001B[34m" + config.poweredBy + " is running\u001B[0m");
                     console.log("\u001B[34mNetwork:\u001B[0m http://" + HOST + ":" + PORT);

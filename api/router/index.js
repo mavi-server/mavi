@@ -27,7 +27,7 @@ const setMiddlewares = (fn) => {
 }
 
 
-const createRouter = ({ routes, define, static, plugins }, options) => {
+const createRouter = ({ base, routes, define, plugins }, options) => {
   const routers = { api: 0, static: 0 }
 
   if (!routes) throw Error('Please define mavi routes')
@@ -78,7 +78,7 @@ const createRouter = ({ routes, define, static, plugins }, options) => {
 
   // Generate router from hydrated routes configuration
   for (const path in $routesConfig) {
-    const model = path.replace(/\//, '')
+    const model = path.replace(/\/+/g, '')
     const routes = $routesConfig[path] // local routes
 
     // Use model.route.config to generate router
@@ -91,7 +91,7 @@ const createRouter = ({ routes, define, static, plugins }, options) => {
       // Generate static routes: // https://expressjs.com/en/4x/api.html#express.static
       if ('serve' in route) {
         // virtual path
-        const Base = route.path
+        const Base = `${base || ''}/${route.path}`.replace(/\/+/g, '/')
 
         // physical path
         const Path = (route.fullpath || join(options.__dirname || process.cwd(), route.folder)).replace(/\\+/g, '/')

@@ -42,29 +42,36 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
   app.use(cors(config.cors))
   app.use(initializer(config)) // Set req.app properties  
 
-  // Mavi - Primary router
-  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'Mavi', debug: true }))
-
   // Mavi - Interface Router
   if (config.page) {
     // user can't/shouldn't define config.page but can deactivate it
 
-    const routes = {}
-
-    // if its a string, it can be one of the predefined static paths: interface, welcome
-    if (typeof config.page === 'string') {
-      routes['/'] = require(`./config/static/${config.page}`)
+    const settings = {
+      base: '/',
+      routes: {},
+      define: {
+        models: {}
+      }
     }
-
-    const settings = { routes, define: { models: {} } }
     const options = {
       name: 'UI',
       __dirname: config.__dirname, // to use main files
       debug: true
     }
 
+    // if its a string, it can be one of the predefined static paths: interface, welcome
+    if (typeof config.page === 'string') {
+      settings.routes['/'] = require(`./config/static/${config.page}`)
+    }
+    else {
+      settings.routes['/'] = []
+    }
+
     app.use(createRouter(settings, options))
   }
+
+  // Mavi - Primary router
+  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'Mavi', debug: true }))
 
 
   app.listen(PORT, HOST, () => {
