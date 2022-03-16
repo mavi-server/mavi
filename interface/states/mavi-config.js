@@ -45,8 +45,14 @@ export default {
     },
   },
   api: {
+    base: '/api',
+    routes: {},
     define: {
-      models: {}
-    }
+      models: {},
+      populate: {},
+      utils: {},
+      middlewares: {},
+      controllers: {},
+    },
   }
 }

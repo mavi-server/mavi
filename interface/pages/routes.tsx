@@ -1,11 +1,14 @@
 import type { NextPage } from 'next'
 import { useState } from 'react'
-import { Grid, gridClasses } from '@mui/material'
+import { Grid, TextField, Switch } from '@mui/material'
+import MainRoutes from '../components/main/routes/MainRoutes'
+
 import styles from './index.module.css'
 import initialState from '../states/mavi-config'
 
 const Routes: NextPage = () => {
   const [settings, setSettings] = useState(initialState)
+  const [apiActive, setApiActive] = useState(false)
   return (
     <Grid>
       <Grid
@@ -20,19 +23,30 @@ const Routes: NextPage = () => {
         </Grid>
 
         <Grid container className={styles.InputContainer}>
-          <Grid item xs={12} sm={6} xl={3}>
-            <h2>This page will touch these `api` options:</h2>
-            <ul>
-              <li>base: string</li>
-              <li>routes: object[]</li>
-              <li>static: object[]</li>
-              {/* <li>plugins?: object</li> */}
-            </ul>
-          </Grid>
-          <Grid item xs={12} sm={6} xl={3}>
-            Model count: {Object.keys(settings.api.define.models)}
+          <Grid xs={12} sm={6} xl={2} className={styles.InputBox}>
+            <TextField
+              required
+              value={settings.api.base}
+              disabled={!apiActive}
+              size="small"
+              variant="standard"
+              margin="dense"
+              InputProps={{
+                endAdornment: (
+                  <Switch disabled={false} value={apiActive} size="small" onChange={() => setApiActive(!apiActive)} />
+                ),
+              }}
+              fullWidth
+              label="Api base"
+              id="input-base"
+              helperText="All your routes starts with this path"
+            />
           </Grid>
         </Grid>
+      </Grid>
+
+      <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} md={6}>
+        <MainRoutes></MainRoutes>
       </Grid>
     </Grid>
   )

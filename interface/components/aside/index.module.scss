@@ -18,8 +18,10 @@
   .head {
     height: var(--header-height);
     @include flex_center;
+    background-color: var(--mavi-dark);
+    border-bottom: 1px solid var(--mavi-darker);
     svg {
-      width: 180px;
+      width: 140px;
     }
   }
   .body {
