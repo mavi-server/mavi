@@ -28,13 +28,18 @@ const knex = require(path.join(__dirname, '../../../database'))(config.database)
 const createTriggerFunctions = async (database) => {
   const mode = (process.env.NODE_ENV || 'development').toLowerCase()
 
-  if (!database.triggerFunctions) throw new Error('`database.triggerFunctions` are required for auto-timestamping, maybe other things in the future')
+  if (!database.triggerFunctions) throw new Error('`database.triggerFunctions` are required for auto-timestamp, maybe other things in the future')
 
   for (const fn in database.triggerFunctions) {
     await knex.raw(database.triggerFunctions[fn]).then(() => {
       // log created functions
       if (mode in database && database[mode].debug) {
         console.log(`\x1b[32m[Function ${fn} created]\x1b[0m`)
+      }
+    }).catch(err => {
+      // log error
+      if (mode in database && database[mode].debug) {
+        console.log(`\x1b[31m[Function ${fn} error]\x1b[0m`, err)
       }
     })
   }
@@ -390,9 +395,15 @@ const applyModels = async () => {
         else {
           await knex.raw(`DROP TABLE IF EXISTS "${model}" CASCADE`)
           await knex.schema.createTable(model, (table) => {
+            // create columns
             eval(generateSchemaSQL({ [model]: models[model] }, { debug })[model])
+          }).then(async () => {
+            // bind triggers
+            await knex.raw(bindOnUpdateTrigger(model))
+          }).then(() => {
+            // log
             console.log(`\x1b[32m[Table ${model} created]\x1b[0m`)
-          }).then(async () => await knex.raw(bindOnUpdateTrigger(model)))
+          })
 
           const seeded = await seedModelIfSeedableAndNotSeeded(model, false)
 
