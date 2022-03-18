@@ -21,9 +21,9 @@ There is relatively simple [PostgreSQL configuration guide](https://www.digitalo
 
 After you setup your database, you can start using the package.
 
-There are two ways to use this module.
+There are two ways to use this module:
 
-## NPM
+### 1 - NPM
 
 `npm install -g mavi`
 
@@ -33,7 +33,7 @@ This file should contain and export your server configurations.
 
 Use `mavi start` command then you ready to go!
 
-## Sub module
+### 2- Sub module
 
 1. Clone this repository `https://github.com/m-emre-yalcin/mavi`
 2. Install dependencies `npm install`
