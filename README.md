@@ -10,13 +10,28 @@ This module aims to lift repetitive works that you have made every time building
 
 ---
 
+## Database Configuration
+
+Before diving any further, you need to configure your database.
+Right now only `PostgreSQL` is supported.
+
+There is relatively simple [PostgreSQL configuration guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-20-04) you can use to get started.
+
+---
+
+After you setup your database, you can start using the package.
+
 There are two ways to use this module.
 
 ## NPM
 
-`npm i mavi`
+`npm install -g mavi`
 
-With the npm usage, you just have to define your server config inside of the `./index.js` and use `mavi start` script then you ready to go!
+You just have to define `index.js` file in your project root.
+This file should contain and export your server configurations.
+[*See example configuration below*](https://github.com/m-emre-yalcin/mavi/blob/main/README.md#server-configuration-example)
+
+Use `mavi start` command then you ready to go!
 
 ## Sub module
 
@@ -31,11 +46,7 @@ With the npm usage, you just have to define your server config inside of the `./
 
 The file below will create the entire server. You need to connect your database first then you can add some routes.
 
-_Don't forget, the columns you choose on one route should be defined in your database too._
-
-Define more populate options and middlewares to be able to use them in your routes.
-
-An example server configuration file:
+[An example server configuration file:](#server-configuration-example)
 
 ```js
 const Package = require('./package.json')
@@ -452,6 +463,6 @@ module.exports = {
 }
 ```
 
-The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc. There are more stuffs, I will mention each one of them, but that requires some time. You can use the latest version and give it a try to see what it does :) If you encounter any problem, please open an issue or email me directly i will be happy to help you.
+The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc. There are more stuffs, I will mention each one of them, but that requires some time. You can use the latest version and give it a try to see what it does :) If you encounter any problem please open an issue or [email](mailto:emrreyalcin@gmail.com) me directly i will be happy to help you.
 
 _this package is still in development_
