@@ -24,17 +24,17 @@ export declare interface MaviConfig {
   /**
    * Port to listen on
    */
-  port: number | string
+  port?: number | string
   /**
    * Host to listen on
    */
-  host: string
+  host?: string
   /**
    * Cors options
    *
    * See details: https://www.npmjs.com/package/cors
    */
-  cors: CorsOptions
+  cors?: CorsOptions
   /**
    * API configurations
    *
@@ -51,9 +51,9 @@ export declare interface MaviConfig {
    *
    * See details about static serving: https://expressjs.com/en/4x/api.html#express.static
    */
-  page: 'interface' | 'welcome' | Static
+  page?: 'interface' | 'welcome' | Static
   poweredBy?: string
-  timer: boolean
+  timer?: boolean
   [any: string]: any
 }
 export declare interface MaviApi {
@@ -96,6 +96,9 @@ export declare interface MaviApi {
      * See details: https://expressjs.com/en/guide/using-middleware.html
      */
     middlewares?: {
+      [functionName: string]: middleware
+    }
+    controllers?: {
       [functionName: string]: middleware
     }
   }
@@ -294,7 +297,7 @@ export declare namespace Model {
     /**
      * Column hash. Used for detecting the changes then updating your database accordingly.
      */
-    hash: string
+    hash?: string
   }
 }
 

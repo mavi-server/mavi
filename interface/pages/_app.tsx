@@ -7,8 +7,8 @@ import Head from 'next/head'
 import AppAside from '../components/aside'
 import AppHeader from '../components/header'
 import AppMain from '../components/main'
-
 import AddButton from '../components/AddButton'
+import { MaviConfigContextProvider } from '../components/context/index'
 
 import '../assets/styles/globals.scss'
 
@@ -33,14 +33,16 @@ function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/logo.svg" />
       </Head>
 
-      <AppAside onNavigationChange={onNavigationChange} />
+      <MaviConfigContextProvider>
+        <AppAside onNavigationChange={onNavigationChange} />
 
-      <AppHeader title={headerTitle} />
-      <AppMain>
-        <Component {...pageProps} />
-      </AppMain>
+        <AppHeader title={headerTitle} />
+        <AppMain>
+          <Component {...pageProps} />
+        </AppMain>
 
-      <AddButton />
+        <AddButton />
+      </MaviConfigContextProvider>
     </ThemeProvider>
   )
 }
