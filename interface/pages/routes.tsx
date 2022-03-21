@@ -46,7 +46,7 @@ const Routes: NextPage = () => {
       </Grid>
 
       <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} md={6}>
-        <MainRoutes></MainRoutes>
+        <MainRoutes />
       </Grid>
     </Grid>
   )
