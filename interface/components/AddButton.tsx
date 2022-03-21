@@ -12,9 +12,11 @@ import LayersIcon from '@mui/icons-material/Layers'
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
 import PreviewIcon from '@mui/icons-material/Preview'
 
+import ModalContainer from './modals'
+
 const actions = [
   { icon: <SchemaIcon />, name: 'Model' },
-  { icon: <RouteIcon />, name: 'Route' },
+  // { icon: <RouteIcon />, name: 'Route' },
   { icon: <PuzzleIcon />, name: 'Populate' },
   { icon: <LayersIcon />, name: 'Controller' },
   { icon: <DynamicFeedIcon />, name: 'Middleware' },
@@ -23,12 +25,12 @@ const actions = [
 
 export default function AddButton() {
   const [open, setOpen] = useState(false)
-  const handleOpen = () => setOpen(true)
-  const handleClose = () => setOpen(false)
+  const [modal, setModal] = useState(null as any)
 
   return (
     <Box sx={{ height: '100%', position: 'fixed', flexGrow: 1, zIndex: 2 }}>
-      <Backdrop open={open} />
+      <ModalContainer onClose={() => setModal(null)} modal={modal} />
+
       <SpeedDial
         title="Add"
         ariaLabel="SpeedDial tooltip example"
@@ -47,8 +49,8 @@ export default function AddButton() {
           },
         }}
         icon={<SpeedDialIcon />}
-        onClose={handleClose}
-        onOpen={handleOpen}
+        onClose={() => setOpen(false)}
+        onOpen={() => setOpen(true)}
         open={open}
       >
         {actions.map((action) => (
@@ -57,7 +59,7 @@ export default function AddButton() {
             icon={action.icon}
             tooltipTitle={action.name}
             tooltipOpen
-            onClick={handleClose}
+            onClick={() => setModal(action)}
           />
         ))}
       </SpeedDial>

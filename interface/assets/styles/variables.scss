@@ -96,7 +96,8 @@ $units: (
 );
 
 // Define common units and vars:
-#__next {
+#__next,
+#__next ~ * {
   @each $name, $value in $units {
     #{'.p-' + $name} {
       padding: $value;
@@ -113,10 +114,12 @@ $units: (
 
 // Define themes:
 #__next,
-#__next[light] {
+#__next[light],
+#__next[light] ~ * {
   @include create-color-variables($lightColors);
 }
-#__next[dark] {
+#__next[dark],
+#__next[dark] ~ * {
   @include create-color-variables($lightColors);
 }
 

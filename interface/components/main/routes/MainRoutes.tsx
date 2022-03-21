@@ -103,7 +103,7 @@ export default function ManageRoutes() {
       {/* depth 2 */}
       {selectedListItems[1] != null && (
         <Grid container xs={2.5} flexDirection="column">
-          <Typography variant="h6">Properties</Typography>
+          <Typography variant="h6">Configs</Typography>
           <List component="nav" aria-label="main mailbox folders" sx={{ flex: 1 }}>
             {(() => {
               const depth: number = 2
@@ -145,9 +145,17 @@ export default function ManageRoutes() {
         <Grid container xs={2.5} flexDirection="column">
           <Stack flexDirection="row">
             <RouteIcon />
-            <Typography variant="h6" sx={{ marginLeft: 1 }}>
-              Config
-            </Typography>
+            {(() => {
+              const key: string = Object.keys(routes)[selectedListItems[0]]
+              const index: number = selectedListItems[1]
+              const route: Route = routes[key][index]
+              const prop = Object.keys(route)[selectedListItems[2]]
+              return (
+                <Typography variant="h6" sx={{ marginLeft: 1 }}>
+                  {prop}
+                </Typography>
+              )
+            })()}
           </Stack>
 
           <List component="nav" aria-label="main mailbox folders" sx={{ flex: 1, padding: 2 }}>
