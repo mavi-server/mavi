@@ -12,14 +12,14 @@ export default createTheme({
       'Cantarell',
     ].join(','),
   },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          color: 'var(--primary)',
-          backgroundColor: 'var(--mavi)',
-        },
-      },
-    },
-  },
+  // components: {
+  //   MuiButton: {
+  //     styleOverrides: {
+  //       'root:not(.MuiButton-text)': {
+  //         color: 'var(--primary)',
+  //         backgroundColor: 'var(--mavi)',
+  //       },
+  //     },
+  //   },
+  // },
 })

@@ -8,6 +8,8 @@ type utils = 'detect-language'
 type middlewares = 'authorization' | 'is-owner'
 type controllers = 'find' | 'findOne' | 'count' | 'delete' | 'update' | 'create' | 'upload'
 type methods = 'get' | 'post' | 'put' | 'delete'
+type controllerWithOptions = [controllers, any]
+type populateControllers = 'count' | 'object' | 'array' | 'token-reference' | 'array-reference'
 
 declare namespace Mavi {
   /**
@@ -104,6 +106,15 @@ export declare interface MaviApi {
   }
   plugins?: object
 }
+
+
+export type MaviQuery = {
+  start: string | 'off'
+  limit: string | 'off'
+  where: string | 'off'
+  order: string | 'off'
+} | 'off'
+
 /**
  * Will transformed into the API routes
  */
@@ -124,7 +135,7 @@ export declare interface Route {
    *
    * `upload` controller may have issues.
    */
-  controller: controllers
+  controller?: controllers | controllerWithOptions
   /** 
    * Intercepts the request and carries response to the next segment.
    
@@ -138,7 +149,7 @@ export declare interface Route {
   /**
    * Which table the query use? (Uses model name by default)
    */
-  model: string
+  model?: string
   /**
    * Columns inherited from your model files.
    *
@@ -172,6 +183,11 @@ export declare interface Route {
    * If not defined, the controller name will be used.
    */
   view?: string
+  serve?: {
+    folder?: string
+    fullpath?: string
+  } & ServeStaticOptions
+  query?: MaviQuery
 }
 /**
  * Database models
@@ -317,13 +333,14 @@ export declare namespace Populate {
     /**
      * Populate method
      */
-    type: 'count' | 'object' | 'array' | 'token-reference' | 'array-reference'
+    type?: populateControllers
+    controller?: populateControllers
     /**
      * Context column
      */
     on?: string
     /**
-     * Context column for `type` column. This should be costumized column name, needs improvement.
+     * Context column for `type` column. This should be customized column name, needs improvement.
      */
     on2?: string
     /**
@@ -348,6 +365,11 @@ export declare namespace Populate {
      * Multiple column selection is not supported yet.
      */
     returning?: string | '*' | 'id'
+    /**
+     * Populate given column with the defined populate options.
+     */
+    populate?: string[]
+    query?: MaviQuery
   }
 }
 

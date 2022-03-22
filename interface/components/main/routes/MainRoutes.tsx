@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import {
   Typography,
   Grid,
@@ -13,126 +13,89 @@ import {
 } from '@mui/material'
 import PropInput from './PropInput'
 import RouteIcon from '@mui/icons-material/AccountTree'
+import MapIcon from '@mui/icons-material/Map'
+import SettingsIcon from '@mui/icons-material/Settings'
+import EditIcon from '@mui/icons-material/Edit'
 import ProgressiveList from '../../ProgressiveList'
 
-import routes from '../../../../../routes/index'
-import type { Route } from '../../../../types'
-
-const ListItems = [
-  {
-    title: 'Entities',
-    component: ({ handleListItemClick, selectedListItems, setSelectedListItems }: any) =>
-      Object.keys(routes).map((name: any, index) => {
-        const depth = 0
-        // const main: Route[] = routes[name] // entity routes | main routes
-        // const staticPathCount = main.filter((route) => route.serve).length || null
-
-        return (
-          <ListItemButton
-            selected={index === selectedListItems[depth]}
-            onClick={() => handleListItemClick(index, depth)}
-            key={index}
-          >
-            <ListItemIcon>
-              <RouteIcon />
-            </ListItemIcon>
-            <ListItemText primary={name} />
-          </ListItemButton>
-        )
-      }),
-  },
-  {
-    title: 'Routes',
-    component: ({ handleListItemClick, selectedListItems, setSelectedListItems }: any) => {
-      const depth = 1
-      const key: string = Object.keys(routes)[selectedListItems[depth - 1]]
-      const main: Route[] = routes[key] // entity routes | main routes
-
-      // if any item selected in previous group
-      // render next group
-      if (main && main.length) {
-        return main.map((route, index) => {
-          return (
-            <ListItemButton
-              selected={index === selectedListItems[depth]}
-              onClick={() => handleListItemClick(index, depth)}
-              key={index}
-            >
-              <ListItemIcon>
-                <RouteIcon />
-              </ListItemIcon>
-              <ListItemText primary={route.path} />
-            </ListItemButton>
-          )
-        })
-      } else {
-        return (
-          <ListItemButton>
-            <ListItemText primary="Nothing to see here" />
-          </ListItemButton>
-        )
-      }
-    },
-  },
-  {
-    title: 'Configs',
-    component: ({ handleListItemClick, selectedListItems, setSelectedListItems }: any) => {
-      const depth = 2
-      const key: string = Object.keys(routes)[selectedListItems[depth - 2]]
-      const main: Route[] = routes[key] // entity routes | main routes
-      const route: Route = main[selectedListItems[depth - 1]]
-
-      // if any item selected in previous group
-      // render next group
-      if (route) {
-        return Object.keys(route).map((propertyName, index) => {
-          return (
-            <ListItemButton
-              selected={index === selectedListItems[depth]}
-              onClick={() => handleListItemClick(index, depth)}
-              key={index}
-            >
-              <ListItemIcon>
-                <RouteIcon />
-              </ListItemIcon>
-              <ListItemText primary={propertyName} />
-            </ListItemButton>
-          )
-        })
-      } else {
-        return (
-          <ListItemButton>
-            <ListItemText primary="Nothing to see here" />
-          </ListItemButton>
-        )
-      }
-    },
-  },
-  {
-    title: 'Props',
-    icon: <RouteIcon />,
-    component: ({ handleListItemClick, selectedListItems, setSelectedListItems }: any) => {
-      const depth = 3
-      const key: string = Object.keys(routes)[selectedListItems[depth - 3]]
-      const index: number = selectedListItems[1]
-      const route: Route = routes[key][index]
-      const prop = Object.keys(route)[selectedListItems[2]]
-
-      // if any item selected in previous group
-      // render next group
-      if (route[prop]) {
-        return <PropInput route={route} prop={prop} />
-      } else {
-        return (
-          <ListItemButton>
-            <ListItemText primary="Nothing to see here" />
-          </ListItemButton>
-        )
-      }
-    },
-  },
-]
-
+import { MaviConfigContext } from '../../context'
 export default function ManageRoutes() {
-  return <ProgressiveList maxDepth={4} listItems={ListItems} />
+  const ctx = useContext(MaviConfigContext)
+  const routes = ctx.state.api.routes
+
+  return (
+    <ProgressiveList
+      maxDepth={4}
+      ctx={ctx}
+      items={([i, ii, iii, iiii]: any[]) => {
+        let list = [],
+          path: string,
+          route: any,
+          prop: any
+
+        list[0] = {
+          name: 'Entity',
+          header: {
+            text: 'Entities',
+            icon: <MapIcon />,
+            menu: ['add', 'delete', 'edit'],
+          },
+          list: Object.keys(routes).map((entityPath: any) => {
+            return {
+              text: entityPath,
+              icon: <MapIcon />,
+            }
+          }),
+        }
+
+        if (i !== null) {
+          path = Object.keys(routes)[i]
+          list[1] = {
+            name: 'Route',
+            header: {
+              text: path,
+              icon: <RouteIcon />,
+              menu: ['add', 'delete', 'edit'],
+            },
+            list: routes[path].map((route: any) => {
+              return {
+                text: route.path,
+                icon: <RouteIcon />,
+              }
+            }),
+          }
+        }
+        if (ii !== null) {
+          route = routes[path][ii]
+          list[2] = {
+            name: 'Config',
+            header: {
+              text: route.path,
+              icon: <SettingsIcon />,
+              menu: ['add', 'delete'],
+            },
+            list: Object.keys(route).map((propertyName: string) => {
+              return {
+                text: propertyName,
+                icon: <SettingsIcon />,
+              }
+            }),
+          }
+        }
+        if (iii !== null) {
+          prop = Object.keys(route)[iii]
+          list[3] = {
+            name: 'Input',
+            header: {
+              text: prop,
+              icon: <EditIcon />,
+            },
+            component: <PropInput route={route} prop={prop} />,
+          }
+        }
+
+        return list
+      }}
+    />
+  )
 }

@@ -7,8 +7,8 @@ export type Action = {
 }
 export type Reducer = (state: State, action: Action) => State
 export type ContextType = {
-  state: MaviConfig | {}
-  dispatch: Action | {}
+  state: MaviConfig
+  dispatch: Action
   actions: {
     [functionName: string]: (...args: any[]) => any
   }

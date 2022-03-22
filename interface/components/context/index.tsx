@@ -6,11 +6,7 @@ import { ContextType } from './index.d'
 
 type ContextProps = { children: ReactNode }
 
-export const MaviConfigContext = createContext<ContextType>({
-  state: {},
-  dispatch: {},
-  actions: {},
-})
+export const MaviConfigContext = createContext<ContextType>({} as any)
 
 export const MaviConfigContextProvider = ({ children }: ContextProps) => {
   const [state, dispatch] = useReducer(reducer, initialState)
