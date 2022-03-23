@@ -1,16 +1,4 @@
 import { useContext, useState } from 'react'
-import {
-  Typography,
-  Grid,
-  Badge,
-  Stack,
-  Chip,
-  Divider,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-} from '@mui/material'
 import PropInput from './PropInput'
 import RouteIcon from '@mui/icons-material/AccountTree'
 import MapIcon from '@mui/icons-material/Map'
@@ -27,6 +15,7 @@ export default function ManageRoutes() {
     <ProgressiveList
       maxDepth={4}
       ctx={ctx}
+      name="routes"
       items={([i, ii, iii, iiii]: any[]) => {
         let list = [],
           path: string,
@@ -50,6 +39,7 @@ export default function ManageRoutes() {
 
         if (i !== null) {
           path = Object.keys(routes)[i]
+
           list[1] = {
             name: 'Route',
             header: {
@@ -67,12 +57,13 @@ export default function ManageRoutes() {
         }
         if (ii !== null) {
           route = routes[path][ii]
+
           list[2] = {
             name: 'Config',
             header: {
               text: route.path,
               icon: <SettingsIcon />,
-              menu: ['add', 'delete'],
+              // menu: ['add', 'delete'],
             },
             list: Object.keys(route).map((propertyName: string) => {
               return {
@@ -84,6 +75,7 @@ export default function ManageRoutes() {
         }
         if (iii !== null) {
           prop = Object.keys(route)[iii]
+
           list[3] = {
             name: 'Input',
             header: {

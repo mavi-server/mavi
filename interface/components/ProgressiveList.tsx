@@ -20,7 +20,7 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 
-import CommonActionsDialog from './dialogs'
+import { CommonActionsDialog, DialogData } from './dialogs'
 import type { ContextType } from '../components/context/index.d'
 
 type Indexes = (number | any)[]
@@ -38,13 +38,14 @@ type ProgressiveList = (indexes: Indexes) => Array<ListItem>
 
 type ListProps = {
   ctx: ContextType
+  name: string
   maxDepth: number
   items: ProgressiveList
 }
-export default function ProgressiveList({ ctx, maxDepth, items }: ListProps) {
+export default function ProgressiveList({ ctx, name, maxDepth, items }: ListProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogData, setDialogData] = useState({})
-  const [selectedListItems, setSelectedListItems] = useState<Indexes>(Array(maxDepth + 1).fill(null))
+  const [dialogData, setDialogData] = useState<DialogData>({ params: { name } })
+  const [selectedListItems, setSelectedListItems] = useState<Indexes>(Array(maxDepth).fill(null))
   const handleListItemClick = (index: number, depth: number) => {
     // set index by depth
     const indexes: Indexes = [...selectedListItems]
@@ -68,32 +69,35 @@ export default function ProgressiveList({ ctx, maxDepth, items }: ListProps) {
     setAnchor(null)
     setDialogOpen(false)
   }
+  const handleListItemDelete = (depth: number) => {
+    setDialogOpen(true)
+    setDialogData({
+      type: 'delete',
+      params: { name, setSelectedListItems, selectedListItems, depth },
+    })
+  }
+  const handleListItemEdit = (depth: number) => {
+    const inputText = items(selectedListItems)[depth].list[selectedListItems[depth]].text
 
-  const handleListItemDelete = () => {
     setDialogOpen(true)
     setDialogData({
-      type: `delete-route/api.routes`,
-      params: selectedListItems,
+      type: 'edit',
+      params: { name, setSelectedListItems, selectedListItems, depth, inputText },
     })
   }
-  const handleListItemEdit = () => {
+  const handleListItemAdd = (depth: number) => {
     setDialogOpen(true)
     setDialogData({
-      type: `edit-route/api.routes`,
-      params: selectedListItems,
-    })
-  }
-  const handleListItemAdd = () => {
-    setDialogOpen(true)
-    setDialogData({
-      type: `add-route/api.routes`,
-      params: selectedListItems,
+      type: 'add',
+      params: { name, setSelectedListItems, selectedListItems, depth },
     })
   }
 
   return (
     <>
       <CommonActionsDialog open={dialogOpen} onClose={handleClose} data={dialogData} />
+
+      {/* On top of this list, the selected paths can be shown like url or breadcrumb */}
 
       <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={1}>
         {items(selectedListItems)
@@ -110,7 +114,7 @@ export default function ProgressiveList({ ctx, maxDepth, items }: ListProps) {
                     {item.header.text}
                   </Typography>
 
-                  {selectedListItems[depth] !== null && (
+                  {item.header.menu && selectedListItems[depth] !== null && (
                     <IconButton
                       onClick={(e) => handleClick(e, depth)}
                       aria-label="more"
@@ -150,7 +154,7 @@ export default function ProgressiveList({ ctx, maxDepth, items }: ListProps) {
                       }}
                     >
                       {item.header.menu.includes('delete') && (
-                        <MenuItem onClick={() => handleListItemDelete()}>
+                        <MenuItem onClick={() => handleListItemDelete(depth)}>
                           <DeleteIcon />
                           Delete
                         </MenuItem>
@@ -158,7 +162,7 @@ export default function ProgressiveList({ ctx, maxDepth, items }: ListProps) {
                       {item.header.menu.includes('edit') && (
                         <>
                           <Divider sx={{ my: 0.5 }} />
-                          <MenuItem onClick={() => handleListItemEdit()}>
+                          <MenuItem onClick={() => handleListItemEdit(depth)}>
                             <EditIcon />
                             Edit
                           </MenuItem>
@@ -176,7 +180,7 @@ export default function ProgressiveList({ ctx, maxDepth, items }: ListProps) {
                       variant="text"
                       size="small"
                       disableRipple
-                      onClick={() => handleListItemAdd()}
+                      onClick={() => handleListItemAdd(depth)}
                     >
                       Add {item.name || item.header.text}
                     </Button>

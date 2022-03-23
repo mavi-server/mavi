@@ -32,7 +32,7 @@ export default function AddButton() {
       <ModalContainer onClose={() => setModal(null)} modal={modal} />
 
       <SpeedDial
-        title="Add"
+        title="Manage defines"
         ariaLabel="SpeedDial tooltip example"
         sx={{
           position: 'fixed',
@@ -55,6 +55,7 @@ export default function AddButton() {
       >
         {actions.map((action) => (
           <SpeedDialAction
+            title={`Define ${action.name}`}
             key={action.name}
             icon={action.icon}
             tooltipTitle={action.name}

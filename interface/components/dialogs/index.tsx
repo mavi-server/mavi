@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   Grid,
   TextField,
@@ -10,47 +10,61 @@ import {
   DialogTitle,
 } from '@mui/material'
 
-type DialogProps = {
+export type DialogProps = {
   open: boolean
   onClose: () => void
-  data: {
-    type: SupportedDialogTypes
-    params?: any
-    title?: string
-    description?: string
-    icon?: any
-  }
+  data: DialogData
 }
 
-type SupportedDialogTypes =
-  | 'add-route/api.routes'
-  | 'edit-route/api.routes'
-  | 'delete-route/api.routes'
-  | 'add-model/api.routes.define.models'
-  | 'edit-model/api.routes.define.models'
-  | 'delete-model/api.routes.define.models'
+export type DialogData = {
+  type?: SupportedDialogTypes
+  params: {
+    name: 'routes' | 'models' | 'controllers' | 'views' | 'middlewares'
+    selectedListItems?: (number | any)[]
+    depth?: number
+    inputText?: string
+  }
+  title?: string
+  description?: string
+  icon?: any
+}
+type SupportedDialogTypes = 'add' | 'edit' | 'delete'
 
 import { MaviConfigContext } from '../context'
-export default function CommonActionsDialog({ data, open, onClose }: DialogProps) {
+export function CommonActionsDialog({ data, open, onClose }: DialogProps) {
   const { state, actions, dispatch } = useContext(MaviConfigContext)
-  const [tn, namespace] = data && data.type ? data.type.split('/') : ''
-  const [type, name] = tn ? tn.split('-') : ''
+  const [input, setInput] = useState('')
+  const { name } = data.params
+  const { type } = data
+
+  useEffect(() => {
+    if (data.params.inputText) {
+      setInput(data.params.inputText)
+    }
+  }, [data.params.inputText])
+
+  const handleInputChange = (e: any) => {
+    setInput(e.target.value)
+  }
+  const handleInputEnter = (e: any) => {
+    if (e.key === 'Enter') {
+      handleAction()
+
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  }
 
   const handleAction = () => {
+    // produce action name
     const fn = `${type}${name[0].toUpperCase() + name.slice(1)}` // eg: => addRoute
-    if (fn in actions) {
-      switch (type) {
-        case 'add':
-          break
-        case 'edit':
-          break
-        case 'delete':
-          break
-      }
-      // actions[fn](name, data.params)
-    } else {
-      console.error(`${fn} not implemented`)
-    }
+
+    // execute the action
+    actions(fn, { input, ...data.params })
+
+    setInput('')
+
+    // close the dialog
     onClose()
   }
 
@@ -90,9 +104,15 @@ export default function CommonActionsDialog({ data, open, onClose }: DialogProps
                     {data.title || `Edit ${name[0].toUpperCase() + name.slice(1)}`}
                   </DialogTitle>
                   <DialogContent>
-                    {/* {JSON.stringify(data.params)} */}
                     <Grid item sx={{ paddingTop: 1 }}>
-                      <TextField label="Input" variant="outlined" size="small" />
+                      <TextField
+                        label="Input"
+                        variant="outlined"
+                        size="small"
+                        value={input}
+                        onKeyDown={handleInputEnter}
+                        onInput={handleInputChange}
+                      />
                     </Grid>
                   </DialogContent>
                   <DialogActions>
@@ -112,14 +132,21 @@ export default function CommonActionsDialog({ data, open, onClose }: DialogProps
                   <DialogTitle id="alert-dialog-title">{data.title || `Add ${Name}`}</DialogTitle>
                   <DialogContent>
                     <Grid item sx={{ paddingTop: 1 }}>
-                      <TextField label="Input" variant="outlined" size="small" />
+                      <TextField
+                        label="Input"
+                        variant="outlined"
+                        size="small"
+                        value={input}
+                        onKeyDown={handleInputEnter}
+                        onInput={handleInputChange}
+                      />
                     </Grid>
                   </DialogContent>
                   <DialogActions>
                     <Button sx={{ color: 'var(--dark-lighter)' }} onClick={onClose}>
                       Close
                     </Button>
-                    <Button sx={{ color: 'var(--mavi' }} onClick={handleAction} autoFocus>
+                    <Button disabled={input == ''} sx={{ color: 'var(--mavi' }} onClick={handleAction} autoFocus>
                       New {Name}
                     </Button>
                   </DialogActions>
