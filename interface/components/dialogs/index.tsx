@@ -106,6 +106,7 @@ export function CommonActionsDialog({ data, open, onClose }: DialogProps) {
                   <DialogContent>
                     <Grid item sx={{ paddingTop: 1 }}>
                       <TextField
+                        autoFocus
                         label="Input"
                         variant="outlined"
                         size="small"
@@ -133,6 +134,7 @@ export function CommonActionsDialog({ data, open, onClose }: DialogProps) {
                   <DialogContent>
                     <Grid item sx={{ paddingTop: 1 }}>
                       <TextField
+                        autoFocus
                         label="Input"
                         variant="outlined"
                         size="small"

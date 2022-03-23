@@ -6,7 +6,7 @@ const reducer: Reducer = (state, action) => {
     case 'ADD_ROUTE': {
       const routes = state.api.routes[action.payload.path].concat(action.payload.route)
 
-      return { ...state, api: { ...state.api, routes } }
+      return { ...state, api: { ...state.api, routes: { ...state.api.routes, [action.payload.path]: routes } } }
     }
     case 'DELETE_API_ENTITY': {
       const { path } = action.payload

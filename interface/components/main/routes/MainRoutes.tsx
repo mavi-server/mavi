@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 import PropInput from './PropInput'
 import RouteIcon from '@mui/icons-material/AccountTree'
-import MapIcon from '@mui/icons-material/Map'
+import FolderIcon from '@mui/icons-material/Folder'
 import SettingsIcon from '@mui/icons-material/Settings'
 import EditIcon from '@mui/icons-material/Edit'
 import ProgressiveList from '../../ProgressiveList'
@@ -26,13 +26,13 @@ export default function ManageRoutes() {
           name: 'Entity',
           header: {
             text: 'Entities',
-            icon: <MapIcon />,
+            icon: <FolderIcon />,
             menu: ['add', 'delete', 'edit'],
           },
           list: Object.keys(routes).map((entityPath: any) => {
             return {
               text: entityPath,
-              icon: <MapIcon />,
+              icon: <FolderIcon />,
             }
           }),
         }
