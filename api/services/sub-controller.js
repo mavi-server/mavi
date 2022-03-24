@@ -15,6 +15,15 @@ const SubController = async function (req, { populate, data }) {
       // must
       if (!config.query) config.query = {}
 
+      // optional from: get 'from' value from request's param slug
+      if (config.from.includes('req.params.')) {
+        const [, key] = config.from.split('req.params.')
+        if (req.params[key]) {
+          config.from = req.params[key]
+        }
+        else throw Error(`sub-controller: req.params.${key} is not defined`)
+      }
+
       const {
         select, // column
         from, // table
