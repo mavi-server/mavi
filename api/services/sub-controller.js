@@ -16,38 +16,28 @@ const SubController = async function (req, { populate, data }) {
       if (!config.query) config.query = {}
 
       const {
-        select,
-        on,
-        on2,
-        from,
+        select, // column
+        from, // table
+        columns, // select populated data columns
+        on, // referencing to the model table's id column eg: { on: 'user' } will refer [model].id
+        on2,// referencing to the model table's specified column eg: {on2: 'type'} will refer [model].[type]
         type /* type will be removed later, controller will be used instead */,
         controller,
         query,
-        populate,
-        columns,
-        returning
+        populate, // recursively populate - deep populate
+        returning // "token-reference" option
       } = config
-      // select: column
-      // from: table
-      // columns: select populated data columns
-      // populate: recursiveley populate - deep populate
-      // on: referencing to the model table's id column eg: { on: 'user' } will refer [model].id
-      // on2: referencing to the model table's specified column eg: {on2: 'type'} will refer [model].[type]
       // * on, on2 are used in the 'where' statements */
-      // returning: "token-reference" option
-
-      // default subquery fragments should be defined in config-sub.js
 
       if (controller || type) {
         // convert user's url queries to objects
         // the objects will be used to build sub sql query
         UrlQueryBuilder(query, columns)
 
-        /* controller: 'array-reference' doesn't need to have a 'from' option */
-        const queryBuilder = (controller || type) !== 'array-reference' && knex(from)
-
         switch (controller || type) {
-          case 'count':
+          case 'count': {
+            const queryBuilder = knex(from)
+
             if (select && on) {
               if (!query.where) query.where = []
 
@@ -79,7 +69,10 @@ const SubController = async function (req, { populate, data }) {
               throw Error({ message })
             }
             break;
-          case 'token-reference':
+          }
+          case 'token-reference': {
+            const queryBuilder = knex(from)
+
             if (select) {
               // only users with identity can use this sub controller
               if (req.user && req.user.id) {
@@ -105,7 +98,8 @@ const SubController = async function (req, { populate, data }) {
               throw Error({ message })
             }
             break;
-          case 'array-reference':
+          }
+          case 'array-reference': {
             if (select && row[select]) {
               try { row[select] = JSON.parse(row[select]) }
               catch (err) { console.error("knex populate [array-reference]:", err.message) }
@@ -118,7 +112,10 @@ const SubController = async function (req, { populate, data }) {
               } else row[select] = null
             }
             break;
-          case 'object':
+          }
+          case 'object': {
+            const queryBuilder = knex(from)
+
             // if row have an id
             if (select && row[select]) {
               row[select] = await queryBuilder.first(columns).where({ id: row[select] })
@@ -133,7 +130,10 @@ const SubController = async function (req, { populate, data }) {
               }
             }
             break
-          case 'array':
+          }
+          case 'array': {
+            const queryBuilder = knex(from)
+
             // if row have an id
             if (select && row[select]) {
               if (query.sort) {
@@ -180,8 +180,8 @@ const SubController = async function (req, { populate, data }) {
               }
             }
             break
-          default:
-            break
+          }
+          default: break
         }
       }
       else {

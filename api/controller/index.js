@@ -39,6 +39,7 @@ module.exports = (req, res) => {
   // SQL Query Builder
   let queryBuilder = db(model)
 
+
   // Req Query builder
   // If req.config.query is set to 'off', then req.query will not be used at all
   if (req.config.query !== 'off') {
@@ -145,6 +146,7 @@ module.exports = (req, res) => {
     // }
   }
 
+
   return {
     count: async () => {
       // handle where clause
@@ -180,7 +182,7 @@ module.exports = (req, res) => {
       if (query.limit || !query.limit) {
         queryBuilder.limit(query.limit || 10)
       }
-      // handle where clause:
+      // handle where clause
       if (!query.where) query.where = []
 
       // is-owner
