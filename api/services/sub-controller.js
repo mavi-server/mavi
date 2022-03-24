@@ -1,10 +1,9 @@
 // Sub Controller for populating relations
-// Also can be refered as 'population controller'
+// Also can be referred as 'population controller'
 
 const UrlQueryBuilder = require('./url-query-builder')
-const SubController = async function (req, { populate, data }) {
+const SubController = async function (req, { populate, data, context }) {
   const knex = req.app.db
-  const model = req.config.model
 
   if (Array.isArray(data) == false) {
     data = [data || {}]
@@ -24,9 +23,9 @@ const SubController = async function (req, { populate, data }) {
           // ** temporary security fix:
           // ** hide hash and private fields when 'req.params' used as `from` value
           // *** normally these process should be done in `hydrate-routes` before the router initialization
-          const $model = req.app.$config.api.define.models[config.from]
-          if ($model) {
-            const columns = Object.keys($model).filter(c => !(c === "hash" || $model[c].private))
+          const table = req.app.$config.api.define.models[config.from]
+          if (table) {
+            const columns = Object.keys(table).filter(c => !(c === "hash" || table[c].private))
             config.columns = columns
           }
         }
@@ -37,20 +36,27 @@ const SubController = async function (req, { populate, data }) {
         select, // column
         from, // table
         columns, // select populated data columns
-        on, // referencing to the model table's id column eg: { on: 'user' } will refer [model].id
-        on2,// referencing to the model table's specified column eg: {on2: 'type'} will refer [model].[type]
+        on, // referencing to the row[id] value. used in where statements
         type /* type will be removed later, controller will be used instead */,
         controller,
         query,
         populate, // recursively populate - deep populate
         returning // "token-reference" option
       } = config
-      // * on, on2 are used in the 'where' statements */
 
       if (controller || type) {
         // convert user's url queries to objects
         // the objects will be used to build sub sql query
         UrlQueryBuilder(query, columns)
+
+        // assign special variables to the query
+        if (query.where) {
+          query.where.find(w => {
+            if (w.params.includes('#context')) {
+              return w.params[2] = context
+            }
+          })
+        }
 
         switch (controller || type) {
           case 'count': {
@@ -62,16 +68,13 @@ const SubController = async function (req, { populate, data }) {
               // on:
               query.where.push({ exec: 'where', params: [on, '=', row.id] })
 
-              // on2: (may be removed on the future)
-              if (on2) query.where.push({ exec: 'where', params: [on2, '=', model] })
-
               // is-owner
               if (req.owner) {
-                if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
+                if (req.config.model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
                 else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] })
               }
 
-              // append where queries
+              // apply where queries
               if (query.where) {
                 for (const group of query.where) {
                   queryBuilder[group.exec](...group.params)
@@ -82,7 +85,7 @@ const SubController = async function (req, { populate, data }) {
               const data = await queryBuilder.count('*').then(res => ({ [select]: Number(res[0].count) }))
               Object.assign(row, data)
             } else {
-              const message = "sql-query-populate-relations: `on` & `select` option should be defined"
+              const message = "sub-controller: `on` & `select` option should be defined"
               console.error(message)
               throw Error({ message })
             }
@@ -98,20 +101,24 @@ const SubController = async function (req, { populate, data }) {
                   user: req.user.id, // reference token
                   [on || select]: row.id // referencing column
                 }
-                if (on2) where[on2] = model
 
                 const reference = await queryBuilder.first(columns).where(where)
                 if (reference) {
                   if (returning) {
                     if (returning === '*') row[select] = reference
                     else if (columns.includes(returning)) row[select] = reference[returning]
+                    else {
+                      const message = `sub-controller: returning column ${returning} is not defined`
+                      console.error(message)
+                      throw Error({ message })
+                    }
                   }
                   else row[select] = reference.id || null
 
                 } else row[select] = null
               }
             } else {
-              const message = "sql-query-populate-relations: `select` option should be defined"
+              const message = "sub-controller: `select` option should be defined"
               console.error(message)
               throw Error({ message })
             }
@@ -120,13 +127,13 @@ const SubController = async function (req, { populate, data }) {
           case 'array-reference': {
             if (select && row[select]) {
               try { row[select] = JSON.parse(row[select]) }
-              catch (err) { console.error("knex populate [array-reference]:", err.message) }
+              catch (err) { console.error("sub-controller:", err.message) }
 
               if (Array.isArray(row[select])) {
                 try {
                   row[select] = await Promise.all(row[select].map(async id => await req.app.db(from).first(columns).where({ id: Number(id) })))
                 }
-                catch (err) { console.error("knex populate [array-reference]:", err.message) }
+                catch (err) { console.error("sub-controller:", err.message) }
               } else row[select] = null
             }
             break;
@@ -140,7 +147,7 @@ const SubController = async function (req, { populate, data }) {
 
               if (populate) { // deep populate
                 try {
-                  row[select] = await SubController(req, { populate, data: row[select] })
+                  row[select] = await SubController(req, { populate, data: row[select], context: config.from })
                   if (Array.isArray(row[select])) row[select] = row[select][0]
                 } catch (err) {
                   throw err
@@ -170,16 +177,13 @@ const SubController = async function (req, { populate, data }) {
               // on:
               query.where.push({ exec: 'where', params: ['id', '=', row[select]] })
 
-              // on2: (may be removed on the future)
-              if (on2) query.where.push({ exec: 'where', params: [on2, '=', model] })
-
               // is-owner
               if (req.owner) {
-                if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
+                if (req.config.model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
                 else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] })
               }
 
-              // append where queries
+              // apply where queries
               if (query.where) {
                 for (const group of query.where) {
                   queryBuilder[group.exec](...group.params)
@@ -192,7 +196,7 @@ const SubController = async function (req, { populate, data }) {
 
             if (populate) { // deep populate
               try {
-                row[select] = await SubController(req, { populate, data: row[select] })
+                row[select] = await SubController(req, { populate, data: row[select], context: config.from })
               } catch (err) {
                 throw err
               }
@@ -203,7 +207,7 @@ const SubController = async function (req, { populate, data }) {
         }
       }
       else {
-        const message = "sql-query-populate-relations: `controller`or `type` option should be defined"
+        const message = "sub-controller: `controller`or `type` option should be defined"
         console.error(message)
         throw Error({ message })
       }

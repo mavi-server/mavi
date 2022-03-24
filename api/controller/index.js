@@ -140,7 +140,7 @@ module.exports = (req, res) => {
     //     let data = await queryBuilder.catch(handleControllerError)
     //     // populate options
     //     if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-    //       data = await SubController(req, { populate, data }).catch(handleControllerError)
+    //       data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
     //     }
 
     //     return res.status(200).send(data)
@@ -203,7 +203,7 @@ module.exports = (req, res) => {
       let data = await queryBuilder.catch(handleControllerError)
       // populate options
       if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
       }
 
       return res.status(200).send(data)
@@ -223,7 +223,7 @@ module.exports = (req, res) => {
       let data = await queryBuilder.catch(handleControllerError)
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
       }
       if (Array.isArray(data)) data = data[0] || null
 
@@ -235,7 +235,7 @@ module.exports = (req, res) => {
       let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError)
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
       }
 
       if (Array.isArray(data)) data = data[0] || null
@@ -289,7 +289,7 @@ module.exports = (req, res) => {
 
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
       }
 
       if (Array.isArray(data)) data = data[0] || null
