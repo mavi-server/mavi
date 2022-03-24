@@ -147,6 +147,9 @@ module.exports = (req, res) => {
 
   return {
     count: async () => {
+      // handle where clause
+      if (!query.where) query.where = []
+
       // is-owner
       if (req.owner) {
         if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
@@ -177,7 +180,7 @@ module.exports = (req, res) => {
       if (query.limit || !query.limit) {
         queryBuilder.limit(query.limit || 10)
       }
-      // Handle where queries:
+      // handle where clause:
       if (!query.where) query.where = []
 
       // is-owner
@@ -186,7 +189,7 @@ module.exports = (req, res) => {
         else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] })
       }
 
-      // append where queries
+      // append where clauses
       if (query.where) {
         for (const group of query.where) {
           queryBuilder[group.exec](...group.params)
