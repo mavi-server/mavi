@@ -20,6 +20,15 @@ const SubController = async function (req, { populate, data }) {
         const [, key] = config.from.split('req.params.')
         if (req.params[key]) {
           config.from = req.params[key]
+
+          // ** temporary security fix:
+          // ** hide hash and private fields when 'req.params' used as `from` value
+          // *** normally these process should be done in `hydrate-routes` before the router initialization
+          const $model = req.app.$config.api.define.models[config.from]
+          if ($model) {
+            const columns = Object.keys($model).filter(c => !(c === "hash" || $model[c].private))
+            config.columns = columns
+          }
         }
         else throw Error(`sub-controller: req.params.${key} is not defined`)
       }

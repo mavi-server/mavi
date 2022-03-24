@@ -104,6 +104,7 @@ module.exports = ({ routes, define }, options) => {
     return define.populate[column] || column
   }
 
+
   const setDefaultColumns = async (route) => {
     const model = route.model || route.from // from is used in sub routes
     const controllers = ['count', 'find', 'findOne', 'update', 'create', 'delete', 'upload']

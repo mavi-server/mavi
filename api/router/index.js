@@ -98,7 +98,7 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
 
 
         // set static folder
-        $router.use(Base, ...route.middlewares.map(setMiddlewares), express.static(Path, route.serve))
+        $router.use(Base, route.middlewares.map(setMiddlewares), express.static(Path, route.serve))
 
         if (options.debug) {
           routers.static++
@@ -109,9 +109,11 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
 
       // Generate api routes:
       else {
-        $router[route.method](route.path, ...route.middlewares.map(setMiddlewares), async (req, res) => {
+        $router[route.method](route.path, route.middlewares.map(setMiddlewares), async (req, res) => {
           // controller settings
-          req.config = route
+          // ** req.config can be passed/overwrite from middlewares as well
+          // ** but it is not recommended to do so
+          req.config = typeof req.config === 'object' ? { ...route, ...req.config } : route
 
           // execute utils
           if (route.utils) {
