@@ -36,8 +36,10 @@ module.exports = (req, res) => {
     return res.status(500).send('[controller] req.config.columns should be an array')
   }
 
-  // SQL Query Builder
-  let queryBuilder = db(model)
+  // SQL Query Builder:
+  // you can pass queryBuilder to the request object
+  // and build queries on top of it
+  let queryBuilder = req.queryBuilder || db(model)
 
 
   // Req Query builder
@@ -171,7 +173,7 @@ module.exports = (req, res) => {
       return res.status(200).send(data)
     },
     find: async (populateIt = true) => {
-      if (!view) queryBuilder.select(columns)
+      if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns)
 
       if (query.sort) {
         queryBuilder.orderBy(query.sort)
