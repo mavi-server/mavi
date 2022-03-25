@@ -128,6 +128,7 @@ jobs:
         with:
           branch: main
           semantic_version: 15.13.28 # version range
+        id: semantic   # Need an `id` for output variables
 
           ## https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format
           ## Commit prefixes and effects:
@@ -145,10 +146,8 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: '📊 package version'
-        if: ${{ steps.semantic.outputs.last_release_version != steps.semantic.outputs.new_release_version }}
+        if: ${{ steps.semantic.outputs.new_release_published == true }}
         run: |
-          echo "is published: ${{ steps.semantic.outputs.new_release_published }}"
-
           git config user.name "Release Bot"
           git config user.email "release@github.com"
 
