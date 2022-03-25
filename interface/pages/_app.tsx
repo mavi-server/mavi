@@ -30,7 +30,7 @@ function App({ Component, pageProps }: AppProps) {
         <title>Mavi - Admin</title>
         <meta name="description" content="Mavi configuration panel" />
         <meta name="viewport" content="initial-scale=1, width=device-width" />
-        <link rel="icon" href="/logo.svg" />
+        <link rel="icon" href="/logo-variant-2.svg" />
       </Head>
 
       <MaviConfigContextProvider>
