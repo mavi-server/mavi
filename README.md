@@ -433,7 +433,7 @@ module.exports = {
           query: {
             where: 'type-eq-#context' // #context = parent model name
             // eg: if populate `bookmark` used in posts, parent model name will be posts.
-          }
+          },
           type: 'token-reference',
           returning: 'id', // '*' or specific column
         },
