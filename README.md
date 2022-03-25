@@ -33,7 +33,7 @@ This file should contain and export your server configurations.
 
 Use `mavi start` command then you ready to go!
 
-### 2- Sub module
+### 2- Sub module 
 
 1. Clone this repository `https://github.com/m-emre-yalcin/mavi`
 2. Install dependencies `npm install`
@@ -46,7 +46,7 @@ Use `mavi start` command then you ready to go!
 
 The file below will create the entire server. You need to connect your database first then you can add some routes.
 
-<a name="server-configuration-example">An example server configuration file<a>
+<a name="server-configuration-example">An example server configuration file</a>
 
 ```js
 const Package = require('./package.json')
@@ -450,6 +450,8 @@ module.exports = {
 }
 ```
 
-The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc. There are more stuffs, I will mention each one of them, but that requires some time. You can use the latest version and give it a try to see what it does :) If you encounter any problem please open an issue or [email](mailto:emrreyalcin@gmail.com) me directly i will be happy to help you.
+The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc.
+
+There are more stuffs, I will mention each one of them, but that requires some time. You can use the latest version and give it a try to see what it does :) If you encounter any problem please open an issue or [email](mailto:emrreyalcin@gmail.com) me directly i will be happy to help you.
 
 _this package is still in development_
