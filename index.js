@@ -56,16 +56,15 @@ var validateConfig = require('./api/services/validate-config');
 var database = null;
 // Main
 var createServer = function (object) { return __awaiter(void 0, void 0, void 0, function () {
-    var config, HOST, PORT, plugin, $plugin, slash, _i, _a, Static, Base, Path;
-    var _b;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var config, HOST, PORT, settings, options;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0: return [4 /*yield*/, validateConfig(object)["catch"](function (err) {
                     console.error('[validateConfig]', err);
                     process.exit(1);
                 })];
             case 1:
-                config = _c.sent();
+                config = _a.sent();
                 HOST = config.host || 'localhost';
                 PORT = config.port || 3000;
                 // Connect to the database
@@ -76,33 +75,34 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
                 app.use(cookieParser());
                 app.use(cors(config.cors));
                 app.use(initializer(config)); // Set req.app properties  
-                app.use("".concat(config.api.base), timer, createRouter(config.api, { name: 'api', debug: true })); // Primary router is api
-                // Set plugins
-                if (config.api.plugins) {
-                    // Check plugins configuration
-                    for (plugin in config.api.plugins) {
-                        $plugin = {
-                            base: config.api.plugins[plugin].base || plugin,
-                            routes: (_b = {}, _b[plugin] = config.api.plugins[plugin].routes, _b),
-                            define: config.api.define // uses the same `define` as the api (for now)
-                        };
-                        slash = $plugin.base.startsWith('/') ? '' : '/';
-                        app.use("".concat(config.api.base).concat(slash).concat($plugin.base), timer, createRouter($plugin, { name: plugin, isPlugin: true, debug: true }));
+                // Mavi - Interface Router
+                if (config.page) {
+                    settings = {
+                        base: '/',
+                        routes: {},
+                        define: {
+                            models: {}
+                        }
+                    };
+                    options = {
+                        name: 'UI',
+                        __dirname: config.__dirname,
+                        debug: true
+                    };
+                    // if its a string, it can be one of the predefined static paths: interface, welcome
+                    if (typeof config.page === 'string') {
+                        settings.routes['/'] = require("./config/static/" + config.page);
                     }
-                }
-                // mavi static folders
-                if (config.static) {
-                    for (_i = 0, _a = config.static; _i < _a.length; _i++) {
-                        Static = _a[_i];
-                        Base = Static.base || Static.folder.replace(/../g, '') || '/';
-                        Path = path.join(config.__dirname, Static.folder);
-                        // set static folder
-                        app.use(Base, timer, express.static(Path, Static.options)); // Primary static folders
+                    else {
+                        settings.routes['/'] = [];
                     }
+                    app.use(createRouter(settings, options));
                 }
+                // Mavi - Primary router
+                app.use("" + config.api.base, timer, createRouter(config.api, { name: 'Mavi', debug: true }));
                 app.listen(PORT, HOST, function () {
-                    console.log("\u001B[34m".concat(config.poweredBy, " is running\u001B[0m"));
-                    console.log("\u001B[34mNetwork:\u001B[0m http://".concat(HOST, ":").concat(PORT));
+                    console.log("\u001B[34m" + config.poweredBy + " is running\u001B[0m");
+                    console.log("\u001B[34mNetwork:\u001B[0m http://" + HOST + ":" + PORT);
                 });
                 return [2 /*return*/, app];
         }
@@ -111,7 +111,7 @@ var createServer = function (object) { return __awaiter(void 0, void 0, void 0, 
 exports.createServer = createServer;
 var timer = responseTime(function (req, res, time) {
     if (req.app.$config.timer === true) {
-        console.log("\u001B[33m[".concat(req.method, "]\u001B[0m \u001B[34m").concat(req.originalUrl, " \u001B[0m(").concat(res.statusCode, ") - ").concat(time.toFixed(0), "ms"));
+        console.log("\u001B[33m[" + req.method + "]\u001B[0m \u001B[34m" + req.originalUrl + " \u001B[0m(" + res.statusCode + ") - " + time.toFixed(0) + "ms");
     }
 });
 var initializer = function (config) { return function (req, res, next) {

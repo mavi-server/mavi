@@ -6,6 +6,8 @@
   width: var(--aside-width);
   overflow-y: auto;
   transition: width 0.25s ease;
+  display: flex;
+  flex-direction: column;
   position: fixed;
   top: 0;
   left: 0;
@@ -15,13 +17,20 @@
   }
   .head {
     height: var(--header-height);
-    @include flex_center;
+    display: flex;
+    align-items: center;
+    padding-left: calc((var(--aside-width) - 180px) / 2);
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: var(--mavi-dark);
+    border-bottom: 1px solid var(--mavi-darker);
     svg {
-      width: 180px;
+      width: 160px;
     }
   }
   .body {
     font-size: 1.2rem;
+    flex: 1;
     li {
       .MuiButton {
         color: var(--primary);
@@ -56,6 +65,14 @@
     }
   }
   .foot {
-    background-color: green;
+    display: flex;
+    justify-content: flex-end;
+    color: var(--primary);
+    .VersionText {
+      padding-right: var(--md);
+      padding-bottom: var(--xs);
+      font-size: smaller;
+      font-weight: 300;
+    }
   }
 }

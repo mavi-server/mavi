@@ -8,6 +8,8 @@ type utils = 'detect-language'
 type middlewares = 'authorization' | 'is-owner'
 type controllers = 'find' | 'findOne' | 'count' | 'delete' | 'update' | 'create' | 'upload'
 type methods = 'get' | 'post' | 'put' | 'delete'
+type controllerWithOptions = [controllers, any]
+type populateControllers = 'count' | 'object' | 'array' | 'token-reference' | 'array-reference'
 
 declare namespace Mavi {
   /**
@@ -24,17 +26,17 @@ export declare interface MaviConfig {
   /**
    * Port to listen on
    */
-  port: number | string
+  port?: number | string
   /**
    * Host to listen on
    */
-  host: string
+  host?: string
   /**
    * Cors options
    *
    * See details: https://www.npmjs.com/package/cors
    */
-  cors: CorsOptions
+  cors?: CorsOptions
   /**
    * API configurations
    *
@@ -46,18 +48,18 @@ export declare interface MaviConfig {
    * See details: https://knexjs.org/#Installation-client
    */
   database: any // I will define this later.
+  /**
+   * You can serve one static path as default page. Set false if you want to disable.
+   *
+   * See details about static serving: https://expressjs.com/en/4x/api.html#express.static
+   */
+  page?: 'interface' | 'welcome' | Static
   poweredBy?: string
-  timer: boolean
+  timer?: boolean
   [any: string]: any
 }
 export declare interface MaviApi {
   base: string
-  /**
-   * You can serve multiple static folders from the api.
-   *
-   * See details: https://expressjs.com/en/4x/api.html#express.static
-   */
-  static: Static[]
   /**
     - Used by req.config
     - Generates the api with the given config
@@ -98,9 +100,21 @@ export declare interface MaviApi {
     middlewares?: {
       [functionName: string]: middleware
     }
+    controllers?: {
+      [functionName: string]: middleware
+    }
   }
   plugins?: object
 }
+
+
+export type MaviQuery = {
+  start: string | 'off'
+  limit: string | 'off'
+  where: string | 'off'
+  order: string | 'off'
+} | 'off'
+
 /**
  * Will transformed into the API routes
  */
@@ -121,7 +135,7 @@ export declare interface Route {
    *
    * `upload` controller may have issues.
    */
-  controller: controllers
+  controller?: controllers | controllerWithOptions
   /** 
    * Intercepts the request and carries response to the next segment.
    
@@ -135,7 +149,7 @@ export declare interface Route {
   /**
    * Which table the query use? (Uses model name by default)
    */
-  model: string
+  model?: string
   /**
    * Columns inherited from your model files.
    *
@@ -169,6 +183,11 @@ export declare interface Route {
    * If not defined, the controller name will be used.
    */
   view?: string
+  serve?: {
+    folder?: string
+    fullpath?: string
+  } & ServeStaticOptions
+  query?: MaviQuery
 }
 /**
  * Database models
@@ -294,7 +313,7 @@ export declare namespace Model {
     /**
      * Column hash. Used for detecting the changes then updating your database accordingly.
      */
-    hash: string
+    hash?: string
   }
 }
 
@@ -314,13 +333,14 @@ export declare namespace Populate {
     /**
      * Populate method
      */
-    type: 'count' | 'object' | 'array' | 'token-reference' | 'array-reference'
+    type?: populateControllers
+    controller?: populateControllers
     /**
      * Context column
      */
     on?: string
     /**
-     * Context column for `type` column. This should be costumized column name, needs improvement.
+     * Context column for `type` column. This should be customized column name, needs improvement.
      */
     on2?: string
     /**
@@ -345,6 +365,11 @@ export declare namespace Populate {
      * Multiple column selection is not supported yet.
      */
     returning?: string | '*' | 'id'
+    /**
+     * Populate given column with the defined populate options.
+     */
+    populate?: string[]
+    query?: MaviQuery
   }
 }
 

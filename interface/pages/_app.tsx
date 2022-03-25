@@ -7,6 +7,8 @@ import Head from 'next/head'
 import AppAside from '../components/aside'
 import AppHeader from '../components/header'
 import AppMain from '../components/main'
+import AddButton from '../components/AddButton'
+import { MaviConfigContextProvider } from '../components/context/index'
 
 import '../assets/styles/globals.scss'
 
@@ -28,15 +30,19 @@ function App({ Component, pageProps }: AppProps) {
         <title>Mavi - Admin</title>
         <meta name="description" content="Mavi configuration panel" />
         <meta name="viewport" content="initial-scale=1, width=device-width" />
-        <link rel="icon" href="/logo.svg" />
+        <link rel="icon" href="/logo-variant-2.svg" />
       </Head>
 
-      <AppAside onNavigationChange={onNavigationChange} />
+      <MaviConfigContextProvider>
+        <AppAside onNavigationChange={onNavigationChange} />
 
-      <AppHeader title={headerTitle} />
-      <AppMain>
-        <Component {...pageProps} />
-      </AppMain>
+        <AppHeader title={headerTitle} />
+        <AppMain>
+          <Component {...pageProps} />
+        </AppMain>
+
+        <AddButton />
+      </MaviConfigContextProvider>
     </ThemeProvider>
   )
 }

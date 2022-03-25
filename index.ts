@@ -41,39 +41,38 @@ export const createServer: Mavi.createServer = async (object: Mavi.config) => {
   app.use(cookieParser())
   app.use(cors(config.cors))
   app.use(initializer(config)) // Set req.app properties  
-  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'api', debug: true })) // Primary router is api
 
-  // Set plugins
-  if (config.api.plugins) {
-    // Check plugins configuration
-    for (const plugin in config.api.plugins) {
-      const $plugin = {
-        base: config.api.plugins[plugin].base || plugin,
-        routes: { [plugin]: config.api.plugins[plugin].routes },
-        define: config.api.define // uses the same `define` as the api (for now)
+  // Mavi - Interface Router
+  if (config.page) {
+    // user can't/shouldn't define config.page but can deactivate it
+
+    const settings = {
+      base: '/',
+      routes: {},
+      define: {
+        models: {}
       }
-
-      // Set plugin as Router
-      let slash = $plugin.base.startsWith('/') ? '' : '/'
-      app.use(`${config.api.base}${slash}${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true, debug: true }))
     }
+    const options = {
+      name: 'UI',
+      __dirname: config.__dirname, // to use main files
+      debug: true
+    }
+
+    // if its a string, it can be one of the predefined static paths: interface, welcome
+    if (typeof config.page === 'string') {
+      settings.routes['/'] = require(`./config/static/${config.page}`)
+    }
+    else {
+      settings.routes['/'] = []
+    }
+
+    app.use(createRouter(settings, options))
   }
 
+  // Mavi - Primary router
+  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'Mavi', debug: true }))
 
-
-  // mavi static folders
-  if (config.static) {
-    for (const Static of config.static) {
-      // virtual path
-      const Base = Static.base || Static.folder.replace(/../g, '') || '/'
-
-      // physical path
-      const Path = path.join(config.__dirname, Static.folder)
-
-      // set static folder
-      app.use(Base, timer, express.static(Path, Static.options)) // Primary static folders
-    }
-  }
 
   app.listen(PORT, HOST, () => {
     console.log(`\x1b[34m${config.poweredBy} is running\x1b[0m`)

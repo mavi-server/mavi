@@ -1,6 +1,6 @@
 // Default Server Settings
 const { name, version } = require('../package.json')
-
+const isDev = process.env.NODE_ENV === 'development';
 module.exports = {
   poweredBy: `${name} v${version}`,
   host: 'localhost', // nodejs instance
@@ -9,6 +9,5 @@ module.exports = {
   cors: require('./cors'),
   database: require('./database'),
   api: require('./api'),
-  static: require('./static'),
-  plugins: {}
+  page: isDev ? 'interface' : 'welcome',
 }

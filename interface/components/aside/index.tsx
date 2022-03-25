@@ -3,27 +3,30 @@ import { useRouter } from 'next/router'
 import { Button } from '@mui/material'
 import Link from 'next/link'
 import styles from './index.module.scss'
-import MaviLogo from '../../public/mavi.svg'
 
-import IconSettings from '../../assets/icons/settings.svg'
-import IconLayers from '../../assets/icons/layers.svg'
-import IconDatabase from '../../assets/icons/database.svg'
+import MaviLogo from '../../assets/icons/logo-variant-2.svg'
+import SettingsIcon from '../../assets/icons/settings.svg'
+import LayersIcon from '../../assets/icons/layers.svg'
+import DatabaseIcon from '../../assets/icons/database.svg'
+
+// Mavi version
+import $package from '../../../package.json'
 
 const ListItems = [
   {
     title: 'Settings',
     href: '/',
-    icon: <IconSettings />,
+    icon: <SettingsIcon />,
   },
   {
     title: 'Database',
     href: '/database',
-    icon: <IconDatabase />,
+    icon: <DatabaseIcon />,
   },
   {
     title: 'Routes',
     href: '/routes',
-    icon: <IconLayers />,
+    icon: <LayersIcon />,
   },
 ]
 
@@ -56,7 +59,12 @@ const AppAside = ({ onNavigationChange }: Aside) => {
         })}
       </ul>
 
-      <div className={styles.foot}></div>
+      <div className={styles.foot}>
+        <div className={styles.VersionText}>
+          <span style={{ marginRight: 2 }}>Mavi</span>
+          <b> v{$package.version}</b>
+        </div>
+      </div>
     </aside>
   )
 }

@@ -1,5 +1,5 @@
 
-<img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/brand.svg" alt="Mavi logo" width="200px" style="text-align: center;" />
+<img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/logo-variant-1.svg" alt="Mavi logo" width="200px" style="text-align: center;" />
 
 
 Create an abstracted and extendible server from one JSON file!
@@ -29,11 +29,11 @@ There are two ways to use this module:
 
 You just have to define `index.js` file in your project root.
 This file should contain and export your server configurations.
-[*See example configuration below*](https://github.com/m-emre-yalcin/mavi/blob/main/README.md#server-configuration-example)
+[*See example configuration below*](#server-configuration-example)
 
 Use `mavi start` command then you ready to go!
 
-### 2- Sub module
+### 2- Sub module 
 
 1. Clone this repository `https://github.com/m-emre-yalcin/mavi`
 2. Install dependencies `npm install`
@@ -46,12 +46,12 @@ Use `mavi start` command then you ready to go!
 
 The file below will create the entire server. You need to connect your database first then you can add some routes.
 
-[An example server configuration file:](#server-configuration-example)
+<a name="server-configuration-example">An example server configuration file</a>
 
 ```js
 const Package = require('./package.json')
 module.exports = {
-  poweredBy: 'Mavi v'.concat(Package.version),
+  poweredBy: 'mavi v'.concat(Package.version),
   host: 'localhost',
   port: 3001,
   cors: {
@@ -72,7 +72,7 @@ module.exports = {
         min: 2,
         max: 10,
       },
-      debug: true, // prints knex queries to console
+      debug: false, // prints knex queries to console
     },
     production: {
       client: 'pg',
@@ -175,15 +175,9 @@ module.exports = {
           middlewares: ['is-owner'],
         },
       ],
-      // This entity below uses views
-      // Views are defined on the `define` property
-      users: [
-        {
-          path: '/posts',
-          method: 'get',
-          view: 'avg_user_age',
-        },
-      ]
+      // .
+      // .
+      // .
     },
     define: {
       // Models generates your database table and api responses
@@ -434,11 +428,14 @@ module.exports = {
         },
         bookmark: {
           select: 'bookmark',
-          from: 'bookmarks',
+          from: 'bookmarks', // current model name.
           on: 'references', // references = row.id
-          on2: 'type', // type = tableName
+          query: {
+            where: 'type-eq-#context' // #context = parent model name
+            // eg: if populate `bookmark` used in posts, parent model name will be posts.
+          }
           type: 'token-reference',
-          returning: 'id', // '*' or spesific column
+          returning: 'id', // '*' or specific column
         },
       },
       // Middlewares are used in routes
@@ -448,21 +445,13 @@ module.exports = {
           next()
         },
       },
-      // Views are used in routes to extend controller methods.
-      // Views will give the ability to make custom queries and can be combined with controllers.
-      // Views are not intended to replace the actual views of the RDBMS (for now)
-      views: {
-        avg_user_age: (knex, params) => {
-          // refer to this doc for the usage of knex: https://knexjs.org/
-          // you can also return a raw sql string as well
-          return knex.avg('age').from('users')
-        },
-      },
     },
   },
 }
 ```
 
-The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc. There are more stuffs, I will mention each one of them, but that requires some time. You can use the latest version and give it a try to see what it does :) If you encounter any problem please open an issue or [email](mailto:emrreyalcin@gmail.com) me directly i will be happy to help you.
+The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc.
+
+There are more stuffs, I will mention each one of them, but that requires some time. You can use the latest version and give it a try to see what it does :) If you encounter any problem please open an issue or [email](mailto:emrreyalcin@gmail.com) me directly i will be happy to help you.
 
 _this package is still in development_

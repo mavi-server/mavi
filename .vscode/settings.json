@@ -3,5 +3,9 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "editor.foldingStrategy": "indentation"
+  "editor.foldingStrategy": "indentation",
+  "cSpell.words": [
+    "fullpath",
+    "middlewares"
+  ]
 }

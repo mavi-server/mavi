@@ -1,27 +1,42 @@
-@function create-color-shade($arguments, $addS: 0%, $addL: 0%) {
-  $hue: map-get($arguments, h);
-  $saturation: map-get($arguments, s) + $addS;
-  $lightness: map-get($arguments, l) + $addL;
+@mixin create-color-variables($hsl_colors) {
+  @each $name, $hsl in $hsl_colors {
+    $h: 0; // hue
+    $s: 0; // saturation
+    $l: 0; // lightness
+    $a: 1; // alpha
 
-  $color: hsl($hue, $saturation, $lightness);
-  @return $color;
-}
-@mixin create-color-variables($hslColors) {
-  $saturation: 50%;
-  $lightness: 50%;
+    // get hue if exists
+    @if map-has-key($hsl, h) {
+      $h: map-get($hsl, h);
+    }
 
-  @each $name, $hslColor in $hslColors {
-    #{'--' + $name}: create-color-shade($hslColor);
-    #{'--' + $name + '-dark'}: create-color-shade($hslColor, 0%, -5%);
-    #{'--' + $name + '-darkest'}: create-color-shade($hslColor, 0%, -10%);
-    #{'--' + $name + '-light'}: create-color-shade($hslColor, 0%, 5%);
-    #{'--' + $name + '-lighter'}: create-color-shade($hslColor, 0%, 10%);
+    // get saturation if exists
+    @if map-has-key($hsl, s) {
+      $s: map-get($hsl, s);
+    }
+
+    // get lightness if exists
+    @if map-has-key($hsl, l) {
+      $l: map-get($hsl, l);
+    }
+
+    // get alpha if exists
+    @if map-has-key($hsl, a) {
+      $a: map-get($hsl, a);
+    }
+
+    #{'--' + $name + '-darker'}: hsla($h, $s, calc(#{$l} - 10%), $a);
+    #{'--' + $name + '-dark'}: hsla($h, $s, calc(#{$l} - 5%), $a);
+    #{'--' + $name}: hsla($h, $s, $l, $a);
+    #{'--' + $name + '-light'}: hsla($h, $s, calc(#{$l} + 5%), $a);
+    #{'--' + $name + '-lighter'}: hsla($h, $s, calc(#{$l} + 10%), $a);
+    #{'--' + $name + '-hsl'}: $h, $s, $l;
   }
 }
 
 $lightColors: (
   primary: (
-    h: 250,
+    h: 230deg,
     s: 100%,
     l: 100%,
   ),
@@ -34,6 +49,16 @@ $lightColors: (
     h: 214,
     s: 90%,
     l: 64%,
+  ),
+  dark: (
+    h: 210,
+    s: 10%,
+    l: 20%,
+  ),
+  shadow: (
+    h: 5,
+    s: 5%,
+    l: 96%,
   ),
 );
 
@@ -53,6 +78,11 @@ $darkColors: (
     s: 90%,
     l: 64%,
   ),
+  shadow: (
+    h: 5,
+    s: 5%,
+    l: 96%,
+  ),
 );
 
 $units: (
@@ -66,7 +96,8 @@ $units: (
 );
 
 // Define common units and vars:
-#__next {
+#__next,
+#__next ~ * {
   @each $name, $value in $units {
     #{'.p-' + $name} {
       padding: $value;
@@ -83,10 +114,12 @@ $units: (
 
 // Define themes:
 #__next,
-#__next[light] {
+#__next[light],
+#__next[light] ~ * {
   @include create-color-variables($lightColors);
 }
-#__next[dark] {
+#__next[dark],
+#__next[dark] ~ * {
   @include create-color-variables($lightColors);
 }
 

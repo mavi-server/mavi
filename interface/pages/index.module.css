@@ -1,0 +1,37 @@
+.HeaderContainer {
+  background-color: var(--primary);
+  color: var(--dark);
+  min-height: 105px;
+  padding: var(--xl);
+  border-bottom: 1px solid hsla(var(--dark-hsl), 0.1);
+  border-right: 1px solid hsla(var(--dark-hsl), 0.1);
+  /* box-shadow: 0 10px 10px var(--shadow-darker); */
+}
+.HeaderContainer.Dark {
+  color: var(--primary-lighter);
+  background-color: var(--dark);
+}
+.HeaderTextBox {
+  font-size: large;
+}
+.HeaderTextBox h2 {
+  margin: 0;
+  font-weight: 300;
+}
+.HeaderTextBox p {
+  margin: var(--md) 0;
+  font-weight: 300;
+}
+.InputContainer {
+  gap: var(--xl);
+}
+.InputBox {
+  background-color: var(--primary-lighter);
+  border-radius: 8px;
+  border: 1px solid hsla(var(--dark-hsl), 0.1);
+  padding: var(--sm);
+}
+.MainPad {
+  padding-left: var(--xl);
+  padding-right: var(--xl);
+}
