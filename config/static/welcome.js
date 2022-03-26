@@ -7,9 +7,9 @@ module.exports = [
       folder: '../public/',
       dotfiles: 'ignore',
       etag: false,
-      extensions: ['html', 'htm', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'ico', 'svg', 'eot', 'ttf', 'woff', 'woff2', 'otf'
+      extensions: ['html', 'htm', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'ico', 'svg', 'eot', 'ttf', 'woff', 'woff2', 'otf',
       ],
       maxAge: '1d',
-    }
+    },
   },
-]
+];

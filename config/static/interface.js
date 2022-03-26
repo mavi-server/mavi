@@ -14,7 +14,7 @@ module.exports = [
       etag: false,
       extensions: ['html', 'htm', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'ico', 'svg', 'eot', 'ttf', 'woff', 'woff2', 'otf'],
       maxAge: '1d',
-    }
+    },
   },
   {
     path: '/_next',
@@ -25,6 +25,6 @@ module.exports = [
       etag: false,
       extensions: ['html', 'htm', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'ico', 'svg', 'eot', 'ttf', 'woff', 'woff2', 'otf'],
       maxAge: '1d',
-    }
+    },
   },
-]
+];

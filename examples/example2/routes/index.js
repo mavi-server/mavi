@@ -6,7 +6,7 @@ module.exports = {
       method: 'get',
       controller: 'find', // built-in controller
       populate: ['status'], // populates defined in config.api.define.populate
-      middlewares: ['greetings'] // middlewares defined in config.api.define.middlewares
+      middlewares: ['greetings'], // middlewares defined in config.api.define.middlewares
     },
     {
       path: '/customers/count',
@@ -66,5 +66,5 @@ module.exports = {
       method: 'delete',
       controller: 'delete',
     },
-  ]
-}
+  ],
+};

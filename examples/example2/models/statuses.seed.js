@@ -13,4 +13,4 @@ module.exports = [
     id: 3,
     state: 'inactive',
   },
-]
+];

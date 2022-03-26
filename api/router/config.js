@@ -207,4 +207,4 @@ module.exports = {
   //     middlewares: ['is-owner']
   //   },
   // ],
-}
+};

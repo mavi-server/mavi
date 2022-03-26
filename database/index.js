@@ -1,10 +1,10 @@
 // Knex Documentation: https://knexjs.org/
-const knex = require('knex')
-const mode = process.env.NODE_ENV || 'development'
+const knex = require('knex');
+const mode = process.env.NODE_ENV || 'development';
 
-const createDatabase = (database) => {
+const createDatabase = database => {
   if (mode in database) {
-    const config = database[mode]
+    const config = database[mode];
 
     // if (config.debug === true) {
     //   let counter = 0
@@ -17,11 +17,11 @@ const createDatabase = (database) => {
     //   })
     // }
 
-    return knex(config)
+    return knex(config);
   }
   else {
-    throw new Error(`Database mode \x1b[31m${mode}\x1b[0m not found`)
+    throw new Error(`Database mode \x1b[31m${mode}\x1b[0m not found`);
   }
-}
+};
 
-module.exports = createDatabase
+module.exports = createDatabase;

@@ -17,7 +17,7 @@ module.exports = {
         user: 'postgres',
         password: 'admin',
       },
-    }
+    },
   },
   api: {
     routes: require('./routes'),
@@ -26,9 +26,9 @@ module.exports = {
       populate: require('./routes/populate'),
       middlewares: {
         greetings: (req, res, next) => {
-          console.log('Hello from middleware!')
-          next()
-        }
+          console.log('Hello from middleware!');
+          next();
+        },
       },
     },
     plugins: {
@@ -37,4 +37,4 @@ module.exports = {
       // and you will have additional [post]/login, [post]/logout, [post]/register routes
     },
   },
-}
+};

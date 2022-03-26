@@ -1,45 +1,45 @@
-const { IncomingForm } = require('formidable')
-const { v4: uuidv4 } = require('uuid')
-const { existsSync, mkdirSync } = require('fs')
-const { join } = require('path')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const UrlQueryBuilder = require('../services/url-query-builder')
-const SubController = require('../services/sub-controller')
+const { IncomingForm } = require('formidable');
+const { v4: uuidv4 } = require('uuid');
+const { existsSync, mkdirSync } = require('fs');
+const { join } = require('path');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const UrlQueryBuilder = require('../services/url-query-builder');
+const SubController = require('../services/sub-controller');
 
 // this file needs to be separated into pieces.
 
 module.exports = (req, res) => {
-  const { query } = req // request query
-  const { $config, db } = req.app // request config
-  const { model, populate, columns, view, controller, /*schema, exclude*/ } = req.config
-  const handleControllerError = (err) => {
+  const { query } = req; // request query
+  const { $config, db } = req.app; // request config
+  const { model, populate, columns, view, controller /* schema, exclude*/ } = req.config;
+  const handleControllerError = err => {
     // Common error handler
-    const { status, /*message,*/ detail, code } = err
+    const { status, /* message,*/ detail, code } = err;
 
     res.error = {
       status: status || 500,
       message: code,
       detail,
       code,
-    }
+    };
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('err.response:', err)
+      console.log('err.response:', err);
     }
-    res.status(res.error.status).send(res.error)
-  }
+    res.status(res.error.status).send(res.error);
+  };
 
 
   // Double check the `columns` type before dive in:
   if (!Array.isArray(columns)) {
-    return res.status(500).send('[controller] req.config.columns should be an array')
+    return res.status(500).send('[controller] req.config.columns should be an array');
   }
 
   // SQL Query Builder:
   // you can pass queryBuilder to the request object
   // and build queries on top of it
-  let queryBuilder = req.queryBuilder || db(model)
+  let queryBuilder = req.queryBuilder || db(model);
 
 
   // Req Query builder
@@ -78,24 +78,24 @@ module.exports = (req, res) => {
         // Overwrite if its not restricted
         if (req.config.query[key] !== 'off') {
           // This will overwrite the req.query:
-          query[key] = req.config.query[key]
+          query[key] = req.config.query[key];
         }
         // Remove if its restricted
         else {
           // This query will not be used in the SQL queries
-          delete query[key]
+          delete query[key];
         }
       }
     }
 
     // Builder:
-    UrlQueryBuilder(query, columns)
+    UrlQueryBuilder(query, columns);
   }
   // If req.config.query is set to 'off', then req.query will not be used at all
   else {
     // Destroyer:
     for (const key in query) {
-      query[key] = false
+      query[key] = false;
     }
   }
   // *
@@ -111,7 +111,7 @@ module.exports = (req, res) => {
 
     // Be sure id parameter is number
     if (req.params.id) {
-      req.params.id = Number(req.params.id)
+      req.params.id = Number(req.params.id);
     }
     // Other params are not checked
     // a view function is gets `knex` and `params` as arguments
@@ -119,7 +119,7 @@ module.exports = (req, res) => {
     // Expecting to return knex object
     // On some url queries you may need to refer your columns with alias_table_name.column_name
     // (e.g. ?where=id=users.id)
-    queryBuilder = $config.api.define.views[view](db, req.params)
+    queryBuilder = $config.api.define.views[view](db, req.params);
 
     // If not, assume that view function is an sql query:
     if (typeof queryBuilder === 'string' || controller === 'count') {
@@ -128,8 +128,8 @@ module.exports = (req, res) => {
       // Like where, orderBy, etc.
 
       // wrap the query string and convert into knex object
-      const sql = `(${queryBuilder}) as ${view}`
-      queryBuilder = db.from(db.raw(sql))
+      const sql = `(${queryBuilder}) as ${view}`;
+      queryBuilder = db.from(db.raw(sql));
     }
 
     // console.log(queryBuilder.toString());
@@ -152,117 +152,117 @@ module.exports = (req, res) => {
   return {
     count: async () => {
       // handle where clause
-      if (!query.where) query.where = []
+      if (!query.where) query.where = [];
 
       // is-owner
       if (req.owner) {
-        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
-        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] })
+        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
+        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] });
       }
 
       // append where queries
       if (query.where) {
         for (const group of query.where) {
-          queryBuilder[group.exec](...group.params)
+          queryBuilder[group.exec](...group.params);
         }
       }
 
-      let [data] = await queryBuilder.count('*').catch(handleControllerError)
-      data.count = Number(data.count || 0)
+      let [data] = await queryBuilder.count('*').catch(handleControllerError);
+      data.count = Number(data.count || 0);
 
-      return res.status(200).send(data)
+      return res.status(200).send(data);
     },
     find: async (populateIt = true) => {
-      if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns)
+      if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns);
 
       if (query.sort) {
-        queryBuilder.orderBy(query.sort)
+        queryBuilder.orderBy(query.sort);
       }
       if (query.start) {
-        queryBuilder.offset(query.start)
+        queryBuilder.offset(query.start);
       }
       if (query.limit || !query.limit) {
-        queryBuilder.limit(query.limit || 10)
+        queryBuilder.limit(query.limit || 10);
       }
       // handle where clause
-      if (!query.where) query.where = []
+      if (!query.where) query.where = [];
 
       // is-owner
       if (req.owner) {
-        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] })
-        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] })
+        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
+        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] });
       }
 
       // append where clauses
       if (query.where) {
         for (const group of query.where) {
-          queryBuilder[group.exec](...group.params)
+          queryBuilder[group.exec](...group.params);
         }
       }
 
-      let data = await queryBuilder.catch(handleControllerError)
+      let data = await queryBuilder.catch(handleControllerError);
       // populate options
       if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
       }
 
-      return res.status(200).send(data)
+      return res.status(200).send(data);
     },
     findOne: async (populateIt = true) => {
-      const where = {}
-      let { id, name, username } = req.params
+      const where = {};
+      let { id, name, username } = req.params;
 
-      if (id) where.id = id
+      if (id) where.id = id;
       else if (name) {
-        name = name.replace(/%20|%|\+|\s|-/g, ' ')
-        where.name = name
-      } else if (username) where.username = username
-      if (req.owner) where.user = req.owner.id
+        name = name.replace(/%20|%|\+|\s|-/g, ' ');
+        where.name = name;
+      } else if (username) where.username = username;
+      if (req.owner) where.user = req.owner.id;
 
-      queryBuilder.first(columns).where(where)
-      let data = await queryBuilder.catch(handleControllerError)
+      queryBuilder.first(columns).where(where);
+      let data = await queryBuilder.catch(handleControllerError);
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
       }
-      if (Array.isArray(data)) data = data[0] || null
+      if (Array.isArray(data)) data = data[0] || null;
 
-      if (!data && req.owner) return res.status(400).send("You don't have permission for this")
+      if (!data && req.owner) return res.status(400).send("You don't have permission for this");
 
-      return res.status(200).send(data)
+      return res.status(200).send(data);
     },
     create: async (body, populateIt = true) => {
-      let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError)
+      let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError);
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
       }
 
-      if (Array.isArray(data)) data = data[0] || null
+      if (Array.isArray(data)) data = data[0] || null;
 
       // try {
       //   // realtime communication
       //   firestore.collection(model).doc(String(data.id)).set(data)
       // } catch (err) { console.error('firebase - adding recovery collection is failed') }
 
-      return res.status(201).send(data)
+      return res.status(201).send(data);
     },
     update: async (id, body) => {
-      const where = {}
-      if (id) where.id = id
+      const where = {};
+      if (id) where.id = id;
       if (req.owner) {
         if (model === 'users') {
-          where.id = req.owner.id
+          where.id = req.owner.id;
         } else {
-          where.user = req.owner.id
+          where.user = req.owner.id;
         }
       }
 
-      let data = await queryBuilder.update(body).where(where).returning(columns).catch(handleControllerError)
+      let data = await queryBuilder.update(body).where(where).returning(columns).catch(handleControllerError);
 
-      if (!data && req.owner) return res.status(400).send("You don't have permission for this")
+      if (!data && req.owner) return res.status(400).send("You don't have permission for this");
 
-      if (Array.isArray(data)) data = data[0] || null
+      if (Array.isArray(data)) data = data[0] || null;
 
       // try {
       //   const id = where.id || where.user
@@ -271,35 +271,35 @@ module.exports = (req, res) => {
       //   firestore.collection(model).doc(String(id)).update(data)
       // } catch (err) { console.error('firebase - updating recovery collection is failed') }
 
-      return res.status(204).send(data)
+      return res.status(204).send(data);
     },
     delete: async (id, populateIt = true) => {
-      const where = {}
-      if (id) where.id = id
+      const where = {};
+      if (id) where.id = id;
       if (req.owner) {
         if (model === 'users') {
-          where.id = req.owner.id
+          where.id = req.owner.id;
         } else {
-          where.user = req.owner.id
+          where.user = req.owner.id;
         }
       }
 
-      let [data] = await queryBuilder.delete().where(where).returning(columns).catch(handleControllerError)
-      if (!data && req.owner) return res.status(400).send("You don't have permission for this")
+      let [data] = await queryBuilder.delete().where(where).returning(columns).catch(handleControllerError);
+      if (!data && req.owner) return res.status(400).send("You don't have permission for this");
 
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
+        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
       }
 
-      if (Array.isArray(data)) data = data[0] || null
+      if (Array.isArray(data)) data = data[0] || null;
 
       // try {
       //   // realtime communication
       //   firestore.collection(model).doc(String(data.id)).delete()
       // } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
 
-      return res.status(202).send(data)
+      return res.status(202).send(data);
     },
     upload: async (childFolder, data) => {
       if (childFolder) {
@@ -307,10 +307,10 @@ module.exports = (req, res) => {
         // check childFolder has a permission to be used
         if (req.config.options && req.config.options.folders) {
           if (!req.config.options.folders.includes(childFolder)) {
-            return res.status(400).send("You don't have permission for this")
+            return res.status(400).send("You don't have permission for this");
           }
         }
-        const options = req.config.options || {}
+        const options = req.config.options || {};
 
 
         // default options:
@@ -322,44 +322,44 @@ module.exports = (req, res) => {
           allowEmptyFiles: false,
           filter: function ({ name, originalFilename, mimetype }) {
             // keep only accepted mime types
-            const accept = (options && options.accept) || 'image' // default: image
-            return mimetype && mimetype.includes(accept)
+            const accept = (options && options.accept) || 'image'; // default: image
+            return mimetype && mimetype.includes(accept);
           },
           filename: function (name, ext, file) {
             // generate a unique filename
-            return uuidv4() + ext
+            return uuidv4() + ext;
           },
-          ...options // overwrite default options
-        }
+          ...options, // overwrite default options
+        };
 
         // create child directory if not exists
         if (!existsSync($options.uploadDir)) {
-          mkdirSync($options.uploadDir)
+          mkdirSync($options.uploadDir);
         }
 
         // access form data files
-        const form = new IncomingForm($options)
+        const form = new IncomingForm($options);
 
         // start processing
-        form.parse(req)
+        form.parse(req);
         form.on('file', async function (formname, file) {
           // register uploaded file
           if (file) {
-            const filePath = `/uploads/${childFolder}/` + file.newFilename
+            const filePath = `/uploads/${childFolder}/` + file.newFilename;
 
             if (req.user) {
-              data.user = req.user.id
+              data.user = req.user.id;
             }
 
-            data.id = Number((Math.random() * 10000).toFixed())
-            data.url = filePath
-            data.alt = req.body.alt || file.originalFilename.split('.').shift().replace(/-/g, ' ')
+            data.id = Number((Math.random() * 10000).toFixed());
+            data.url = filePath;
+            data.alt = req.body.alt || file.originalFilename.split('.').shift().replace(/-/g, ' ');
             // console.log(data)
 
             if (!model || !columns) {
-              return res.send(data)
+              return res.send(data);
             } else {
-              const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError)
+              const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError);
               // console.log(result)
 
               // try {
@@ -367,20 +367,20 @@ module.exports = (req, res) => {
               //   firestore.collection(model).doc(result.id).set(result)
               // } catch (err) { console.error('firebase - recovering collection is failed') }
 
-              return res.status(201).send(result)
+              return res.status(201).send(result);
             }
           } else {
-            console.error('upload controller: `file` not defined')
-            return res.status(500).send('upload controller: `file` not defined')
+            console.error('upload controller: `file` not defined');
+            return res.status(500).send('upload controller: `file` not defined');
           }
-        })
+        });
         form.on('error', function (err) {
-          console.error('upload controller: ' + err)
-          return res.status(500).send('upload controller: ' + err)
-        })
+          console.error('upload controller: ' + err);
+          return res.status(500).send('upload controller: ' + err);
+        });
       } else {
-        console.error('upload controller: please define `childFolder` parameter')
-        return res.status(500).send('upload controller: please define `childFolder` parameter')
+        console.error('upload controller: please define `childFolder` parameter');
+        return res.status(500).send('upload controller: please define `childFolder` parameter');
       }
     },
     /**
@@ -390,11 +390,11 @@ module.exports = (req, res) => {
       // Register logic starts here
       try {
         // Get user input
-        const { fullname, username, avatar, email, password } = req.body
+        const { fullname, username, avatar, email, password } = req.body;
 
         // Validate user input
         if (!fullname || !email || !username || !password) {
-          return res.status(400).send('Missing required fields')
+          return res.status(400).send('Missing required fields');
         }
 
         // check if user already exist
@@ -403,14 +403,14 @@ module.exports = (req, res) => {
           .count('*')
           .where({ username })
           .orWhere({ email })
-          .catch(handleControllerError) // [ { count: 'number' } ]
+          .catch(handleControllerError); // [ { count: 'number' } ]
 
         if (Number(count)) {
-          return res.status(409).send('User Already Exist. Please try another email or username.')
+          return res.status(409).send('User Already Exist. Please try another email or username.');
         }
 
-        //Encrypt user password
-        encryptedPassword = await bcrypt.hash(password, 10)
+        // Encrypt user password
+        encryptedPassword = await bcrypt.hash(password, 10);
 
         const data = {
           email: email.toLowerCase(), // sanitize: convert email to lowercase
@@ -418,40 +418,40 @@ module.exports = (req, res) => {
           username: username.trim(), // sanitize: remove white spaces
           avatar: avatar,
           password: encryptedPassword,
-        }
+        };
 
         // Get new user id
         const [user] = await queryBuilder
           .insert(data)
           .returning(['id', 'email', 'fullname', 'username', 'avatar', 'token', 'refresh'])
-          .catch(handleControllerError)
+          .catch(handleControllerError);
 
         // Create/assign access tokens with *user id*:
 
         // 1- access token for restricted resources
         const token = await jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
           expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
-        })
+        });
 
         // 2- refresh token for long term access
         const refresh = await jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {
           expiresIn: process.env.REFRESH_EXPIRE || '30d',
-        })
+        });
 
-        user.token = token
-        user.refresh = refresh
+        user.token = token;
+        user.refresh = refresh;
 
         // Update user access tokens:
         await queryBuilder
           .update({ token, refresh })
           .where({ username })
           .orWhere({ email })
-          .catch(handleControllerError)
+          .catch(handleControllerError);
 
         // return new user
-        return res.status(201).send(user)
+        return res.status(201).send(user);
       } catch (err) {
-        return res.status(401).send(`Something went wrong: ${err}`)
+        return res.status(401).send(`Something went wrong: ${err}`);
       }
       // Register logic ends here
     },
@@ -462,18 +462,18 @@ module.exports = (req, res) => {
       // Login logic starts here
       try {
         // Get user input
-        const { username, email, password } = req.body
+        const { username, email, password } = req.body;
 
         // Validate user input
         if (!(username || email) || !password) {
-          return res.status(400).send('All input is required')
+          return res.status(400).send('All input is required');
         }
 
         // Validate if user exist in our database
         const user = await queryBuilder
           .first()
           .where(email ? { email } : { username })
-          .catch(handleControllerError)
+          .catch(handleControllerError);
 
         if (user && (await bcrypt.compare(password, user.password))) {
           // token payload
@@ -483,18 +483,18 @@ module.exports = (req, res) => {
             email: user.email,
             avatar: user.avatar,
             fullname: user.fullname,
-          }
+          };
 
           // Revive tokens:
           const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
-          })
+          });
           const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: process.env.REFRESH_EXPIRE || '30d',
-          })
+          });
 
           // set new token in response headers
-          res.set('x-access-token', token)
+          res.set('x-access-token', token);
 
           // set token cookie
           res.cookie('token', token, {
@@ -504,29 +504,29 @@ module.exports = (req, res) => {
             secure: process.env.NODE_ENV === 'production', // cookie must be sent over https / ssl
             domain: process.env.CLIENT_URL,
             path: '/',
-          })
+          });
 
           // save new tokens for consistency
-          await queryBuilder.update({ token, refresh }).where({ id: user.id })
+          await queryBuilder.update({ token, refresh }).where({ id: user.id });
 
           // assign access token for the response
-          payload.token = token
+          payload.token = token;
 
           // return signed user
-          return res.status(200).send(payload)
+          return res.status(200).send(payload);
         }
-        return res.status(400).send('Invalid Credentials')
+        return res.status(400).send('Invalid Credentials');
       } catch (err) {
-        console.log(err)
-        return res.status(500).send('Server error')
+        console.log(err);
+        return res.status(500).send('Server error');
       }
       // Register logic ends here
     },
     logout: (req, res) => {
-      res.set('x-access-token', null)
-      res.clearCookie('token')
+      res.set('x-access-token', null);
+      res.clearCookie('token');
 
-      res.status(200).send('User cookie removed')
+      res.status(200).send('User cookie removed');
     },
-  }
-}
+  };
+};

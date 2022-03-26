@@ -1,5 +1,5 @@
 // Default Server Settings
-const { name, version } = require('../package.json')
+const { name, version } = require('../package.json');
 const isDev = process.env.NODE_ENV === 'development';
 module.exports = {
   poweredBy: `${name} v${version}`,
@@ -10,4 +10,4 @@ module.exports = {
   database: require('./database'),
   api: require('./api'),
   page: isDev ? 'interface' : 'welcome',
-}
+};

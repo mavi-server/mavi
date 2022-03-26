@@ -5,15 +5,15 @@ const jwt = require("jsonwebtoken");
 
 // every request uses this middleware.
 const interceptor = async (req, res, next) => {
-  req.token = req.cookies.token || req.headers["x-access-token"] || req.body.token || req.query.token
+  req.token = req.cookies.token || req.headers["x-access-token"] || req.body.token || req.query.token;
 
   if (!req.token) {
-    req.user = null
+    req.user = null;
   } else {
-    req.user = jwt.decode(req.token)
+    req.user = jwt.decode(req.token);
   }
 
-  return next()
-}
+  return next();
+};
 
 module.exports = interceptor;

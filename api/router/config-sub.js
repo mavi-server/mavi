@@ -106,4 +106,4 @@ module.exports = {
   //   type: 'token-reference',
   //   returning: 'id', // '*' or spesific column
   // },
-}
+};

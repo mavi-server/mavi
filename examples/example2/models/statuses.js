@@ -25,4 +25,4 @@ module.exports = {
     hash: 'WzE2NDM2Mzc1NDY0Mjddc3RhdHVzZXMuY3JlYXRlZF9hdA',
   },
   hash: 'WzE2NDM2Mzc1NDY0MjZdc3RhdHVzZXM',
-}
+};
