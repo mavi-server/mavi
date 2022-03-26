@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const path = require("path");
-const config = require(path.join(process.cwd(), './index.js'));
+const config = require(path.join(process.cwd(), './index'));
 const command = process.argv[2];
 const { version } = require(path.join(__dirname, '../../package.json'));
 let script;

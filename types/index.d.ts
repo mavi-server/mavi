@@ -11,7 +11,7 @@ type methods = 'get' | 'post' | 'put' | 'delete'
 type controllerWithOptions = [controllers, any]
 type populateControllers = 'count' | 'object' | 'array' | 'token-reference' | 'array-reference'
 
-declare namespace Mavi {
+export declare namespace Mavi {
   /**
    * Creates a mavi instance.
    */
