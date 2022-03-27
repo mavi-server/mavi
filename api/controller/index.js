@@ -486,10 +486,10 @@ module.exports = (req, res) => {
           };
 
           // Revive tokens:
-          const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+          const token = jwt.sign({...payload}, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
           });
-          const refresh = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+          const refresh = jwt.sign({...payload}, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: process.env.REFRESH_EXPIRE || '30d',
           });
 
@@ -506,7 +506,7 @@ module.exports = (req, res) => {
             path: '/',
           });
 
-          // save new tokens for consistency
+          // save new tokens for consistency/security
           await queryBuilder.update({ token, refresh }).where({ id: user.id });
 
           // assign access token for the response

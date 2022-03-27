@@ -1,5 +1,5 @@
 // This function intercepts all the requests.
-// Used as a default middleware for every route.
+// Used as a default middleware for every router.
 
 const jwt = require("jsonwebtoken");
 

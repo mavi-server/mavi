@@ -3,21 +3,25 @@
 // Client should handle the remaining jobs.
 const jwt = require('jsonwebtoken');
 
-const authorization = (req, res, next) => {
+const authorization = async (req, res, next) => {
   if (!req.token) {
     if (req.user && req.user.token) req.token = req.user.token;
-    else return res.status(403).send("A token is required for authentication");
+    else return res.status(403).send("Access token is required for authentication");
   }
-
-  return jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
-    // if token is not verified:
-    if (err) return await refreshToken(req, res, next);
-
-    // pass to the next request
+  
+  // Verify the access token
+  try{
+    const decoded = await jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET);
+    
     req.user = decoded;
     req.body.user = decoded.id; // for create, update, delete controllers. no need to send user id on client side.
     return next();
-  });
+  }
+
+  // Token is not verified
+  catch(error) {
+    return await refreshToken(req, res, next);
+  }
 };
 
 const refreshToken = async (req, res, next) => {
@@ -32,20 +36,20 @@ const refreshToken = async (req, res, next) => {
 
   if (!user) {
     error = {
-      status: 403,
-      message: 'User not found',
+      status: 401,
+      message: 'Invalid access token',  // Unauthorized: User not found
     };
   }
   else if (!user.refresh) {
     error = {
       status: 401,
-      message: 'Refresh token is not valid',
+      message: 'Please login again.', // Unauthorized: Refresh token is not valid. 
     };
   }
   else if (jwt.decode(user.refresh).id && jwt.decode(req.token).id !== user.id) {
     error = {
       status: 403,
-      message: 'Refresh token <-> user mismatch',
+      message: 'Something is not right X﹏X', // Forbidden: Refresh token mismatch.
     };
   }
 
@@ -57,8 +61,17 @@ const refreshToken = async (req, res, next) => {
     // verify the refresh token
     jwt.verify(user.refresh, process.env.REFRESH_TOKEN_SECRET);
 
+    // token payload
+    const payload = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      fullname: user.fullname,
+    };
+
     // new token
-    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    const token = jwt.sign({...payload}, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: process.env.ACCESS_TOKEN_LIFE,
     });
 
@@ -83,7 +96,7 @@ const refreshToken = async (req, res, next) => {
 
     return next();
   } catch (err) {
-    return res.status(401).send('Unauthorized', err.message);
+    return res.status(401).send('Please login again.'); // Unauthorized: Refresh token is not valid
   }
 };
 

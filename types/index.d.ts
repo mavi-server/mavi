@@ -6,10 +6,22 @@ export default Mavi
 type middleware = (req: Request, res: Response, next: NextFunction) => any
 type utils = 'detect-language'
 type middlewares = 'authorization' | 'is-owner'
-type controllers = 'find' | 'findOne' | 'count' | 'delete' | 'update' | 'create' | 'upload'
+type controllers =
+  | 'find'
+  | 'findOne'
+  | 'count'
+  | 'delete'
+  | 'update'
+  | 'create'
+  | 'upload'
 type methods = 'get' | 'post' | 'put' | 'delete'
 type controllerWithOptions = [controllers, any]
-type populateControllers = 'count' | 'object' | 'array' | 'token-reference' | 'array-reference'
+type populateControllers =
+  | 'count'
+  | 'object'
+  | 'array'
+  | 'token-reference'
+  | 'array-reference'
 
 export declare namespace Mavi {
   /**
@@ -44,7 +56,7 @@ export declare interface MaviConfig {
   api: MaviApi
   /**
    * Knex database connection
-   * 
+   *
    * See details: https://knexjs.org/#Installation-client
    */
   database: any // I will define this later.
@@ -58,6 +70,9 @@ export declare interface MaviConfig {
   timer?: boolean
   [any: string]: any
 }
+export type Routes = {
+  [name: string]: Route[]
+}
 export declare interface MaviApi {
   base: string
   /**
@@ -65,9 +80,7 @@ export declare interface MaviApi {
     - Generates the api with the given config
     - Can be extendable by middlewares
    */
-  routes: {
-    [name: string]: Route[]
-  }
+  routes: Routes
   /**
    * Definitions for the api routes
    *
@@ -75,11 +88,11 @@ export declare interface MaviApi {
   define: {
     /**
      * Database models
-     * 
+     *
      * Used for creating/deleting tables
-     * 
+     *
      * Used for api router and populate configurations
-     * 
+     *
      * Order is important if there are existing foreign key references
      */
     models: Model.Tables
@@ -107,13 +120,14 @@ export declare interface MaviApi {
   plugins?: object
 }
 
-
-export type MaviQuery = {
-  start: string | 'off'
-  limit: string | 'off'
-  where: string | 'off'
-  order: string | 'off'
-} | 'off'
+export type MaviQuery =
+  | {
+      start: string | 'off'
+      limit: string | 'off'
+      where: string | 'off'
+      order: string | 'off'
+    }
+  | 'off'
 
 /**
  * Will transformed into the API routes
@@ -191,11 +205,11 @@ export declare interface Route {
 }
 /**
  * Database models
- * 
+ *
  * Used for creating/deleting tables
- * 
+ *
  * Used for api router and populate configurations
- * 
+ *
  * Order is important if there are existing foreign key references
  */
 export declare namespace Model {
@@ -244,18 +258,18 @@ export declare namespace Model {
     dataset?: string[]
     /**
      * Used with `datetime`, `time`, `timestamp` types
-     * 
+     *
      * In PostgreSQL and MySQL a precision option may be passed.
-     * 
+     *
      * https://knexjs.org/#Schema-timestamps
      */
     precision?: number
     /**
-     * 
+     *
      * Used with `datetime`, `timestamp` types
-     * 
+     *
      * By default PostgreSQL creates column with timezone (timestamptz type) and MSSQL does not (datetime2). This behaviour can be overriden by passing the useTz option (which is by default false for MSSQL and true for PostgreSQL). MySQL does not have useTz option.
-     * 
+     *
      * In PostgreSQL and MSSQL a timezone option may be passed
      */
     useTz?: number
@@ -265,14 +279,14 @@ export declare namespace Model {
     charset?: string
     /**
      * Default column value.
-     * 
+     *
      * This can be a SQL too.
-     * 
-     * 
+     *
+     *
      * *Example:*
-     * 
+     *
      * defaultTo: "knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')"
-     * 
+     *
      */
     defaultTo?: string | number | boolean
     /**
@@ -284,11 +298,11 @@ export declare namespace Model {
     /**
      * References to "table" where the foreign key column is located
      */
-    references?: string,
+    references?: string
     /**
      * Specifies an integer as unsigned. No-op if this is chained off of a non-integer field.
      */
-    unsigned?: boolean,
+    unsigned?: boolean
     /**
      * Private columns are not included in the response.
      */
