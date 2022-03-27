@@ -147,27 +147,27 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
 
             // set $arguments for default controllers
             switch (route.controller) {
-              case 'find':
-              case 'count':
-              case 'findOne':
-                $arguments = [];
-                break;
-              case 'create':
-                $arguments = [data];
-                break;
-              case 'delete':
-                $arguments = [id];
-                break;
-              case 'update':
-                $arguments = [id, data];
-                break;
-              case 'upload':
-                $arguments = [folder, data];
-                break;
-              case 'login':
-              case 'logout':
-              case 'register':
-                $arguments = [req, res];
+            case 'find':
+            case 'count':
+            case 'findOne':
+              $arguments = [];
+              break;
+            case 'create':
+              $arguments = [data];
+              break;
+            case 'delete':
+              $arguments = [id];
+              break;
+            case 'update':
+              $arguments = [id, data];
+              break;
+            case 'upload':
+              $arguments = [folder, data];
+              break;
+            case 'login':
+            case 'logout':
+            case 'register':
+              $arguments = [req, res];
             }
 
             if (route.view && !route.controller) {

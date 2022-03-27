@@ -27,7 +27,7 @@ module.exports = (req, res) => {
     if (process.env.NODE_ENV === 'development') {
       console.log('err.response:', err);
     }
-    res.status(res.error.status).send(res.error);
+    return res.status(res.error.status).send(res.error);
   };
 
 
