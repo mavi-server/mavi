@@ -448,6 +448,9 @@ module.exports = (req, res) => {
           .orWhere({ email })
           .catch(handleControllerError);
 
+        // set new token in response header
+        res.set('x-access-token', token);
+
         // return new user
         return res.status(201).send(user);
       } catch (err) {
@@ -493,24 +496,15 @@ module.exports = (req, res) => {
             expiresIn: process.env.REFRESH_EXPIRE || '30d',
           });
 
-          // set new token in response headers
+          // set new token in response header
           res.set('x-access-token', token);
-
-          // set token cookie
-          res.cookie('token', token, {
-            maxAge: 86400 * 7 * 1000, // 7 days
-            httpOnly: true, // http only, prevents JavaScript cookie access
-            overwrite: true,
-            secure: process.env.NODE_ENV === 'production', // cookie must be sent over https / ssl
-            domain: process.env.CLIENT_URL,
-            path: '/',
-          });
 
           // save new tokens for consistency/security
           await queryBuilder.update({ token, refresh }).where({ id: user.id });
 
-          // assign access token for the response
-          payload.token = token;
+          // assign access required tokens for the response
+          payload.token = token; // access
+          payload.refresh = refresh; // refresh
 
           // return signed user
           return res.status(200).send(payload);
@@ -524,6 +518,7 @@ module.exports = (req, res) => {
     },
     logout: (req, res) => {
       res.set('x-access-token', null);
+      res.set('x-refresh-token', null);
       res.clearCookie('token');
 
       res.status(200).send('User cookie removed');
