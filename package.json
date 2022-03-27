@@ -1,6 +1,6 @@
 {
   "name": "mavi",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "license": "MIT",
   "description": "Create scalable api routes and relational database without coding!",
   "main": "dist/index.js",
