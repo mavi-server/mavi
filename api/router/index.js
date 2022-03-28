@@ -138,8 +138,14 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
           route.path,
           route.middlewares.map(setMiddlewares),
           async (req, res) => {
+            /**
+             * @type {{status:number, data:any}} response
+             * @description response object from controller
+             */
+            let response = {};
+
             // controller settings
-            // ** req.config can be passed/overwrite from middlewares as well
+            // ** req.config can be passed/overwritten from middlewares as well
             // ** but it is not recommended to do so
             req.config =
               typeof req.config === 'object'
@@ -171,9 +177,8 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
 
             // Use default controllers
             else if (controllers.includes(route.controller) || route.view) {
-              // params & datas
               const { id, folder } = req.params;
-              const data = req.body;
+              const { body } = req;
               let $arguments = [];
 
               // set $arguments for default controllers
@@ -184,16 +189,16 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
                 $arguments = [];
                 break;
               case 'create':
-                $arguments = [data];
+                $arguments = [body];
                 break;
               case 'delete':
                 $arguments = [id];
                 break;
               case 'update':
-                $arguments = [id, data];
+                $arguments = [id, body];
                 break;
               case 'upload':
-                $arguments = [folder, data];
+                $arguments = [folder, body];
                 break;
               case 'login':
               case 'logout':
@@ -203,23 +208,23 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
 
               if (route.view && !route.controller) {
                 // execute controller with only view
-                return req.app.controller(req, res).find();
+                response = await req.app.controller(req, res).find(false); // false to disable sub-controllers
               } else {
                 // execute default controller
-                /**
-                 * @type {{status:number, data:any}} res - name of the controller
-                 */
-                const { status, data } = await req.app
+                response = await req.app
                   .controller(req, res)
                   [route.controller](...$arguments);
-
-                return res.status(status).send(data);
               }
             } else {
               // controller not found
-              return res.status(500).send('Controller not found');
+              response = {
+                status: 404,
+                data: 'Controller not found',
+              };
             }
-          }
+
+            res.status(response.status).send(response.data);
+          } // end of async function
         );
       }
 

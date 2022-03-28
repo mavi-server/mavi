@@ -16,7 +16,7 @@ module.exports = (req, res) => {
     req.config;
   const handleControllerError = err => {
     // Common error handler
-    const { status, /* message,*/ detail, code } = err;
+    const { status, message, detail, code } = err;
 
     if (process.env.NODE_ENV === 'development') {
       console.log('err.response:', err);
@@ -24,7 +24,7 @@ module.exports = (req, res) => {
     return {
       status: status || 500,
       data: {
-        message: code,
+        message: `${code}: ${message}`,
         detail,
         code,
       },
@@ -280,6 +280,7 @@ module.exports = (req, res) => {
         .insert(body)
         .returning(columns)
         .catch(handleControllerError);
+        
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
         data = await SubController(req, {
@@ -295,7 +296,7 @@ module.exports = (req, res) => {
         data,
       };
     },
-    update: async (id, body) => {
+    update: async (id, body, populateIt=true) => {
       const where = {};
       if (id) where.id = id;
       if (req.owner) {
@@ -306,22 +307,31 @@ module.exports = (req, res) => {
         }
       }
 
-      let data = await queryBuilder
+      let [data] = await queryBuilder
         .update(body)
         .where(where)
         .returning(columns)
         .catch(handleControllerError);
-
-      if ((!data && req.owner) || (Array.isArray(data) && data.length === 0)) {
+      
+      if (!data && req.owner) {
         return {
           status: 400,
           data: "You don't have permission for this",
         };
       }
-      if (Array.isArray(data)) data = data[0] || null;
+
+      // populate options
+      if (populateIt && data && populate && Array.isArray(populate)) {
+        [data] = await SubController(req, {
+          populate,
+          data,
+          context: model,
+        }).catch(handleControllerError);
+      }
+      if(Array.isArray(data)) data = data[0] || null;
 
       return {
-        status: 204,
+        status: 201,
         data,
       };
     },
@@ -341,11 +351,13 @@ module.exports = (req, res) => {
         .where(where)
         .returning(columns)
         .catch(handleControllerError);
-      if (!data && req.owner)
+      
+      if (!data && req.owner) {
         return {
-          status: 400,
+          status: 405, // method not allowed
           data: "You don't have permission for this",
         };
+      }
 
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
@@ -355,11 +367,10 @@ module.exports = (req, res) => {
           context: model,
         }).catch(handleControllerError);
       }
-
       if (Array.isArray(data)) data = data[0] || null;
 
       return {
-        status: 202,
+        status: 200,
         data,
       };
     },
