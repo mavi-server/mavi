@@ -8,5 +8,4 @@ module.exports = {
     middlewares: {},
     controllers: {},
   },
-  // plugins: {},
 };

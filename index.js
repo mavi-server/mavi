@@ -45,7 +45,7 @@ const createServer = async object => {
   app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
   app.use(cookieParser());
   app.use(cors(config.cors));
-  app.use(initializer(config)); // Set req.app properties  
+  app.use(initializer(config)); // Set req.app properties
 
   // Mavi - Interface Router
   if (config.page) {
@@ -67,8 +67,7 @@ const createServer = async object => {
     // if its a string, it can be one of the predefined static paths: interface, welcome
     if (typeof config.page === 'string') {
       settings.routes['/'] = require(`./config/static/${config.page}`);
-    }
-    else {
+    } else {
       settings.routes['/'] = [];
     }
 
@@ -76,8 +75,11 @@ const createServer = async object => {
   }
 
   // Mavi - Primary router
-  app.use(`${config.api.base}`, timer, createRouter(config.api, { name: 'Mavi', debug: true }));
-
+  app.use(
+    `${config.api.base}`,
+    timer,
+    createRouter(config.api, { name: 'Mavi', debug: true })
+  );
 
   app.listen(PORT, HOST, () => {
     console.log(`\x1b[34m${config.poweredBy} is running\x1b[0m`);
@@ -89,7 +91,11 @@ const createServer = async object => {
 
 const timer = responseTime((req, res, time) => {
   if (req.app.$config.timer === true) {
-    console.log(`\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.originalUrl} \x1b[0m(${res.statusCode}) - ${time.toFixed(0)}ms`);
+    console.log(
+      `\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.originalUrl} \x1b[0m(${
+        res.statusCode
+      }) - ${time.toFixed(0)}ms`
+    );
   }
 });
 const initializer = config => (req, res, next) => {

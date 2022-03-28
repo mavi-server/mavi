@@ -20,21 +20,17 @@ module.exports = {
     },
   },
   api: {
+    base: '/',
     routes: require('./routes'),
     define: {
-      models: require('./models'), // if you reference to `models/index.js`, you can take advantage of database-state tracking & apply-models
+      models: require('./models'), // if you reference to `models/index.js`, you can take advantage of database-state tracking
       populate: require('./routes/populate'),
-      middlewares: {
-        greetings: (req, res, next) => {
-          console.log('Hello from middleware!');
-          next();
-        },
-      },
-    },
-    plugins: {
-      // auth: true // you need `users` model for this with at least: `username`, `email`, `password` columns
-      // if you use auth, you can use `is-owner`, `authorization` middlewares in `config.api.routes`
-      // and you will have additional [post]/login, [post]/logout, [post]/register routes
+      // middlewares: {
+      //   greetings: (req, res, next) => {
+      //     console.log('Hello from middleware!');
+      //     next();
+      //   },
+      // },
     },
   },
 };

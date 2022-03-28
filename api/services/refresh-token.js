@@ -3,10 +3,10 @@ const refreshToken = async (req, res, next) => {
   // Assuming that req.token is defined
   // Get refresh token:
   req.refresh =
-        req.cookies.refresh ||
-        req.headers['x-refresh-token'] ||
-        req.body.refresh ||
-        req.query.refresh;
+    req.cookies.refresh ||
+    req.headers['x-refresh-token'] ||
+    req.body.refresh ||
+    req.query.refresh;
 
   if (!req.refresh) {
     return res.status(401).send('Please login again'); // Refresh token is required for authentication
