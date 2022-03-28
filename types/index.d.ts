@@ -1,6 +1,6 @@
 import { CorsOptions } from 'cors'
 import { ServeStaticOptions } from 'serve-static'
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction, Application } from 'express'
 export default Mavi
 
 type middleware = (req: Request, res: Response, next: NextFunction) => any
@@ -27,7 +27,7 @@ export declare namespace Mavi {
   /**
    * Creates a mavi instance.
    */
-  type createServer = (config: MaviConfig) => any
+  type createServer = (config: MaviConfig) => Application
   type config = MaviConfig
 }
 

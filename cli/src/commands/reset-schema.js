@@ -14,7 +14,3 @@ knex.schema.dropSchemaIfExists(schema, true).then(async () => {
   // exit process
   process.exit(0);
 });
-
-
-
-

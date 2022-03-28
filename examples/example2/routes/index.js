@@ -1,68 +1,70 @@
 module.exports = {
-  // [table name]: options{}
-  customers: [
+  '/customers': [
     {
-      path: '/customers', // alias route
+      path: '/',
       method: 'get',
       controller: 'find', // built-in controller
       populate: ['status'], // populates defined in config.api.define.populate
       middlewares: ['greetings'], // middlewares defined in config.api.define.middlewares
     },
     {
-      path: '/customers/count',
+      path: '/',
+      method: 'post',
+      controller: 'create',
+      populate: ['status'],
+    },
+    {
+      path: '/count',
       method: 'get',
       controller: 'count',
     },
     {
-      path: '/customers',
-      method: 'post',
-      controller: 'create',
-    },
-    {
-      path: '/customers/:id',
+      path: '/:id',
       method: 'get',
       controller: 'findOne',
       populate: ['status'],
     },
     {
-      path: '/customers/:id',
+      path: '/:id',
       method: 'put',
       controller: 'update',
+      populate: ['status'],
     },
     {
-      path: '/customers/:id',
+      path: '/:id',
       method: 'delete',
       controller: 'delete',
+      populate: ['status'],
     },
   ],
-  statuses: [
+  '/statuses': [
     {
-      path: '/statuses',
+      path: '/',
       method: 'get',
       controller: 'find',
     },
     {
-      path: '/statuses/count',
-      method: 'get',
-      controller: 'count',
-    },
-    {
-      path: '/statuses',
+      path: '/',
       method: 'post',
       controller: 'create',
     },
     {
-      path: '/statuses/:id',
+      path: '/count',
+      method: 'get',
+      controller: 'count',
+    },
+    {
+      path: '/:id',
       method: 'get',
       controller: 'findOne',
     },
     {
-      path: '/statuses/:id',
+      path: '/:id',
       method: 'put',
       controller: 'update',
     },
     {
-      path: '/statuses/:id',
+      path: '/:id',
       method: 'delete',
       controller: 'delete',
     },
