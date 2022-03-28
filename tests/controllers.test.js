@@ -1,5 +1,6 @@
-// This is `controller` tests using /examples/example2 workspace.
+// This `controller` tests are using /examples/example2 workspace.
 // Tests doesn't cover all the functionality yet.
+// You can also use `mavi` npm package to run tests.
 
 let app;
 const request = require('supertest');
