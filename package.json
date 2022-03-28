@@ -30,7 +30,7 @@
     "build": "webpack --config webpack.config.js",
     "lint:fix": "eslint --fix --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"interface\"",
     "lint": "eslint --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"interface\"",
-    "test": "jest --watchAll --verbose false"
+    "test": "jest --watchAll"
   },
   "repository": {
     "type": "git",

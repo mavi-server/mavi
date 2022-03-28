@@ -12,35 +12,37 @@ const SubController = require('../services/sub-controller');
 module.exports = (req, res) => {
   const { query } = req; // request query
   const { $config, db } = req.app; // request config
-  const { model, populate, columns, view, controller /* schema, exclude*/ } = req.config;
+  const { model, populate, columns, view, controller /* schema, exclude*/ } =
+    req.config;
   const handleControllerError = err => {
     // Common error handler
     const { status, /* message,*/ detail, code } = err;
 
-    res.error = {
-      status: status || 500,
-      message: code,
-      detail,
-      code,
-    };
-
     if (process.env.NODE_ENV === 'development') {
       console.log('err.response:', err);
     }
-    return res.status(res.error.status).send(res.error);
+    return {
+      status: status || 500,
+      data: {
+        message: code,
+        detail,
+        code,
+      },
+    };
   };
-
 
   // Double check the `columns` type before dive in:
   if (!Array.isArray(columns)) {
-    return res.status(500).send('[controller] req.config.columns should be an array');
+    return {
+      status: 500,
+      data: 'Controller: req.config.columns should be an array!',
+    };
   }
 
   // SQL Query Builder:
   // you can pass queryBuilder to the request object
   // and build queries on top of it
   let queryBuilder = req.queryBuilder || db(model);
-
 
   // Req Query builder
   // If req.config.query is set to 'off', then req.query will not be used at all
@@ -70,7 +72,6 @@ module.exports = (req, res) => {
         query: 'off', // restrict all the queries
         populate..
       */
-
 
       for (const key in req.config.query) {
         // Query keys can be restricted as well
@@ -104,10 +105,14 @@ module.exports = (req, res) => {
   // this will give the ability to make custom queries
   // they are not intended to replace the actual view of the RDBMS (for now)
   // *
-  if (view && $config.api.define && $config.api.define.views && typeof $config.api.define.views === 'object') {
+  if (
+    view &&
+    $config.api.define &&
+    $config.api.define.views &&
+    typeof $config.api.define.views === 'object'
+  ) {
     // if view is defined
     // queryBuilder = db
-
 
     // Be sure id parameter is number
     if (req.params.id) {
@@ -142,12 +147,13 @@ module.exports = (req, res) => {
     //     if (populateIt && data && data.length && populate && Array.isArray(populate)) {
     //       data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
     //     }
-
-    //     return res.status(200).send(data)
+    // return {
+    //   status: 200,
+    //   data,
+    // };
     //   }
     // }
   }
-
 
   return {
     count: async () => {
@@ -156,8 +162,13 @@ module.exports = (req, res) => {
 
       // is-owner
       if (req.owner) {
-        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
-        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] });
+        if (model === 'users')
+          query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
+        else
+          query.where.push({
+            exec: 'where',
+            params: ['user', '=', req.owner.id],
+          });
       }
 
       // append where queries
@@ -170,7 +181,10 @@ module.exports = (req, res) => {
       let [data] = await queryBuilder.count('*').catch(handleControllerError);
       data.count = Number(data.count || 0);
 
-      return res.status(200).send(data);
+      return {
+        status: 200,
+        data,
+      };
     },
     find: async (populateIt = true) => {
       if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns);
@@ -189,8 +203,13 @@ module.exports = (req, res) => {
 
       // is-owner
       if (req.owner) {
-        if (model === 'users') query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
-        else query.where.push({ exec: 'where', params: ['user', '=', req.owner.id] });
+        if (model === 'users')
+          query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
+        else
+          query.where.push({
+            exec: 'where',
+            params: ['user', '=', req.owner.id],
+          });
       }
 
       // append where clauses
@@ -202,11 +221,24 @@ module.exports = (req, res) => {
 
       let data = await queryBuilder.catch(handleControllerError);
       // populate options
-      if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
+      if (
+        populateIt &&
+        data &&
+        data.length &&
+        populate &&
+        Array.isArray(populate)
+      ) {
+        data = await SubController(req, {
+          populate,
+          data,
+          context: model,
+        }).catch(handleControllerError);
       }
 
-      return res.status(200).send(data);
+      return {
+        status: 200,
+        data,
+      };
     },
     findOne: async (populateIt = true) => {
       const where = {};
@@ -223,29 +255,45 @@ module.exports = (req, res) => {
       let data = await queryBuilder.catch(handleControllerError);
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
+        data = await SubController(req, {
+          populate,
+          data,
+          context: model,
+        }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
 
-      if (!data && req.owner) return res.status(400).send("You don't have permission for this");
+      if (!data && req.owner) {
+        return {
+          status: 400,
+          data: "You don't have permission for this",
+        };
+      }
 
-      return res.status(200).send(data);
+      return {
+        status: 200,
+        data,
+      };
     },
     create: async (body, populateIt = true) => {
-      let data = await queryBuilder.insert(body).returning(columns).catch(handleControllerError);
+      let data = await queryBuilder
+        .insert(body)
+        .returning(columns)
+        .catch(handleControllerError);
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
+        data = await SubController(req, {
+          populate,
+          data,
+          context: model,
+        }).catch(handleControllerError);
       }
-
       if (Array.isArray(data)) data = data[0] || null;
 
-      // try {
-      //   // realtime communication
-      //   firestore.collection(model).doc(String(data.id)).set(data)
-      // } catch (err) { console.error('firebase - adding recovery collection is failed') }
-
-      return res.status(201).send(data);
+      return {
+        status: 201,
+        data,
+      };
     },
     update: async (id, body) => {
       const where = {};
@@ -258,20 +306,24 @@ module.exports = (req, res) => {
         }
       }
 
-      let data = await queryBuilder.update(body).where(where).returning(columns).catch(handleControllerError);
+      let data = await queryBuilder
+        .update(body)
+        .where(where)
+        .returning(columns)
+        .catch(handleControllerError);
 
-      if (!data && req.owner) return res.status(400).send("You don't have permission for this");
-
+      if ((!data && req.owner) || (Array.isArray(data) && data.length === 0)) {
+        return {
+          status: 400,
+          data: "You don't have permission for this",
+        };
+      }
       if (Array.isArray(data)) data = data[0] || null;
 
-      // try {
-      //   const id = where.id || where.user
-
-      //   // realtime communication
-      //   firestore.collection(model).doc(String(id)).update(data)
-      // } catch (err) { console.error('firebase - updating recovery collection is failed') }
-
-      return res.status(204).send(data);
+      return {
+        status: 204,
+        data,
+      };
     },
     delete: async (id, populateIt = true) => {
       const where = {};
@@ -284,22 +336,32 @@ module.exports = (req, res) => {
         }
       }
 
-      let [data] = await queryBuilder.delete().where(where).returning(columns).catch(handleControllerError);
-      if (!data && req.owner) return res.status(400).send("You don't have permission for this");
+      let [data] = await queryBuilder
+        .delete()
+        .where(where)
+        .returning(columns)
+        .catch(handleControllerError);
+      if (!data && req.owner)
+        return {
+          status: 400,
+          data: "You don't have permission for this",
+        };
 
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
-        data = await SubController(req, { populate, data, context: model }).catch(handleControllerError);
+        data = await SubController(req, {
+          populate,
+          data,
+          context: model,
+        }).catch(handleControllerError);
       }
 
       if (Array.isArray(data)) data = data[0] || null;
 
-      // try {
-      //   // realtime communication
-      //   firestore.collection(model).doc(String(data.id)).delete()
-      // } catch (err) { console.error('firebase - deleting from recovery collection is failed') }
-
-      return res.status(202).send(data);
+      return {
+        status: 202,
+        data,
+      };
     },
     upload: async (childFolder, data) => {
       if (childFolder) {
@@ -307,11 +369,13 @@ module.exports = (req, res) => {
         // check childFolder has a permission to be used
         if (req.config.options && req.config.options.folders) {
           if (!req.config.options.folders.includes(childFolder)) {
-            return res.status(400).send("You don't have permission for this");
+            return {
+              status: 400,
+              data: "You don't have permission for this",
+            };
           }
         }
         const options = req.config.options || {};
-
 
         // default options:
         const $options = {
@@ -353,34 +417,45 @@ module.exports = (req, res) => {
 
             data.id = Number((Math.random() * 10000).toFixed());
             data.url = filePath;
-            data.alt = req.body.alt || file.originalFilename.split('.').shift().replace(/-/g, ' ');
-            // console.log(data)
+            data.alt =
+              req.body.alt ||
+              file.originalFilename.split('.').shift().replace(/-/g, ' ');
 
             if (!model || !columns) {
-              return res.send(data);
+              return {
+                status: 200,
+                data,
+              };
             } else {
-              const [result] = await queryBuilder.insert(data).returning(columns).catch(handleControllerError);
-              // console.log(result)
+              const [result] = await queryBuilder
+                .insert(data)
+                .returning(columns)
+                .catch(handleControllerError);
 
-              // try {
-              //   // realtime communication
-              //   firestore.collection(model).doc(result.id).set(result)
-              // } catch (err) { console.error('firebase - recovering collection is failed') }
-
-              return res.status(201).send(result);
+              return {
+                status: 201,
+                data: result,
+              };
             }
           } else {
             console.error('upload controller: `file` not defined');
-            return res.status(500).send('upload controller: `file` not defined');
+            return {
+              status: 400,
+              data: 'upload controller: `file` not defined',
+            };
           }
         });
         form.on('error', function (err) {
-          console.error('upload controller: ' + err);
-          return res.status(500).send('upload controller: ' + err);
+          return {
+            status: 400,
+            data: 'upload controller: ' + err,
+          };
         });
       } else {
-        console.error('upload controller: please define `childFolder` parameter');
-        return res.status(500).send('upload controller: please define `childFolder` parameter');
+        return {
+          status: 400,
+          data: 'upload controller: `childFolder` not defined',
+        };
       }
     },
     /**
@@ -394,7 +469,10 @@ module.exports = (req, res) => {
 
         // Validate user input
         if (!fullname || !email || !username || !password) {
-          return res.status(400).send('Missing required fields');
+          return {
+            status: 400,
+            data: 'Please fill all the fields',
+          };
         }
 
         // check if user already exist
@@ -406,7 +484,10 @@ module.exports = (req, res) => {
           .catch(handleControllerError); // [ { count: 'number' } ]
 
         if (Number(count)) {
-          return res.status(409).send('User Already Exist. Please try another email or username.');
+          return {
+            status: 409,
+            data: 'Username or email already exist',
+          };
         }
 
         // Encrypt user password
@@ -423,7 +504,15 @@ module.exports = (req, res) => {
         // Get new user id
         const [user] = await queryBuilder
           .insert(data)
-          .returning(['id', 'email', 'fullname', 'username', 'avatar', 'token', 'refresh'])
+          .returning([
+            'id',
+            'email',
+            'fullname',
+            'username',
+            'avatar',
+            'token',
+            'refresh',
+          ])
           .catch(handleControllerError);
 
         // Create/assign access tokens with *user id*:
@@ -452,9 +541,15 @@ module.exports = (req, res) => {
         res.set('x-access-token', token);
 
         // return new user
-        return res.status(201).send(user);
+        return {
+          status: 201,
+          data: user,
+        };
       } catch (err) {
-        return res.status(401).send(`Something went wrong: ${err}`);
+        return {
+          status: 401,
+          data: `Something went wrong: ${err}`,
+        };
       }
       // Register logic ends here
     },
@@ -469,7 +564,10 @@ module.exports = (req, res) => {
 
         // Validate user input
         if (!(username || email) || !password) {
-          return res.status(400).send('All input is required');
+          return {
+            status: 400,
+            data: 'All input is required',
+          };
         }
 
         // Validate if user exist in our database
@@ -489,12 +587,20 @@ module.exports = (req, res) => {
           };
 
           // Revive tokens:
-          const token = jwt.sign({...payload}, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
-          });
-          const refresh = jwt.sign({...payload}, process.env.REFRESH_TOKEN_SECRET, {
-            expiresIn: process.env.REFRESH_EXPIRE || '30d',
-          });
+          const token = jwt.sign(
+            { ...payload },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+              expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
+            }
+          );
+          const refresh = jwt.sign(
+            { ...payload },
+            process.env.REFRESH_TOKEN_SECRET,
+            {
+              expiresIn: process.env.REFRESH_EXPIRE || '30d',
+            }
+          );
 
           // set new token in response header
           res.set('x-access-token', token);
@@ -507,12 +613,20 @@ module.exports = (req, res) => {
           payload.refresh = refresh; // refresh
 
           // return signed user
-          return res.status(200).send(payload);
+          return {
+            status: 200,
+            data: payload,
+          };
         }
-        return res.status(400).send('Invalid Credentials');
+        return {
+          status: 400,
+          data: 'Invalid Credentials',
+        };
       } catch (err) {
-        console.log(err);
-        return res.status(500).send('Server error');
+        return {
+          status: 401,
+          data: `Something went wrong: ${err}`,
+        };
       }
       // Register logic ends here
     },
@@ -521,7 +635,10 @@ module.exports = (req, res) => {
       res.set('x-refresh-token', null);
       res.clearCookie('token');
 
-      res.status(200).send('User cookie removed');
+      return {
+        status: 200,
+        data: 'User cookie removed',
+      };
     },
   };
 };

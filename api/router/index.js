@@ -166,7 +166,7 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
             // Use custom controllers: (comes first because users can overwrite the default controllers)
             else if (route.controller in define.controllers) {
               // execute defined controller
-              return await define.controllers[route.controller](req, res);
+              return define.controllers[route.controller](req, res);
             }
 
             // Use default controllers
@@ -203,12 +203,17 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
 
               if (route.view && !route.controller) {
                 // execute controller with only view
-                return await req.app.controller(req, res).find();
+                return req.app.controller(req, res).find();
               } else {
-                // execute controller
-                return await req.app
+                // execute default controller
+                /**
+                 * @type {{status:number, data:any}} res - name of the controller
+                 */
+                const { status, data } = await req.app
                   .controller(req, res)
                   [route.controller](...$arguments);
+
+                return res.status(status).send(data);
               }
             } else {
               // controller not found
