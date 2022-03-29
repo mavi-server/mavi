@@ -211,13 +211,15 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
                 await req.app
                   .controller(req, res)
                   .find(false) // false to disable sub-controllers
-                  .then(res=>response = res).catch(err=>response = err);
+                  .then(res => (response = res))
+                  .catch(err => (response = err));
               } else {
                 // execute default controller
                 await req.app
                   .controller(req, res)
                   [route.controller](...$arguments)
-                  .then(res=>response = res).catch(err=>response = err);
+                  .then(async res => (response = await res))
+                  .catch(async err => (response = await err));
               }
             } else {
               // controller not found
@@ -228,7 +230,12 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
             }
 
             // prevent unknown status error when some unpredictable error occurs
-            if(!response.status) response.status = 500;
+            if (!response || !response.status) {
+              response = {
+                status: 500,
+                data: 'Unknown error',
+              };
+            }
 
             res.status(response.status).send(response.data);
           } // end of async function

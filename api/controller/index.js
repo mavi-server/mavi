@@ -297,10 +297,10 @@ module.exports = (req, res) => {
       // You can send data via parameters or via body.
 
       if (req.params) {
-        if(!body) body = {};
-        body = {...body, ...req.params};
+        if (!body) body = {};
+        body = { ...body, ...req.params };
       }
-      
+
       if (!body || Object.keys(body).length === 0) {
         return {
           status: 400,
@@ -443,61 +443,58 @@ module.exports = (req, res) => {
         if (!existsSync($options.uploadDir)) {
           mkdirSync($options.uploadDir);
         }
-
         // access form data files
         const form = new IncomingForm($options);
-
-        // start processing
-        form.parse(req);
-        form.on('file', async function (formname, file) {
-          // register uploaded file
-          if (file) {
-            const filePath = `/uploads/${childFolder}/` + file.newFilename;
-
+        return await new Promise((resolve, reject) => {
+          form.parse(req);
+          form.on('file', async (formname, file) => {
             if (req.user) {
               data.user = req.user.id;
             }
 
             data.id = Number((Math.random() * 10000).toFixed());
-            data.url = filePath;
+            data.url = `/uploads/${childFolder}/` + file.newFilename;
             data.alt =
               req.body.alt ||
               file.originalFilename.split('.').shift().replace(/-/g, ' ');
 
-            if (!model || !columns) {
-              return {
-                status: 200,
-                data,
-              };
-            } else {
-              const [result] = await queryBuilder
-                .insert(data)
-                .returning(columns)
-                .catch(handleControllerError);
+            // register uploaded file
+            if (file) {
+              if (!model || !columns) {
+                return resolve({
+                  status: 200,
+                  data,
+                });
+              } else {
+                const [result] = await queryBuilder
+                  .insert(data)
+                  .returning(columns)
+                  .catch(handleControllerError);
 
-              return {
-                status: 201,
-                data: result,
-              };
+                return resolve({
+                  status: 201,
+                  data: result,
+                });
+              }
+            } else {
+              return resolve({
+                status: 400,
+                data: 'upload: `file` not defined',
+              });
             }
-          } else {
-            console.error('upload controller: `file` not defined');
-            return {
+          });
+
+          form.on('error', async err  =>{
+            return reject({
               status: 400,
-              data: 'upload controller: `file` not defined',
-            };
-          }
-        });
-        form.on('error', function (err) {
-          return {
-            status: 400,
-            data: 'upload controller: ' + err,
-          };
-        });
+              data: 'upload: ' + err,
+            });
+          });
+        }); // end Promise
       } else {
         return {
           status: 400,
-          data: 'upload controller: `childFolder` not defined',
+          data: 'upload: `childFolder` not defined',
         };
       }
     },
@@ -534,7 +531,7 @@ module.exports = (req, res) => {
         }
 
         // Encrypt user password
-        encryptedPassword = await bcrypt.hash(password, 10);
+        let encryptedPassword = await bcrypt.hash(password, 10);
 
         const data = {
           email: email.toLowerCase(), // sanitize: convert email to lowercase
@@ -562,12 +559,12 @@ module.exports = (req, res) => {
 
         // 1- access token for restricted resources
         const token = await jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: process.env.ACCESS_TOKEN_LIFE || '2h',
+          expiresIn: process.env.ACCESS_TOKEN_LIFE || '15m', // default 15 minutes
         });
 
         // 2- refresh token for long term access
         const refresh = await jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {
-          expiresIn: process.env.REFRESH_EXPIRE || '30d',
+          expiresIn: process.env.REFRESH_EXPIRE || '30d', // default 30 days
         });
 
         user.token = token;
