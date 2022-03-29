@@ -73,6 +73,38 @@ export declare interface MaviConfig {
 export type Routes = {
   [name: string]: Route[]
 }
+export type Define = {
+  /**
+   * Database models
+   *
+   * Used for creating/deleting tables
+   *
+   * Used for api router and populate configurations
+   *
+   * Order is important if there are existing foreign key references
+   */
+  models: Model.Tables
+  /**
+    - Every fragment(column) is like a sub route used by the parent routes
+    - Each parent column can be used for populating relational data or datasets from these sub routes
+    - This parent column is usually an id or a virtual column
+    - Example: the posts entity doesn't have column as `isLiked`, but you can populate it via `likes` table.
+      A user token will be required for this, and likes table should have a relation with the post ids.
+  */
+  populate: Populate.Columns
+  utils?: object
+  /**
+   * Middlewares for the api routes
+   *
+   * See details: https://expressjs.com/en/guide/using-middleware.html
+   */
+  middlewares?: {
+    [functionName: string]: middleware
+  }
+  controllers?: {
+    [functionName: string]: middleware
+  }
+}
 export declare interface MaviApi {
   base: string
   /**
@@ -85,38 +117,7 @@ export declare interface MaviApi {
    * Definitions for the api routes
    *
    */
-  define: {
-    /**
-     * Database models
-     *
-     * Used for creating/deleting tables
-     *
-     * Used for api router and populate configurations
-     *
-     * Order is important if there are existing foreign key references
-     */
-    models: Model.Tables
-    /**
-      - Every fragment(column) is like a sub route used by the parent routes
-      - Each parent column can be used for populating relational data or datasets from these sub routes
-      - This parent column is usually an id or a virtual column
-      - Example: the posts entity doesn't have column as `isLiked`, but you can populate it via `likes` table.
-        A user token will be required for this, and likes table should have a relation with the post ids.
-    */
-    populate: Populate.Columns
-    utils?: object
-    /**
-     * Middlewares for the api routes
-     *
-     * See details: https://expressjs.com/en/guide/using-middleware.html
-     */
-    middlewares?: {
-      [functionName: string]: middleware
-    }
-    controllers?: {
-      [functionName: string]: middleware
-    }
-  }
+  define: Define
   plugins?: object
 }
 
@@ -404,3 +405,10 @@ export declare interface Static {
   fullpath?: string
   options: ServeStaticOptions
 }
+export type HydrateRoutes = (
+  payload: {
+    routes: Routes
+    define: Define
+  },
+  options: object
+) => Routes

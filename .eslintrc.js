@@ -24,6 +24,6 @@ module.exports = {
     'semi': ['warn', 'always'],
     'space-before-blocks': ['warn', 'always'],
     'spaced-comment': ['warn', 'always'],
-    'indent': ["error", 2],
+    'indent': ["error", 2, { "SwitchCase": 1 }],
   },
 };

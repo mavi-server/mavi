@@ -1,10 +1,13 @@
+/** @type {import('../../../types').HydrateRoutes} */
+
 module.exports = ({ routes, define }, options) => {
   if (!define.models) define.models = {};
 
   const hydrateRoutes = () => {
     for (const path in routes) {
       if (!routes[path]) throw Error(`Please define mavi routes for ${path}`);
-      if (!Array.isArray(routes[path])) throw Error(`Please define mavi routes for ${path} as array`);
+      if (!Array.isArray(routes[path]))
+        throw Error(`Please define mavi routes for ${path} as array`);
 
       // complete required fields for every route
       for (let route of routes[path]) {
@@ -22,24 +25,34 @@ module.exports = ({ routes, define }, options) => {
           }
         }
 
-        if (!route.path) throw Error(`Please define mavi routes['${path}'][x].path`);
+        if (!route.path)
+          throw Error(`Please define mavi routes['${path}'][x].path`);
 
         // set full path
         route.path = `${path}/${route.path}`.replace(/\/+/g, '/');
 
         // global middleware (order sensitive)
-        if (!("middlewares" in route)) route.middlewares = ['interceptor'];
-        else route.middlewares = ['interceptor', ...route.middlewares];
+        if (!('middlewares' in route)) route.middlewares = ['interceptor'];
+        else if (route.controller === 'create' && route.middlewares.includes('is-owner')) {
+          // if controller is `create` and middleware includes `is-owner`, return error
+          throw Error(`Middleware 'is-owner' is not allowed for 'create' controller`);
+        }
+        else {
+          route.middlewares = ['interceptor', ...route.middlewares];
+        }
 
         // *If this is a static route*
-        if ("serve" in route) {
+        if ('serve' in route) {
           // Serves as a static file
           // serve options will be used inside of express.static
           // https://expressjs.com/en/4x/api.html#express.static
 
-          if (!route.serve) throw Error(`Please define mavi routes['${path}'].serve`);
+          if (!route.serve)
+            throw Error(`Please define mavi routes['${path}'].serve`);
           if (!route.serve.folder && !route.serve.fullpath) {
-            throw Error(`Please define routes['${path}'].serve.folder or routes['${path}'].serve.fullpath`);
+            throw Error(
+              `Please define routes['${path}'].serve.folder or routes['${path}'].serve.fullpath`
+            );
           }
 
           if (!route.method) {
@@ -58,17 +71,21 @@ module.exports = ({ routes, define }, options) => {
 
         // *If this is a dynamic route*
         else {
-          if (!route.method) throw Error(`Please define mavi routes['${path}'].method`);
+          if (!route.method)
+            throw Error(`Please define mavi routes['${path}'].method`);
 
           // global utils (order sensitive)
-          if (!("utils" in route)) route.utils = [];
+          if (!('utils' in route)) route.utils = [];
 
           // controller setter
-          if ("controller" in route) {
+          if ('controller' in route) {
             // if route controller uses req.body eg: create and updates, sanitize as default
             // note: senitize function needs improvement
             // not works with function controllers
-            if (typeof route.controller === 'string' && route.controller.match(/create|update/gi)) {
+            if (
+              typeof route.controller === 'string' &&
+              route.controller.match(/create|update/gi)
+            ) {
               route.utils.splice(0, 0, 'sanitize');
             }
 
@@ -83,9 +100,10 @@ module.exports = ({ routes, define }, options) => {
 
           // set schema columns:
           if (define.models[route.model]) {
-            route.schema = Object.keys(define.models[route.model]).filter(column => column !== 'hash');
-          }
-          else if (route.controller) {
+            route.schema = Object.keys(define.models[route.model]).filter(
+              column => column !== 'hash'
+            );
+          } else if (route.controller) {
             throw Error(`Please define mavi model for '${route.model}'`);
           }
         }
@@ -104,23 +122,35 @@ module.exports = ({ routes, define }, options) => {
     return define.populate[column] || column;
   };
 
-
   const setDefaultColumns = async route => {
     const model = route.model || route.from; // from is used in sub routes
-    const controllers = ['count', 'find', 'findOne', 'update', 'create', 'delete', 'upload'];
+    const controllers = [
+      'count',
+      'find',
+      'findOne',
+      'update',
+      'create',
+      'delete',
+      'upload',
+    ];
 
     // if route uses one of these controllers, then it should have a model
-    if (route.controller && !define.models[model] && controllers.includes(route.controller)) {
-      throw new Error(`Please define a model for the '${model}' which is used in '${route.path}' path`);
-    }
-    else {
-      if (!("exclude" in route)) route.exclude = [];
-      if (!("columns" in route)) route.columns = [];
+    if (
+      route.controller &&
+      !define.models[model] &&
+      controllers.includes(route.controller)
+    ) {
+      throw new Error(
+        `Please define a model for the '${model}' which is used in '${route.path}' path`
+      );
+    } else {
+      if (!('exclude' in route)) route.exclude = [];
+      if (!('columns' in route)) route.columns = [];
 
       // Set columns:
       for (const column in define.models[model]) {
         // Select all by default and exclude the "hash" & "private" fields
-        if (column == "hash" || define.models[model][column].private) continue;
+        if (column == 'hash' || define.models[model][column].private) continue;
 
         // Don't include the excluded columns
         if (!route.exclude.includes(column)) route.columns.push(column);
@@ -130,7 +160,7 @@ module.exports = ({ routes, define }, options) => {
       if (route.type && route.type === 'count') route.columns = [];
 
       // if populate is defined, set default columns for it
-      if ("populate" in route) {
+      if ('populate' in route) {
         // convert into array if populate is an object
         if (!Array.isArray(route.populate)) route.populate = [route.populate];
 
@@ -138,7 +168,9 @@ module.exports = ({ routes, define }, options) => {
         route.populate = await Promise.all(route.populate.map(setFragments));
 
         // set default columns
-        route.populate = await Promise.all(route.populate.map(setDefaultColumns));
+        route.populate = await Promise.all(
+          route.populate.map(setDefaultColumns)
+        );
       }
     }
 
