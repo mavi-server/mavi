@@ -183,37 +183,41 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
 
               // set $arguments for default controllers
               switch (route.controller) {
-              case 'find':
-              case 'count':
-              case 'findOne':
-                $arguments = [];
-                break;
-              case 'create':
-                $arguments = [body];
-                break;
-              case 'delete':
-                $arguments = [id];
-                break;
-              case 'update':
-                $arguments = [id, body];
-                break;
-              case 'upload':
-                $arguments = [folder, body];
-                break;
-              case 'login':
-              case 'logout':
-              case 'register':
-                $arguments = [req, res];
+                case 'find':
+                case 'count':
+                case 'findOne':
+                  $arguments = [];
+                  break;
+                case 'create':
+                  $arguments = [body];
+                  break;
+                case 'delete':
+                  $arguments = [id];
+                  break;
+                case 'update':
+                  $arguments = [id, body];
+                  break;
+                case 'upload':
+                  $arguments = [folder, body];
+                  break;
+                case 'login':
+                case 'logout':
+                case 'register':
+                  $arguments = [req, res];
               }
 
               if (route.view && !route.controller) {
                 // execute controller with only view
-                response = await req.app.controller(req, res).find(false); // false to disable sub-controllers
+                await req.app
+                  .controller(req, res)
+                  .find(false) // false to disable sub-controllers
+                  .then(res=>response = res).catch(err=>response = err);
               } else {
                 // execute default controller
-                response = await req.app
+                await req.app
                   .controller(req, res)
-                  [route.controller](...$arguments);
+                  [route.controller](...$arguments)
+                  .then(res=>response = res).catch(err=>response = err);
               }
             } else {
               // controller not found

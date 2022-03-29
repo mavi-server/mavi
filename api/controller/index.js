@@ -21,7 +21,7 @@ module.exports = (req, res) => {
     if (process.env.NODE_ENV === 'development') {
       console.log('err.response:', err);
     }
-    return {
+    throw {
       status: status || 500,
       data: {
         message: `${code}: ${message}`,
@@ -91,6 +91,24 @@ module.exports = (req, res) => {
 
     // Builder:
     UrlQueryBuilder(query, columns);
+
+    // assign special variables to the query
+    if (query.where) {
+      for(const w of query.where) {
+        if (w.params[2] && w.params[2].startsWith('#')) {
+          // get variable string
+          const variable = w.params[2].slice(1);
+          
+          // don't allow to use if special variable is not in the req.params
+          if(!(variable in req.params)) {
+            throw new Error('Missing parameter: ' + variable);
+          }
+
+          // replace the variable with the value from the req.params
+          w.params[2] = req.params[variable];
+        }
+      }
+    }
   }
   // If req.config.query is set to 'off', then req.query will not be used at all
   else {
@@ -276,6 +294,34 @@ module.exports = (req, res) => {
       };
     },
     create: async (body, populateIt = true) => {
+      // You can send data via parameters or via body.
+
+      // Where clause for `create` controller. Used to set body fields.
+      if(!body || Object.keys(body).length === 0) {
+        // Where queries can be used to set body.
+        // Special variable string should be defined in the `req.params` object
+        // Special variable Values can be set in the `req.params` object
+        // example: /:id/:type => where: 'title-#id-and-content_type-#type'
+        if(query.where) {
+          body = {};
+          const specialWhereForCreate = query.where.filter(w=>w.params[2].startsWith('#'));
+
+          if(specialWhereForCreate.length) {
+            for(const w of specialWhereForCreate) {
+              const $var = w.params[2].slice(1);
+              body[$var] = req.params[$var] || null;
+            }
+          } else {
+            return {
+              status: 400,
+              data: 'Body is required',
+            };
+          }
+        }
+      }
+
+      console.log(body);
+
       let data = await queryBuilder
         .insert(body)
         .returning(columns)
