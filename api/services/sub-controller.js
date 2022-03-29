@@ -63,118 +63,184 @@ const SubController = async function (req, { populate, data, context }) {
             }
 
             switch (controller || type) {
-            case 'count': {
-              const queryBuilder = knex(from);
+              case 'count': {
+                const queryBuilder = knex(from);
 
-              if (select && on) {
-                if (!query.where) query.where = [];
+                if (select && on) {
+                  if (!query.where) query.where = [];
 
-                // on:
-                query.where.push({ exec: 'where', params: [on, '=', row.id] });
+                  // on:
+                  query.where.push({ exec: 'where', params: [on, '=', row.id] });
 
-                // is-owner
-                if (req.owner) {
-                  if (req.config.model === 'users')
-                    query.where.push({
-                      exec: 'where',
-                      params: ['id', '=', req.owner.id],
-                    });
-                  else
-                    query.where.push({
-                      exec: 'where',
-                      params: ['user', '=', req.owner.id],
-                    });
-                }
-
-                // apply where queries
-                if (query.where) {
-                  for (const group of query.where) {
-                    queryBuilder[group.exec](...group.params);
+                  // is-owner
+                  if (req.owner) {
+                    if (req.config.model === 'users')
+                      query.where.push({
+                        exec: 'where',
+                        params: ['id', '=', req.owner.id],
+                      });
+                    else
+                      query.where.push({
+                        exec: 'where',
+                        params: ['user', '=', req.owner.id],
+                      });
                   }
-                }
 
-                // populate:
-                const data = await queryBuilder
-                  .count('*')
-                  .then(res => ({ [select]: Number(res[0].count) }));
-                Object.assign(row, data);
-              } else {
-                const message =
+                  // apply where queries
+                  if (query.where) {
+                    for (const group of query.where) {
+                      queryBuilder[group.exec](...group.params);
+                    }
+                  }
+
+                  // populate:
+                  const data = await queryBuilder
+                    .count('*')
+                    .then(res => ({ [select]: Number(res[0].count) }));
+                  Object.assign(row, data);
+                } else {
+                  const message =
                     'sub-controller: `on` & `select` option should be defined';
-                console.error(message);
-                throw Error({ message });
-              }
-              break;
-            }
-            case 'token-reference': {
-              const queryBuilder = knex(from);
-
-              if (select) {
-                // only users with identity can use this sub controller
-                if (req.user && req.user.id) {
-                  const where = {
-                    user: req.user.id, // reference token
-                    [on || select]: row.id, // referencing column
-                  };
-
-                  const reference = await queryBuilder
-                    .first(columns)
-                    .where(where);
-                  if (reference) {
-                    if (returning) {
-                      if (returning === '*') row[select] = reference;
-                      else if (columns.includes(returning))
-                        row[select] = reference[returning];
-                      else {
-                        const message = `sub-controller: returning column ${returning} is not defined`;
-                        console.error(message);
-                        throw Error({ message });
-                      }
-                    } else row[select] = reference.id || null;
-                  } else row[select] = null;
+                  console.error(message);
+                  throw Error({ message });
                 }
-              } else {
-                const message =
+                break;
+              }
+              case 'token-reference': {
+                const queryBuilder = knex(from);
+
+                if (select) {
+                  // only users with identity can use this sub controller
+                  if (req.user && req.user.id) {
+                    const where = {
+                      user: req.user.id, // reference token
+                      [on || select]: row.id, // referencing column
+                    };
+
+                    const reference = await queryBuilder
+                      .first(columns)
+                      .where(where);
+                    if (reference) {
+                      if (returning) {
+                        if (returning === '*') row[select] = reference;
+                        else if (columns.includes(returning))
+                          row[select] = reference[returning];
+                        else {
+                          const message = `sub-controller: returning column ${returning} is not defined`;
+                          console.error(message);
+                          throw Error({ message });
+                        }
+                      } else row[select] = reference.id || null;
+                    } else row[select] = null;
+                  }
+                } else {
+                  const message =
                     'sub-controller: `select` option should be defined';
-                console.error(message);
-                throw Error({ message });
-              }
-              break;
-            }
-            case 'array-reference': {
-              if (select && row[select]) {
-                try {
-                  row[select] = JSON.parse(row[select]);
-                } catch (err) {
-                  console.error('sub-controller:', err.message);
+                  console.error(message);
+                  throw Error({ message });
                 }
-
-                if (Array.isArray(row[select])) {
+                break;
+              }
+              case 'array-reference': {
+                if (select && row[select]) {
                   try {
-                    row[select] = await Promise.all(
-                      row[select].map(
-                        async id =>
-                          await req.app
-                            .db(from)
-                            .first(columns)
-                            .where({ id: Number(id) })
-                      )
-                    );
+                    row[select] = JSON.parse(row[select]);
                   } catch (err) {
                     console.error('sub-controller:', err.message);
                   }
-                } else row[select] = null;
-              }
-              break;
-            }
-            case 'object': {
-              const queryBuilder = knex(from);
 
-              // if row have an id
-              if (select && row[select]) {
-                row[select] = await queryBuilder
-                  .first(columns)
-                  .where({ id: row[select] });
+                  if (Array.isArray(row[select])) {
+                    try {
+                      row[select] = await Promise.all(
+                        row[select].map(
+                          async id =>
+                            await req.app
+                              .db(from)
+                              .first(columns)
+                              .where({ id: Number(id) })
+                        )
+                      );
+                    } catch (err) {
+                      console.error('sub-controller:', err.message);
+                    }
+                  } else row[select] = null;
+                }
+                break;
+              }
+              case 'object': {
+                const queryBuilder = knex(from);
+
+                // if row have an id
+                if (select && row[select]) {
+                  row[select] = await queryBuilder
+                    .first(columns)
+                    .where({ id: row[select] });
+
+                  if (populate) {
+                    // deep populate
+                    try {
+                      row[select] = await SubController(req, {
+                        populate,
+                        data: row[select],
+                        context: config.from,
+                      });
+                      if (Array.isArray(row[select]))
+                        row[select] = row[select][0];
+                    } catch (err) {
+                      throw err;
+                    }
+                  }
+                }
+                break;
+              }
+              case 'array': {
+                const queryBuilder = knex(from);
+
+                // if row have an id
+                if (select && row[select]) {
+                  if (query.sort) {
+                    queryBuilder.orderBy(query.sort);
+                  }
+                  if (query.start) {
+                    queryBuilder.offset(query.start);
+                  }
+                  if (query.limit || !query.limit) {
+                    queryBuilder.limit(query.limit || 10);
+                  }
+
+                  // Handle where queries:
+                  if (!query.where) query.where = [];
+
+                  // on:
+                  query.where.push({
+                    exec: 'where',
+                    params: ['id', '=', row[select]],
+                  });
+
+                  // is-owner
+                  if (req.owner) {
+                    if (req.config.model === 'users')
+                      query.where.push({
+                        exec: 'where',
+                        params: ['id', '=', req.owner.id],
+                      });
+                    else
+                      query.where.push({
+                        exec: 'where',
+                        params: ['user', '=', req.owner.id],
+                      });
+                  }
+
+                  // apply where queries
+                  if (query.where) {
+                    for (const group of query.where) {
+                      queryBuilder[group.exec](...group.params);
+                    }
+                  }
+
+                  // populate selected row:
+                  row[select] = await queryBuilder.first(columns);
+                }
 
                 if (populate) {
                   // deep populate
@@ -184,80 +250,14 @@ const SubController = async function (req, { populate, data, context }) {
                       data: row[select],
                       context: config.from,
                     });
-                    if (Array.isArray(row[select]))
-                      row[select] = row[select][0];
                   } catch (err) {
                     throw err;
                   }
                 }
+                break;
               }
-              break;
-            }
-            case 'array': {
-              const queryBuilder = knex(from);
-
-              // if row have an id
-              if (select && row[select]) {
-                if (query.sort) {
-                  queryBuilder.orderBy(query.sort);
-                }
-                if (query.start) {
-                  queryBuilder.offset(query.start);
-                }
-                if (query.limit || !query.limit) {
-                  queryBuilder.limit(query.limit || 10);
-                }
-
-                // Handle where queries:
-                if (!query.where) query.where = [];
-
-                // on:
-                query.where.push({
-                  exec: 'where',
-                  params: ['id', '=', row[select]],
-                });
-
-                // is-owner
-                if (req.owner) {
-                  if (req.config.model === 'users')
-                    query.where.push({
-                      exec: 'where',
-                      params: ['id', '=', req.owner.id],
-                    });
-                  else
-                    query.where.push({
-                      exec: 'where',
-                      params: ['user', '=', req.owner.id],
-                    });
-                }
-
-                // apply where queries
-                if (query.where) {
-                  for (const group of query.where) {
-                    queryBuilder[group.exec](...group.params);
-                  }
-                }
-
-                // populate selected row:
-                row[select] = await queryBuilder.first(columns);
-              }
-
-              if (populate) {
-                // deep populate
-                try {
-                  row[select] = await SubController(req, {
-                    populate,
-                    data: row[select],
-                    context: config.from,
-                  });
-                } catch (err) {
-                  throw err;
-                }
-              }
-              break;
-            }
-            default:
-              break;
+              default:
+                break;
             }
           } else {
             const message =

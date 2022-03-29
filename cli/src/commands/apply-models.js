@@ -119,11 +119,12 @@ const seedModelIfSeedableAndNotSeeded = async (model, seeded) => {
     let modelSeed = {};
 
     if (modelSeedExists) modelSeed = require(path.join(modelsPath, seedFile));
-    else if (model in config.api.define.seeds)
+    else if (config.api.define.seeds && model in config.api.define.seeds) {
       modelSeed = config.api.define.seeds[model];
+    }
 
     // if seed data exists, seed the model table
-    if (modelSeed.length) {
+    if (Array.isArray(modelSeed) && modelSeed.length) {
       await knex(model)
         .insert(modelSeed)
         .then(() => {
@@ -334,15 +335,15 @@ const applyModels = async () => {
                             table[Fn](column);
                           } else {
                             switch (fn) {
-                            case 'unique':
-                              constraint = 'unique';
-                              break;
-                            case 'primary':
-                              constraint = 'pkey';
-                              break;
-                            case 'foreign':
-                              constraint = 'foreign';
-                              break;
+                              case 'unique':
+                                constraint = 'unique';
+                                break;
+                              case 'primary':
+                                constraint = 'pkey';
+                                break;
+                              case 'foreign':
+                                constraint = 'foreign';
+                                break;
                             }
 
                             table[Fn](
