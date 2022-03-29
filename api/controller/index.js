@@ -94,13 +94,13 @@ module.exports = (req, res) => {
 
     // assign special variables to the query
     if (query.where) {
-      for(const w of query.where) {
+      for (const w of query.where) {
         if (w.params[2] && w.params[2].startsWith('#')) {
           // get variable string
           const variable = w.params[2].slice(1);
-          
+
           // don't allow to use if special variable is not in the req.params
-          if(!(variable in req.params)) {
+          if (!(variable in req.params)) {
             throw new Error('Missing parameter: ' + variable);
           }
 
@@ -296,37 +296,24 @@ module.exports = (req, res) => {
     create: async (body, populateIt = true) => {
       // You can send data via parameters or via body.
 
-      // Where clause for `create` controller. Used to set body fields.
-      if(!body || Object.keys(body).length === 0) {
-        // Where queries can be used to set body.
-        // Special variable string should be defined in the `req.params` object
-        // Special variable Values can be set in the `req.params` object
-        // example: /:id/:type => where: 'title-#id-and-content_type-#type'
-        if(query.where) {
-          body = {};
-          const specialWhereForCreate = query.where.filter(w=>w.params[2].startsWith('#'));
-
-          if(specialWhereForCreate.length) {
-            for(const w of specialWhereForCreate) {
-              const $var = w.params[2].slice(1);
-              body[$var] = req.params[$var] || null;
-            }
-          } else {
-            return {
-              status: 400,
-              data: 'Body is required',
-            };
-          }
-        }
+      if (req.params) {
+        if(!body) body = {};
+        body = {...body, ...req.params};
+      }
+      
+      if (!body || Object.keys(body).length === 0) {
+        return {
+          status: 400,
+          data: 'Body is required',
+        };
       }
 
-      console.log(body);
 
       let data = await queryBuilder
         .insert(body)
         .returning(columns)
         .catch(handleControllerError);
-        
+
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
         data = await SubController(req, {
@@ -342,7 +329,7 @@ module.exports = (req, res) => {
         data,
       };
     },
-    update: async (id, body, populateIt=true) => {
+    update: async (id, body, populateIt = true) => {
       const where = {};
       if (id) where.id = id;
       if (req.owner) {
@@ -358,7 +345,7 @@ module.exports = (req, res) => {
         .where(where)
         .returning(columns)
         .catch(handleControllerError);
-      
+
       if (!data && req.owner) {
         return {
           status: 400,
@@ -374,7 +361,7 @@ module.exports = (req, res) => {
           context: model,
         }).catch(handleControllerError);
       }
-      if(Array.isArray(data)) data = data[0] || null;
+      if (Array.isArray(data)) data = data[0] || null;
 
       return {
         status: 201,
@@ -397,7 +384,7 @@ module.exports = (req, res) => {
         .where(where)
         .returning(columns)
         .catch(handleControllerError);
-      
+
       if (!data && req.owner) {
         return {
           status: 405, // method not allowed
