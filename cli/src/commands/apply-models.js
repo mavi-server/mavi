@@ -591,7 +591,7 @@ const db = {
           .insert(modelSeed)
           .then(() => {
             seeded = true;
-            console.log(`\x1b[32m[${model} seeded]\x1b[0m`);
+            console.log(`\x1b[32m[Table ${model} seeded]\x1b[0m`);
           });
       }
     }

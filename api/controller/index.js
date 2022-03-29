@@ -451,17 +451,17 @@ module.exports = (req, res) => {
             if (req.user) {
               data.user = req.user.id;
             }
-  
+
             data.id = Number((Math.random() * 10000).toFixed());
             data.url = `/uploads/${childFolder}/` + file.newFilename;
             data.alt =
               req.body.alt ||
               file.originalFilename.split('.').shift().replace(/-/g, ' ');
-            
+
             // register uploaded file
             if (file) {
               if (!model || !columns) {
-                resolve ({
+                return resolve({
                   status: 200,
                   data,
                 });
@@ -470,29 +470,29 @@ module.exports = (req, res) => {
                   .insert(data)
                   .returning(columns)
                   .catch(handleControllerError);
-  
-                resolve ({
+
+                return resolve({
                   status: 201,
                   data: result,
                 });
               }
             } else {
-              resolve ({
+              return resolve({
                 status: 400,
                 data: 'upload: `file` not defined',
               });
             }
           });
 
-          form.on('error', function (err) {
-            reject({
+          form.on('error', async err  =>{
+            return reject({
               status: 400,
               data: 'upload: ' + err,
             });
           });
         }); // end Promise
       } else {
-        throw {
+        return {
           status: 400,
           data: 'upload: `childFolder` not defined',
         };
