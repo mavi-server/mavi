@@ -227,6 +227,9 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
               };
             }
 
+            // prevent unknown status error when some unpredictable error occurs
+            if(!response.status) response.status = 500;
+
             res.status(response.status).send(response.data);
           } // end of async function
         );

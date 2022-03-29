@@ -308,7 +308,6 @@ module.exports = (req, res) => {
         };
       }
 
-
       let data = await queryBuilder
         .insert(body)
         .returning(columns)
