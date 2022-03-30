@@ -670,7 +670,7 @@ module.exports = (req, res) => {
       }
       // Register logic ends here
     },
-    logout: (req, res) => {
+    logout: async (req, res) => {
       res.set('x-access-token', null);
       res.set('x-refresh-token', null);
       res.clearCookie('token');
