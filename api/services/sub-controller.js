@@ -17,28 +17,44 @@ const SubController = function (req, { populate, data, context }) {
            * @param {import('../../types').Populate.Properties} config
            */
           async config => {
-            // must
-            if (!config.query) config.query = {};
+            // allocate new memory for each config
+            // we do this because configs can be dynamic
+            // eg. row and req.param values can be used during population
+            // const config = { ...Config }; // clone config
 
-            // optional from: get 'from' value from request's param slug
-            if (config.from.includes('req.params.')) {
-              const [, key] = config.from.split('req.params.');
-              if (req.params[key]) {
-                config.from = req.params[key];
+            // you can assign row value to the config.from value
+            // e.g. { config.from: row.type } will assign row.type to config.from value
+            if (config.from.startsWith('row.')) {
+              // row column key
+              const key = config.from.split('row.')[1];
 
-                // ** temporary security fix:
-                // ** hide hash and private fields when 'req.params' used as `from` value
-                // *** normally these process should be done in `hydrate-routes` before the router initialization
-                const table = req.app.$config.api.define.models[config.from];
-                if (table) {
-                  const columns = Object.keys(table).filter(
-                    c => !(c === 'hash' || table[c].private)
-                  );
-                  config.columns = columns;
-                }
-              } else
-                throw Error(`sub-controller: req.params.${key} is not defined`);
+              if (row[key]) {
+                config.from = row[key];
+              } else {
+                throw Error(`sub-controller: row.${key} is not defined`);
+              }
             }
+
+            // ** temporary security fix:
+            // ** hide hash and private fields when 'row.value' used as a dynamic `from` value
+            // *** normally static `from` value processes should be done in `hydrate-routes` before the router initialization
+            if (config.from in req.app.$config.api.define.models) {
+              const table = req.app.$config.api.define.models[config.from];
+              const columns = Object.keys(table).filter(
+                c => !(c === 'hash' || table[c].private)
+              );
+              config.columns = columns;
+            } else {
+              throw Error(`sub-controller: ${config.from} is not defined`);
+            }
+
+            // convert user's url queries to objects
+            // the objects will be used to build sub sql query
+            // Url Query Builder:
+            config.query = UrlQueryBuilder(config.query, config.columns, {
+              context,
+              row,
+            });
 
             const {
               select, // column
@@ -50,56 +66,27 @@ const SubController = function (req, { populate, data, context }) {
               query,
               populate, // recursively populate - deep populate
               returning, // "token-reference" option
+              // context, // parent model name - disabled because of a bug with the usage of row.value in `query.where` or `from`
             } = config;
 
             if (controller || type) {
-              // convert user's url queries to objects
-              // the objects will be used to build sub sql query
-              UrlQueryBuilder(query, columns);
-
-              // assign special variables to the query
-              if (query.where) {
-                query.where.find(w => {
-                  if (w.params.includes('#context')) {
-                    return (w.params[2] = context);
-                  }
-                });
-              }
-              else query.where = [];
-
               switch (controller || type) {
                 case 'count': {
-                  const queryBuilder = knex(from);
-
                   if (select && on) {
-                    // on:
-                    const $where = [ // detach memory references from the query if we not do that it will acumulate previous queries as one group.
-                      ...query.where,
-                      {
-                        exec: 'where',
-                        params: [on, '=', row.id],
-                      },
-                    ];
+                    const queryBuilder = knex(from);
 
-                    // is-owner
-                    // if (req.owner) {
-                    //   if (req.config.model === 'users')
-                    //     $where.push({
-                    //       exec: 'where',
-                    //       params: ['id', '=', req.owner.id],
-                    //     });
-                    //   else
-                    //     $where.push({
-                    //       exec: 'where',
-                    //       params: ['user', '=', req.owner.id],
-                    //     });
-                    // }
+                    // handle where clause
+                    if (!query.where) query.where = [];
+
+                    // on:
+                    query.where.push({
+                      exec: 'where',
+                      params: [on, '=', row.id],
+                    });
 
                     // apply where queries
-                    if ($where) {
-                      for (const group of $where) {
-                        queryBuilder[group.exec](...group.params);
-                      }
+                    for (const group of query.where) {
+                      queryBuilder[group.exec](...group.params);
                     }
 
                     // populate:
@@ -110,25 +97,39 @@ const SubController = function (req, { populate, data, context }) {
                   } else {
                     const message =
                       'sub-controller: `on` & `select` option should be defined';
-                    console.error(message);
                     throw Error({ message });
                   }
                   break;
                 }
                 case 'token-reference': {
-                  const queryBuilder = knex(from);
-
                   if (select) {
                     // only users with identity can use this sub controller
                     if (req.user && req.user.id) {
-                      const where = {
-                        user: req.user.id, // reference token
-                        [on || select]: row.id, // referencing column
-                      };
+                      const queryBuilder = knex(from);
 
-                      const reference = await queryBuilder
-                        .first(columns)
-                        .where(where);
+                      // handle where clause
+                      if (!query.where) query.where = [];
+
+                      // on:
+                      query.where.push(
+                        {
+                          exec: 'where',
+                          params: ['user', '=', req.user.id], // reference token
+                        },
+                        {
+                          exec: 'where',
+                          params: [on || select, '=', row.id], // referencing column
+                        }
+                      );
+
+                      // apply where queries
+                      for (const group of query.where) {
+                        queryBuilder[group.exec](...group.params);
+                      }
+
+                      // fetch the data
+                      const reference = await queryBuilder.first(columns);
+
                       if (reference) {
                         if (returning) {
                           if (returning === '*') row[select] = reference;
@@ -136,7 +137,6 @@ const SubController = function (req, { populate, data, context }) {
                             row[select] = reference[returning];
                           else {
                             const message = `sub-controller: returning column ${returning} is not defined`;
-                            console.error(message);
                             throw Error({ message });
                           }
                         } else row[select] = reference.id || null;
@@ -145,7 +145,6 @@ const SubController = function (req, { populate, data, context }) {
                   } else {
                     const message =
                       'sub-controller: `select` option should be defined';
-                    console.error(message);
                     throw Error({ message });
                   }
                   break;
@@ -156,6 +155,7 @@ const SubController = function (req, { populate, data, context }) {
                       row[select] = JSON.parse(row[select]);
                     } catch (err) {
                       console.error('sub-controller:', err.message);
+                      row[select] = [];
                     }
 
                     if (Array.isArray(row[select])) {
@@ -177,24 +177,39 @@ const SubController = function (req, { populate, data, context }) {
                   break;
                 }
                 case 'object': {
-                  const queryBuilder = knex(from);
-
                   // if row have an id
                   if (select && row[select]) {
-                    row[select] = await queryBuilder
-                      .first(columns)
-                      .where({ id: row[select] });
+                    const queryBuilder = knex(from);
 
+                    // handle where clause
+                    if (!query.where) query.where = [];
+
+                    // on:
+                    query.where.push({
+                      exec: 'where',
+                      params: ['id', '=', row[select]],
+                    });
+
+                    // apply where queries
+                    for (const group of query.where) {
+                      queryBuilder[group.exec](...group.params);
+                    }
+
+                    // fetch:
+                    row[select] = await queryBuilder.first(columns);
+
+                    // deep populate selected row:
                     if (populate) {
-                      // deep populate
                       try {
                         row[select] = await SubController(req, {
                           populate,
                           data: row[select],
-                          context: config.from,
+                          context,
                         });
-                        if (Array.isArray(row[select]))
+
+                        if (Array.isArray(row[select])) {
                           row[select] = row[select][0];
+                        }
                       } catch (err) {
                         throw err;
                       }
@@ -203,10 +218,19 @@ const SubController = function (req, { populate, data, context }) {
                   break;
                 }
                 case 'array': {
-                  const queryBuilder = knex(from);
-
                   // if row have an id
                   if (select && row[select]) {
+                    const queryBuilder = knex(from);
+
+                    // handle where clause
+                    if (!query.where) query.where = [];
+
+                    // on:
+                    query.where.push({
+                      exec: 'where',
+                      params: ['id', '=', row[select]],
+                    });
+
                     if (query.sort) {
                       queryBuilder.orderBy(query.sort);
                     }
@@ -217,50 +241,25 @@ const SubController = function (req, { populate, data, context }) {
                       queryBuilder.limit(query.limit || 10);
                     }
 
-                    // on:
-                    const $where = [ // detach memory references from the query if we not do that it will acumulate previous queries as one group.
-                      ...query.where,
-                      {
-                        exec: 'where',
-                        params: ['id', '=', row[select]],
-                      },
-                    ];
-
-                    // is-owner
-                    // if (req.owner) {
-                    //   if (req.config.model === 'users')
-                    //     $where.push({
-                    //       exec: 'where',
-                    //       params: ['id', '=', req.owner.id],
-                    //     });
-                    //   else
-                    //     $where.push({
-                    //       exec: 'where',
-                    //       params: ['user', '=', req.owner.id],
-                    //     });
-                    // }
-
                     // apply where queries
-                    if ($where) {
-                      for (const group of $where) {
-                        queryBuilder[group.exec](...group.params);
-                      }
+                    for (const group of query.where) {
+                      queryBuilder[group.exec](...group.params);
                     }
 
-                    // populate selected row:
+                    // fetch:
                     row[select] = await queryBuilder.first(columns);
-                  }
 
-                  if (populate) {
-                    // deep populate
-                    try {
-                      row[select] = await SubController(req, {
-                        populate,
-                        data: row[select],
-                        context: config.from,
-                      });
-                    } catch (err) {
-                      throw err;
+                    // deep populate selected row:
+                    if (populate) {
+                      try {
+                        row[select] = await SubController(req, {
+                          populate,
+                          data: row[select],
+                          context,
+                        });
+                      } catch (err) {
+                        throw err;
+                      }
                     }
                   }
                   break;

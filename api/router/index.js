@@ -1,7 +1,7 @@
 // Generate router from the given routes
 const express = require('express');
-const hydrateRoutes = require('./utils/hydrate-routes');
 const $router = express.Router();
+const hydrateRoutes = require('./utils/hydrate-routes');
 const { join } = require('path');
 
 // Default middlewares
@@ -37,7 +37,7 @@ const setMiddlewares = fn => {
   else throw Error('Please define mavi middlewares');
 };
 
-const createRouter = ({ base, routes, define, plugins }, options) => {
+const createRouter = async ({ base, routes, define, plugins }, options) => {
   const routers = { api: 0, static: 0 };
 
   if (!routes) throw Error('Please define mavi routes');
@@ -93,8 +93,8 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
   ];
 
   // Set required fields for every route
-  const $routesConfig = hydrateRoutes({ routes, define }, options);
-
+  const $routesConfig = await hydrateRoutes({ routes, define }, options);
+  
   // Generate router from hydrated routes configuration
   for (const path in $routesConfig) {
     const model = path.replace(/\/+/g, '');
@@ -144,13 +144,15 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
              */
             let response = {};
 
-            // controller settings
+            // Controller settings
+            // ** assign req.config
             // ** req.config can be passed/overwritten from middlewares as well
             // ** but it is not recommended to do so
-            req.config =
-              typeof req.config === 'object'
-                ? { ...route, ...req.config }
-                : route;
+            if(typeof req.config === 'object') {
+              Object.assign(route, req.config);
+            }
+            // set route configs to the req.config
+            req.config = route;
 
             // execute utils
             if (route.utils) {
@@ -242,6 +244,7 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
         );
       }
 
+      // Debug:
       if (options.debug) {
         // colorful log:
         // console.log(
@@ -251,7 +254,7 @@ const createRouter = ({ base, routes, define, plugins }, options) => {
     }
   }
 
-  // colorful log:
+  // Debug:
   if (options.debug) {
     console.log(
       `\x1b[36m${options.name || 'Router'} is ready: \x1b[32m${

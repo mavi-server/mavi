@@ -10,113 +10,42 @@ const SubController = require('../services/sub-controller');
 // this file needs to be separated into pieces.
 
 module.exports = (req, res) => {
-  const { query } = req; // request query
-  const { $config, db } = req.app; // request config
-  const { model, populate, columns, view, controller /* schema, exclude*/ } =
-    req.config;
-  const handleControllerError = err => {
-    // Common error handler
-    const { status, message, detail, code } = err;
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('err.response:', err);
-    }
-    throw {
-      status: status || 500,
-      data: {
-        message: `${code}: ${message}`,
-        detail,
-        code,
-      },
-    };
-  };
-
   // Double check the `columns` type before dive in:
-  if (!Array.isArray(columns)) {
+  if (!req.config.columns || !Array.isArray(req.config.columns)) {
     return {
       status: 500,
       data: 'Controller: req.config.columns should be an array!',
     };
   }
 
-  // SQL Query Builder:
-  // you can pass queryBuilder to the request object
-  // and build queries on top of it
-  let queryBuilder = req.queryBuilder || db(model);
-
-  // Req Query builder
-  // If req.config.query is set to 'off', then req.query will not be used at all
-  if (req.config.query !== 'off') {
+  // overwrite the req.query with the api.config.query
+  if (typeof req.config.query === 'object') {
+    req.config.query = { ...req.query, ...req.config.query };
     // Check if there is a pre-configured query
     // Pre-configured queries can be defined inside of the "api.routes"
     // All pre-configured queries should be strings
-    if (req.config.query && typeof req.config.query === 'object') {
-      // example 1:
-      /*
-        ..
-        controler..
-        query: {
-          where: 'title-neq-null',  // overwritten to req.query url
-          limit: 10,                // overwritten to req.query url
-          sort: 'title-asc',        // overwritten to req.query url
-          start: 'off',             // restricted query
-          exclude: 'off',           // restricted query
-        },
-        populate..
-        ..
-      */
-
-      // example 2:
-      /* 
-        controler..
-        query: 'off', // restrict all the queries
-        populate..
-      */
-
-      for (const key in req.config.query) {
-        // Query keys can be restricted as well
-
-        // Overwrite if its not restricted
-        if (req.config.query[key] !== 'off') {
-          // This will overwrite the req.query:
-          query[key] = req.config.query[key];
-        }
-        // Remove if its restricted
-        else {
-          // This query will not be used in the SQL queries
-          delete query[key];
-        }
-      }
-    }
-
-    // Builder:
-    UrlQueryBuilder(query, columns);
-
-    // assign special variables to the query
-    if (query.where) {
-      for (const w of query.where) {
-        if (w.params[2] && w.params[2].startsWith('req.params.')) {
-          // get variable string
-          const variable = w.params[2].split('req.params.')[1];
-
-          // don't allow to use if special variable is not in the req.params
-          if (!(variable in req.params)) {
-            throw new Error('Missing parameter: ' + variable);
-          }
-
-          // replace the variable with the value from the req.params
-          w.params[2] = req.params[variable];
-        }
-      }
-    }
   }
-  // If req.config.query is set to 'off', then req.query will not be used at all
-  else {
-    // Destroyer:
-    for (const key in query) {
-      query[key] = false;
-    }
-  }
+  const { params } = req;
+
+  // Url Query Builder:
+  req.config.query = UrlQueryBuilder(req.config.query, req.config.columns, { params });
+
+  const { $config, db } = req.app; // request config
+  const {
+    model,
+    populate,
+    columns,
+    view,
+    controller,
+    query /* schema, exclude*/,
+  } = req.config;
+  const context = model;
+
+  // SQL Query Builder:
+  // you can pass queryBuilder to the request object
+  // and build queries on top of it
+  let queryBuilder = req.queryBuilder || db(context);
+
   // *
   // *view feature needs improvements*
   // "views" can be defined inside of the "api.define.view" config
@@ -163,7 +92,7 @@ module.exports = (req, res) => {
     //     let data = await queryBuilder.catch(handleControllerError)
     //     // populate options
     //     if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-    //       data = await SubController(req, { populate, data, context: model }).catch(handleControllerError)
+    //       data = await SubController(req, { populate, data, context }).catch(handleControllerError)
     //     }
     // return {
     //   status: 200,
@@ -190,10 +119,8 @@ module.exports = (req, res) => {
       }
 
       // append where queries
-      if (query.where) {
-        for (const group of query.where) {
-          queryBuilder[group.exec](...group.params);
-        }
+      for (const group of query.where) {
+        queryBuilder[group.exec](...group.params);
       }
 
       let [data] = await queryBuilder.count('*').catch(handleControllerError);
@@ -231,10 +158,8 @@ module.exports = (req, res) => {
       }
 
       // append where clauses
-      if (query.where) {
-        for (const group of query.where) {
-          queryBuilder[group.exec](...group.params);
-        }
+      for (const group of query.where) {
+        queryBuilder[group.exec](...group.params);
       }
 
       let data = await queryBuilder.catch(handleControllerError);
@@ -249,7 +174,7 @@ module.exports = (req, res) => {
         data = await SubController(req, {
           populate,
           data,
-          context: model,
+          context,
         }).catch(handleControllerError);
       }
 
@@ -269,14 +194,17 @@ module.exports = (req, res) => {
       } else if (username) where.username = username;
       if (req.owner) where.user = req.owner.id;
 
-      queryBuilder.first(columns).where(where);
-      let data = await queryBuilder.catch(handleControllerError);
+      let data = await queryBuilder
+        .first(columns)
+        .where(where)
+        .catch(handleControllerError);
+
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
         data = await SubController(req, {
           populate,
           data,
-          context: model,
+          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
@@ -318,7 +246,7 @@ module.exports = (req, res) => {
         data = await SubController(req, {
           populate,
           data,
-          context: model,
+          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
@@ -357,7 +285,7 @@ module.exports = (req, res) => {
         [data] = await SubController(req, {
           populate,
           data,
-          context: model,
+          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
@@ -396,7 +324,7 @@ module.exports = (req, res) => {
         data = await SubController(req, {
           populate,
           data,
-          context: model,
+          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
@@ -484,7 +412,7 @@ module.exports = (req, res) => {
             }
           });
 
-          form.on('error', async err  =>{
+          form.on('error', async err => {
             return reject({
               status: 400,
               data: 'upload: ' + err,
@@ -679,6 +607,23 @@ module.exports = (req, res) => {
         status: 200,
         data: 'User cookie removed',
       };
+    },
+  };
+};
+
+const handleControllerError = err => {
+  // Common error handler
+  const { status, message, detail, code } = err;
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('err.response:', err);
+  }
+  throw {
+    status: status || 500,
+    data: {
+      message: `${code}: ${message}`,
+      detail,
+      code,
     },
   };
 };

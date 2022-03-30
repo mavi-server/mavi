@@ -385,6 +385,11 @@ export declare namespace Populate {
      */
     populate?: string[]
     query?: MaviQuery
+    /**
+     * Parent model name.
+     * Automatically assigned by the system.
+     */
+    context?: String
   }
 }
 
@@ -411,4 +416,4 @@ export type HydrateRoutes = (
     define: Define
   },
   options: object
-) => Routes
+) => Promise<Routes>

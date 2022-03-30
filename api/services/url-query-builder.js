@@ -1,9 +1,15 @@
-/** @type {(query: any, columns: array, payload: { row: any, context: string, params: object }) => any} */
-const UrlQueryBuilder = (Query, columns, { context, row, params }) => {
-  let query = { ...Query };
+/**
+ * @type {(query: any[], columns: any[], payload: { row: any, context: string, params: object }) => any}
+ * @description $query should not mutated directly. Instead allocate a new array and return it.
+ */
+const UrlQueryBuilder = async (query, columns, { context, params, row }) => {
+  if (!query || query === 'off') return query = {};
 
-  // Builder:
+  // build the url query
   for (const key in query) {
+    // query is deactivated
+    if (query[key] === 'off') continue;
+
     switch (key) {
       case 'limit': // (number)
       case 'start': // (number)
@@ -83,16 +89,12 @@ const UrlQueryBuilder = (Query, columns, { context, row, params }) => {
             Groups[0].part = query[key].slice(0, firstIndex);
             Groups[0].params = createParameters(Groups[0]);
           }
+          
+          Groups.forEach((g, i) => {
+            Groups[i].params = getSpecialParameters(Groups[i], { context, params, row });
+          });
 
-          if ((context && row) || params) {
-            query[key] = placeSpecialParameters(Groups, {
-              context,
-              row,
-              params,
-            });
-          } else {
-            query[key] = Groups;
-          }
+          query[key] = Groups;
         }
         break;
       case 'exclude':
@@ -113,6 +115,7 @@ const UrlQueryBuilder = (Query, columns, { context, row, params }) => {
 
   return query;
 };
+
 const createParameters = group => {
   if (!group || !group.part) return;
 
@@ -167,62 +170,61 @@ const createParameters = group => {
 
   return [column, operator, value];
 };
-const placeSpecialParameters = (group, { context, row, params }) => {
+const getSpecialParameters = (group, { context, params, row }) => {
   // assign special variables to the query
-  if (group)
-    for (const w of group) {
-      w.params
-        .filter(p => typeof p === 'string')
-        .filter(p => p.includes('row.') || p === '#context')
-        .forEach(p => {
-          let key;
+  return group.params.map(p => {
+    if(typeof p === 'string' && (p.includes('row.') || p === '#context')) {
+      let key;
 
-          if (p === '#context') {
-            // replace `#context` with the current context
-            // context is the parent model name
-            w.params[2] = context;
+      if (p === '#context') {
+        // replace `#context` with the current context
+        // context is the parent model name
+        group.params[2] = context;
 
-            // in some cases the `context` can be defined as a special string
-            // eg. parentPopulateObject: { from: row.key, populate: ['x'] }
-            // x's `context` will be 'row.key'
-            if (context.startsWith('row.')) {
-              key = context.split('row.')[1];
-            }
-          } else if (p.startsWith('row.')) {
-            // you can assign row values to the where parameters
-            // e.g. query: { where: 'id-eq-row.id' } (inside of the populate object)
-            key = p.split('row.')[1]; // get the key from the parameter
-          } else if (p.startsWith('req.params.')) {
-            // you can assign req.params values to the where parameters
-            // if params are defined corresponding values will be used
-            // get variable string
-            key = p.split('req.params.')[1];
+        // in some cases the `context` can be defined as a special string
+        // eg. parentPopulateObject: { from: row.key, populate: ['x'] }
+        // x's `context` will be 'row.key'
+        if (context.startsWith('row.')) {
+          key = context.split('row.')[1];
+        }
+      } else if (p.startsWith('row.')) {
+        // you can assign row values to the where parameters
+        // e.g. query: { where: 'id-eq-row.id' } (inside of the populate object)
+        key = p.split('row.')[1]; // get the key from the parameter
+      } else if (p.startsWith('req.params.')) {
+        // you can assign req.params values to the where parameters
+        // if params are defined corresponding values will be used
+        // get variable string
+        key = p.split('req.params.')[1];
+      }
+
+      if (typeof key !== 'undefined') {
+        if (row) {
+          // throw error if row column is undefined
+          if (!(key in row)) {
+            throw Error(
+              `sub-controller: row.${key} is not defined where: "${group.params}"`
+            );
           }
 
-          if (row) {
-            // throw error if row column is undefined
-            if (typeof key !== 'undefined' && !(key in row)) {
-              throw Error(
-                `sub-controller: row.${key} is not defined for params: "${w.params}"`
-              );
-            }
-
-            // assign the row value to the where parameter
-            p = row[key];
-          } else if (params) {
-            // don't allow to use if key is not in the req.params
-            if (!(key in params)) {
-              throw new Error('Missing parameter: ' + key);
-            }
-
-            // assign the req.params value to the where parameter
-            p = params[key];
+          // assign the row value to the where parameter
+          p = row[key];
+        } else if (params) {
+          // don't allow to use if key is not in the req.params
+          if (!(key in params)) {
+            throw new Error(
+              `sub-controller: params.${key} is not defined where: "${group.params}"`
+            );
           }
-        });
+
+          // assign the req.params value to the where parameter
+          p = params[key];
+        }
+      }
     }
-  else group = [];
 
-  return group;
+    return p;
+  });
 };
 
 module.exports = UrlQueryBuilder;

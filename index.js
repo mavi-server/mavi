@@ -71,14 +71,14 @@ const createServer = async object => {
       settings.routes['/'] = [];
     }
 
-    app.use(createRouter(settings, options));
+    app.use(await createRouter(settings, options));
   }
 
   // Mavi - Primary router
   app.use(
     `${config.api.base}`,
     timer,
-    createRouter(config.api, { name: 'Mavi', debug: true })
+    await createRouter(config.api, { name: 'Mavi', debug: true })
   );
 
   app.listen(PORT, HOST, () => {
