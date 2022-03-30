@@ -95,9 +95,9 @@ module.exports = (req, res) => {
     // assign special variables to the query
     if (query.where) {
       for (const w of query.where) {
-        if (w.params[2] && w.params[2].startsWith('#')) {
+        if (w.params[2] && w.params[2].startsWith('req.params.')) {
           // get variable string
-          const variable = w.params[2].slice(1);
+          const variable = w.params[2].split('req.params.')[1];
 
           // don't allow to use if special variable is not in the req.params
           if (!(variable in req.params)) {
