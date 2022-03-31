@@ -148,11 +148,11 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
             // ** assign req.config
             // ** req.config can be passed/overwritten from middlewares as well
             // ** but it is not recommended to do so
-            if(typeof req.config === 'object') {
-              Object.assign(route, req.config);
-            }
             // set route configs to the req.config
-            req.config = {...route};
+            req.config =
+              typeof req.config === 'object'
+                ? { ...route, ...req.config }
+                : {...route};
 
             // debug route:
             // console.log(JSON.stringify(route, null, 2));
