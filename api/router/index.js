@@ -152,7 +152,10 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
               Object.assign(route, req.config);
             }
             // set route configs to the req.config
-            req.config = route;
+            req.config = {...route};
+
+            // debug route:
+            // console.log(JSON.stringify(route, null, 2));
 
             // execute utils
             if (route.utils) {
@@ -213,15 +216,27 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
                 await req.app
                   .controller(req, res)
                   .find(false) // false to disable sub-controllers
-                  .then(res => (response = res))
-                  .catch(err => (response = err));
+                  .then(async res => (response = await res))
+                  .catch(async err => {
+                    if(process.env.NODE_ENV === 'development') {
+                      console.log(err);
+                    }
+                    
+                    return (response = await err);
+                  });
               } else {
                 // execute default controller
                 await req.app
                   .controller(req, res)
                   [route.controller](...$arguments)
                   .then(async res => (response = await res))
-                  .catch(async err => (response = await err));
+                  .catch(async err => {
+                    if(process.env.NODE_ENV === 'development') {
+                      console.log(err);
+                    }
+
+                    return (response = await err);
+                  });
               }
             } else {
               // controller not found

@@ -25,26 +25,16 @@ module.exports = (req, res) => {
     // Pre-configured queries can be defined inside of the "api.routes"
     // All pre-configured queries should be strings
   }
-  const { params } = req;
-
-  // Url Query Builder:
-  req.config.query = UrlQueryBuilder(req.config.query, req.config.columns, { params });
 
   const { $config, db } = req.app; // request config
-  const {
-    model,
-    populate,
-    columns,
-    view,
-    controller,
-    query /* schema, exclude*/,
-  } = req.config;
+  const { model, populate, columns, view, controller, query } = req.config;
   const context = model;
-
+  
   // SQL Query Builder:
   // you can pass queryBuilder to the request object
   // and build queries on top of it
   let queryBuilder = req.queryBuilder || db(context);
+
 
   // *
   // *view feature needs improvements*
@@ -104,13 +94,21 @@ module.exports = (req, res) => {
 
   return {
     count: async () => {
+      // Url Query Builder:
+      req.config.query = await UrlQueryBuilder( req.config.query, req.config.columns, {
+        params: req.params,
+      });
+  
       // handle where clause
       if (!query.where) query.where = [];
 
       // is-owner
       if (req.owner) {
         if (model === 'users')
-          query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
+          query.where.push({
+            exec: 'where',
+            params: ['id', '=', req.owner.id],
+          });
         else
           query.where.push({
             exec: 'where',
@@ -118,11 +116,11 @@ module.exports = (req, res) => {
           });
       }
 
-      // append where queries
+      // append where clauses
       for (const group of query.where) {
         queryBuilder[group.exec](...group.params);
       }
-
+      
       let [data] = await queryBuilder.count('*').catch(handleControllerError);
       data.count = Number(data.count || 0);
 
@@ -132,6 +130,11 @@ module.exports = (req, res) => {
       };
     },
     find: async (populateIt = true) => {
+      // Url Query Builder:
+      req.config.query = await UrlQueryBuilder( req.config.query, req.config.columns, {
+        params: req.params,
+      });
+      
       if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns);
 
       if (query.sort) {
@@ -149,7 +152,10 @@ module.exports = (req, res) => {
       // is-owner
       if (req.owner) {
         if (model === 'users')
-          query.where.push({ exec: 'where', params: ['id', '=', req.owner.id] });
+          query.where.push({
+            exec: 'where',
+            params: ['id', '=', req.owner.id],
+          });
         else
           query.where.push({
             exec: 'where',
