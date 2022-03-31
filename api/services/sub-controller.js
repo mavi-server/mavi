@@ -33,20 +33,21 @@ const SubController = function (req, { populate, data, context }) {
               } else {
                 throw Error(`sub-controller: row.${key} is not defined`);
               }
+
+              // ** temporary security fix:
+              // ** hide hash and private fields when 'row.value' used as a dynamic `from` value
+              // *** normally static `from` value processes should be done in `hydrate-routes` before the router initialization
+              if (config.from in req.app.$config.api.define.models) {
+                const table = req.app.$config.api.define.models[config.from];
+                const columns = Object.keys(table).filter(
+                  c => !(c === 'hash' || table[c].private || config.exclude.includes(c))
+                );
+                config.columns = columns;
+              } else {
+                throw Error(`sub-controller: ${config.from} is not defined`);
+              }
             }
 
-            // ** temporary security fix:
-            // ** hide hash and private fields when 'row.value' used as a dynamic `from` value
-            // *** normally static `from` value processes should be done in `hydrate-routes` before the router initialization
-            if (config.from in req.app.$config.api.define.models) {
-              const table = req.app.$config.api.define.models[config.from];
-              const columns = Object.keys(table).filter(
-                c => !(c === 'hash' || table[c].private)
-              );
-              config.columns = columns;
-            } else {
-              throw Error(`sub-controller: ${config.from} is not defined`);
-            }
 
             // convert user's url queries to objects
             // the objects will be used to build sub sql query
