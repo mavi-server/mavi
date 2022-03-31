@@ -355,10 +355,6 @@ export declare namespace Populate {
      */
     on?: string
     /**
-     * Context column for `type` column. This should be customized column name, needs improvement.
-     */
-    on2?: string
-    /**
      * As default, inherits all the columns from table's model. You can overwrite it.
      *
      * This property represents columns that will be selected in the query.
@@ -417,3 +413,11 @@ export type HydrateRoutes = (
   },
   options: object
 ) => Promise<Routes>
+export type UrlQueryBuilder = (
+  req: {
+    config: Populate.Properties
+    params?: any
+  },
+  row: any
+) => Promise<MaviQuery>
+export type setDefaultColumns = (route: Route, define: Define) => Promise<Route>

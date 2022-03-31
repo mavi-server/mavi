@@ -27,14 +27,14 @@ module.exports = (req, res) => {
   }
 
   const { $config, db } = req.app; // request config
-  const { model, populate, columns, view, controller, query } = req.config;
-  const context = model;
-  
+  const { model, populate, columns, view, controller } = req.config;
+
+  // console.log("populate:", JSON.stringify(populate, null, 1));
+
   // SQL Query Builder:
   // you can pass queryBuilder to the request object
   // and build queries on top of it
-  let queryBuilder = req.queryBuilder || db(context);
-
+  let queryBuilder = req.queryBuilder || db(model);
 
   // *
   // *view feature needs improvements*
@@ -82,7 +82,7 @@ module.exports = (req, res) => {
     //     let data = await queryBuilder.catch(handleControllerError)
     //     // populate options
     //     if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-    //       data = await SubController(req, { populate, data, context }).catch(handleControllerError)
+    //       data = await SubController(req, { populate, data }).catch(handleControllerError)
     //     }
     // return {
     //   status: 200,
@@ -95,12 +95,11 @@ module.exports = (req, res) => {
   return {
     count: async () => {
       // Url Query Builder:
-      req.config.query = await UrlQueryBuilder( req.config.query, req.config.columns, {
-        params: req.params,
-      });
-  
-      // handle where clause
-      if (!query.where) query.where = [];
+      req.config.query = await UrlQueryBuilder(req);
+      const { query } = req.config;
+
+      // handle where clause | open `where` for inner queries
+      if (!query.where || query.where === 'off') query.where = [];
 
       // is-owner
       if (req.owner) {
@@ -120,7 +119,7 @@ module.exports = (req, res) => {
       for (const group of query.where) {
         queryBuilder[group.exec](...group.params);
       }
-      
+
       let [data] = await queryBuilder.count('*').catch(handleControllerError);
       data.count = Number(data.count || 0);
 
@@ -130,11 +129,16 @@ module.exports = (req, res) => {
       };
     },
     find: async (populateIt = true) => {
+      // temporary
+      // req.config.query = {...req.query, ...req.config.query};
+
       // Url Query Builder:
-      req.config.query = await UrlQueryBuilder( req.config.query, req.config.columns, {
-        params: req.params,
-      });
-      
+      req.config.query = await UrlQueryBuilder(req);
+      const { query } = req.config;
+
+      // console.log('req.config.query:', JSON.stringify(req.config.query, null, 2));
+
+
       if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns);
 
       if (query.sort) {
@@ -146,8 +150,8 @@ module.exports = (req, res) => {
       if (query.limit || !query.limit) {
         queryBuilder.limit(query.limit || 10);
       }
-      // handle where clause
-      if (!query.where) query.where = [];
+      // handle where clause | open `where` for inner queries
+      if (!query.where || query.where === 'off') query.where = [];
 
       // is-owner
       if (req.owner) {
@@ -169,6 +173,7 @@ module.exports = (req, res) => {
       }
 
       let data = await queryBuilder.catch(handleControllerError);
+
       // populate options
       if (
         populateIt &&
@@ -180,7 +185,6 @@ module.exports = (req, res) => {
         data = await SubController(req, {
           populate,
           data,
-          context,
         }).catch(handleControllerError);
       }
 
@@ -210,7 +214,6 @@ module.exports = (req, res) => {
         data = await SubController(req, {
           populate,
           data,
-          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
@@ -252,7 +255,6 @@ module.exports = (req, res) => {
         data = await SubController(req, {
           populate,
           data,
-          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
@@ -291,7 +293,6 @@ module.exports = (req, res) => {
         [data] = await SubController(req, {
           populate,
           data,
-          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;
@@ -330,7 +331,6 @@ module.exports = (req, res) => {
         data = await SubController(req, {
           populate,
           data,
-          context,
         }).catch(handleControllerError);
       }
       if (Array.isArray(data)) data = data[0] || null;

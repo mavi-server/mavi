@@ -8,6 +8,7 @@ const controllers = [
   'upload',
 ];
 // let route;
+/** @type {import('../../../types').setDefaultColumns} */
 const setDefaultColumns = async (route, define) => {
   // allocate new memory for each route
   // const route = {...Route}; // clone route object
@@ -35,7 +36,10 @@ const setDefaultColumns = async (route, define) => {
       if (column == 'hash' || define.models[model][column].private) continue;
 
       // Don't include the excluded columns
-      if (!route.exclude.includes(column)) route.columns.push(column);
+      // Prevent duplicate columns
+      if (!route.exclude.includes(column) && !route.columns.includes(column)) {
+        route.columns.push(column);
+      }
     }
 
     // count type doesn't needs columns
@@ -64,7 +68,7 @@ const setDefaultColumns = async (route, define) => {
       );
 
       // ********* delete later **********
-      // if (model === 'followers') {
+      // if (route.path === '/followings/:user') {
       //   console.log(JSON.stringify(route.populate, null, 2));
       // }
     }
