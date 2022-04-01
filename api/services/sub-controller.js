@@ -19,7 +19,6 @@ const SubController = function (req, { populate, data, parent }) {
       from, // table
       columns, // select populated data columns
       on, // referencing to the row[id] value. used in where statements
-      on2, // will be removed later
       type /* type will be removed later, controller will be used instead */,
       controller,
       query,
@@ -27,6 +26,7 @@ const SubController = function (req, { populate, data, parent }) {
       returning, // "token-reference" option
       exclude,
       context, // context is the parent row's model name
+      overwrite, // overwrite the row with the given data
     }) {
       /** @type {import('../../types').Populate.Properties} */
       const config = arguments[0];
@@ -65,6 +65,17 @@ const SubController = function (req, { populate, data, parent }) {
           context = row[key]; // check row for just 1 level deep populate
         else {
           throw Error(`row.${key} is not defined`);
+        }
+      }
+      // set special overwrite values
+      if (overwrite) {
+        if (row && typeof overwrite === 'object') {
+          Object.keys(overwrite).forEach(key => {
+            if(typeof overwrite[key] === 'string' && overwrite[key].includes('row.')) {
+              const column = overwrite[key].split('row.')[1];
+              overwrite[key] = row[column];
+            }
+          });
         }
       }
 
@@ -129,14 +140,6 @@ const SubController = function (req, { populate, data, parent }) {
                     params: [on || select, '=', row.id], // referencing column
                   }
                 );
-                if(on2 && row[on2]) {
-                  $where.push(
-                    {
-                      exec: 'where',
-                      params: [on2, '=', row[on2]], // referencing column
-                    }
-                  );
-                }
 
                 // apply where queries
                 for (const group of $where) {
@@ -220,6 +223,16 @@ const SubController = function (req, { populate, data, parent }) {
 
                   if (Array.isArray(row[select])) {
                     row[select] = row[select][0];
+
+                    // overwrite to the row with the given object:
+                    if (overwrite) {
+                      if (
+                        typeof overwrite === 'object' &&
+                        typeof row[select] === 'object'
+                      ) {
+                        Object.assign(row[select], overwrite);
+                      }
+                    }
                   }
                 } catch (err) {
                   throw err;
