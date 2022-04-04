@@ -138,7 +138,6 @@ module.exports = (req, res) => {
 
       // console.log('req.config.query:', JSON.stringify(req.config.query, null, 2));
 
-
       if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns);
 
       if (query.sort) {
@@ -342,20 +341,21 @@ module.exports = (req, res) => {
     },
     upload: async (childFolder, data) => {
       if (childFolder) {
+        const $options = req.config.options || {};
+
         // if controller has default options:
         // check childFolder has a permission to be used
-        if (req.config.options && req.config.options.folders) {
-          if (!req.config.options.folders.includes(childFolder)) {
+        if ($options.folders) {
+          if (!$options.folders.includes(childFolder)) {
             return {
               status: 400,
               data: "You don't have permission for this",
             };
           }
         }
-        const options = req.config.options || {};
 
         // default options:
-        const $options = {
+        const options = {
           multiples: false,
           keepExtensions: true,
           uploadDir: join(process.cwd(), `/uploads/${childFolder}/`),
@@ -370,54 +370,62 @@ module.exports = (req, res) => {
             // generate a unique filename
             return uuidv4() + ext;
           },
-          ...options, // overwrite default options
+          ...$options, // overwrite default options
         };
 
         // create child directory if not exists
-        if (!existsSync($options.uploadDir)) {
-          mkdirSync($options.uploadDir);
+        if (!existsSync(options.uploadDir)) {
+          mkdirSync(options.uploadDir);
         }
-        // access form data files
-        const form = new IncomingForm($options);
-        return await new Promise((resolve, reject) => {
+
+        // get incoming form data
+        const form = new IncomingForm(options);
+
+        // parse form data
+        return new Promise((resolve, reject) => {
           form.parse(req);
           form.on('file', async (formname, file) => {
+            if (!data) data = {};
             if (req.user) {
               data.user = req.user.id;
             }
-
-            data.id = Number((Math.random() * 10000).toFixed());
+  
+            // data.id = Number((Math.random() * 10000).toFixed());
             data.url = `/uploads/${childFolder}/` + file.newFilename;
             data.alt =
               req.body.alt ||
               file.originalFilename.split('.').shift().replace(/-/g, ' ');
-
-            // register uploaded file
+  
+            // file uploaded
             if (file) {
+              // send file informations
               if (!model || !columns) {
                 return resolve({
-                  status: 200,
+                  status: 201,
                   data,
                 });
-              } else {
+              }
+  
+              // register file to database
+              // and send file informations
+              else {
                 const [result] = await queryBuilder
                   .insert(data)
                   .returning(columns)
                   .catch(handleControllerError);
-
+  
                 return resolve({
                   status: 201,
                   data: result,
                 });
               }
             } else {
-              return resolve({
+              return reject({
                 status: 400,
                 data: 'upload: `file` not defined',
               });
             }
           });
-
           form.on('error', async err => {
             return reject({
               status: 400,
@@ -468,7 +476,7 @@ module.exports = (req, res) => {
         let encryptedPassword = await bcrypt.hash(password, 10);
 
         const data = {
-          email: email.toLowerCase(), // sanitize: convert email to lowercase
+          email: email.trim(), // sanitize: convert email to lowercase
           fullname: fullname.trim(), // sanitize: remove white spaces
           username: username.trim(), // sanitize: remove white spaces
           avatar: avatar,
@@ -520,9 +528,13 @@ module.exports = (req, res) => {
           data: user,
         };
       } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(err);
+        }
+
         return {
           status: 401,
-          data: `Something went wrong: ${err}`,
+          data: `Something went wrong`,
         };
       }
       // Register logic ends here
