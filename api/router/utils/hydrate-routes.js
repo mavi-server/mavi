@@ -29,6 +29,7 @@ const setDefaultColumns = async (route, define) => {
   } else {
     if (!route.exclude) route.exclude = [];
     if (!route.columns) route.columns = [];
+    route.context = model; // set context (used as #context in populate queries)
 
     // Set columns:
     for (const column in define.models[model]) {

@@ -61,7 +61,7 @@ module.exports = (req, res) => {
     // Expecting to return knex object
     // On some url queries you may need to refer your columns with alias_table_name.column_name
     // (e.g. ?where=id=users.id)
-    queryBuilder = $config.api.define.views[view](db, req.params);
+    queryBuilder = $config.api.define.views[view](db, req.params, req.user);
 
     // If not, assume that view function is an sql query:
     if (typeof queryBuilder === 'string' || controller === 'count') {
