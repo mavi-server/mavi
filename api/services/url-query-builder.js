@@ -110,7 +110,9 @@ const UrlQueryBuilder = (req, row) => {
     }
 
     // have to parse these values:
-    if (/true|false|null/.test(value)) value = JSON.parse(value);
+    if(value === 'null') value = null;
+    else if(value === 'true') value = true;
+    else if(value === 'false') value = false;
     else if (value === 'undefined') value = null;
 
     // convert the condition into operator so that knex can understand it
