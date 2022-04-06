@@ -203,117 +203,119 @@ const UrlQueryBuilder = (req, row) => {
   };
 
   // Build url queries
-  return Object.keys(config.query).reduce((Q, key) => {
-    switch (key) {
-      case 'limit': // (number)
-      case 'start': // (number)
-        Q[key] = Number(config.query[key]);
-        break;
-      case 'sort': // (column|columns, direction, nulls)
-        // https://knexjs.org/#Builder-orderBy
+  return Object.keys(config.query)
+    .filter(key => config.query[key] !== 'off')
+    .reduce((Q, key) => {
+      switch (key) {
+        case 'limit': // (number)
+        case 'start': // (number)
+          Q[key] = Number(config.query[key]);
+          break;
+        case 'sort': // (column|columns, direction, nulls)
+          // https://knexjs.org/#Builder-orderBy
 
-        // examples:
-        // simple sort: "name-asc"
-        // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
+          // examples:
+          // simple sort: "name-asc"
+          // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
 
-        if (typeof config.query[key] === 'string') {
-          const Groups = config.query[key].split(':');
-          Q[key] = [];
+          if (typeof config.query[key] === 'string') {
+            const Groups = config.query[key].split(':');
+            Q[key] = [];
 
-          for (const group of Groups) {
-            let [column, order] = group.split('-');
-            column = column || 'id';
-            order = order || 'asc';
-            // nulls = nulls || 'last' // not works idk why
+            for (const group of Groups) {
+              let [column, order] = group.split('-');
+              column = column || 'id';
+              order = order || 'asc';
+              // nulls = nulls || 'last' // not works idk why
 
-            Q[key].push({ column, order });
-          }
-        }
-        break;
-      case 'where': // (column, operator, value|values)
-        // examples:
-        // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
-        if (typeof config.query[key] === 'string') {
-          // clear $ signs
-          config.query[key] = config.query[key].replace(/\$/g, '');
-
-          // split the query into groups
-          const reg = /-and-|-or-|\sand\s|\sor\s/g;
-          const groupCount = config.query[key].split(reg).length;
-          const Groups = new Array(groupCount).fill({});
-
-          Groups[0] = {
-            exec: 'where',
-            part: config.query[key],
-            params: createParameters({ part: config.query[key] }),
-          };
-
-          // whereNull can be used because null values can't be compared by the operators like `=`
-          if (Groups[0].params[2] === null) {
-            if (Groups[0].params[1] === '=') {
-              Groups[0].exec = 'whereNull';
-            } else if (Groups[0].params[1] === '<>') {
-              Groups[0].exec = 'whereNotNull';
+              Q[key].push({ column, order });
             }
           }
+          break;
+        case 'where': // (column, operator, value|values)
+          // examples:
+          // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
+          if (typeof config.query[key] === 'string') {
+            // clear $ signs
+            config.query[key] = config.query[key].replace(/\$/g, '');
 
-          if (groupCount > 1) {
-            let i = 1;
-            const matches = [...config.query[key].matchAll(reg)];
+            // split the query into groups
+            const reg = /-and-|-or-|\sand\s|\sor\s/g;
+            const groupCount = config.query[key].split(reg).length;
+            const Groups = new Array(groupCount).fill({});
 
-            for (const match of matches) {
-              const conjuctive = match[0].replace(/-|\s/g, '');
-              const index = match.index + match[0].length;
-              const nextIndex = matches[i] ? matches[i].index : undefined;
+            Groups[0] = {
+              exec: 'where',
+              part: config.query[key],
+              params: createParameters({ part: config.query[key] }),
+            };
 
-              const exec = `${conjuctive}Where`;
-              const part = config.query[key].slice(index, nextIndex);
-              const params = createParameters({ part });
-              Groups[i] = { exec, part, params };
-
-              // whereNull can be used because null values can't be compared by the operators like `=`
-              if (Groups[i].params[2] === null) {
-                if (Groups[i].params[1] === '=') {
-                  Groups[i].exec =
-                    conjuctive == 'or' ? `orWhereNull` : `whereNull`; // knex doesn't support andWhereNull
-                } else if (Groups[i].params[1] === '<>') {
-                  Groups[i].exec =
-                    conjuctive == 'or' ? 'orWhereNotNull' : 'whereNotNull'; // knex doesn't support andWhereNotNull
-                }
+            // whereNull can be used because null values can't be compared by the operators like `=`
+            if (Groups[0].params[2] === null) {
+              if (Groups[0].params[1] === '=') {
+                Groups[0].exec = 'whereNull';
+              } else if (Groups[0].params[1] === '<>') {
+                Groups[0].exec = 'whereNotNull';
               }
-              i++;
             }
 
-            // update first part
-            const firstIndex = matches[0].index;
-            Groups[0].part = config.query[key].slice(0, firstIndex);
-            Groups[0].params = createParameters(Groups[0]);
+            if (groupCount > 1) {
+              let i = 1;
+              const matches = [...config.query[key].matchAll(reg)];
+
+              for (const match of matches) {
+                const conjuctive = match[0].replace(/-|\s/g, '');
+                const index = match.index + match[0].length;
+                const nextIndex = matches[i] ? matches[i].index : undefined;
+
+                const exec = `${conjuctive}Where`;
+                const part = config.query[key].slice(index, nextIndex);
+                const params = createParameters({ part });
+                Groups[i] = { exec, part, params };
+
+                // whereNull can be used because null values can't be compared by the operators like `=`
+                if (Groups[i].params[2] === null) {
+                  if (Groups[i].params[1] === '=') {
+                    Groups[i].exec =
+                      conjuctive == 'or' ? `orWhereNull` : `whereNull`; // knex doesn't support andWhereNull
+                  } else if (Groups[i].params[1] === '<>') {
+                    Groups[i].exec =
+                      conjuctive == 'or' ? 'orWhereNotNull' : 'whereNotNull'; // knex doesn't support andWhereNotNull
+                  }
+                }
+                i++;
+              }
+
+              // update first part
+              const firstIndex = matches[0].index;
+              Groups[0].part = config.query[key].slice(0, firstIndex);
+              Groups[0].params = createParameters(Groups[0]);
+            }
+
+            for (let i = 0; i <= Groups.length - 1; i++) {
+              Groups[i].params = getSpecialParameters(Groups[i]);
+            }
+
+            Q[key] = Groups;
           }
+          break;
+        case 'exclude':
+          // Normally "exclude" option is defined inside of the "api.routes" config
+          // This will overwrite the existing "exclude" properties
 
-          for (let i = 0; i <= Groups.length - 1; i++) {
-            Groups[i].params = getSpecialParameters(Groups[i]);
-          }
+          // example query is: ?exclude=id:updated_at:created_at
+          const excludeColumns = config.query.exclude.split(/[:,]/gi);
+          config.columns.forEach((col, i) => {
+            // exclude columns
+            if (excludeColumns.find(C => col == C)) {
+              config.columns.splice(i, 1);
+            }
+          });
+          break;
+      }
 
-          Q[key] = Groups;
-        }
-        break;
-      case 'exclude':
-        // Normally "exclude" option is defined inside of the "api.routes" config
-        // This will overwrite the existing "exclude" properties
-
-        // example query is: ?exclude=id:updated_at:created_at
-        const excludeColumns = config.query.exclude.split(/[:,]/gi);
-        config.columns.forEach((col, i) => {
-          // exclude columns
-          if (excludeColumns.find(C => col == C)) {
-            config.columns.splice(i, 1);
-          }
-        });
-        break;
-    }
-
-    return Q;
-  }, {});
+      return Q;
+    }, {});
 };
 
 module.exports = UrlQueryBuilder;
