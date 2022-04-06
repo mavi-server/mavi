@@ -14,13 +14,18 @@ module.exports = async () => {
 
   // drop models:
   for (const model in config.api.define.models) {
-    await knex.raw(`DROP TABLE IF EXISTS ${model} CASCADE`)
-      .then(() => {
-        console.log(`\x1b[36mRemoved table "${model}"\x1b[0m`);
-      })
-      .catch(err => {
-        console.log(`\x1b[31mError removing table "${model}"\x1b[0m`);
-        console.log(err);
-      });
+    const exists = await knex.schema.hasTable(model);
+    
+    if(exists) {
+      // await knex.raw(`TRUNCATE TABLE ${model} RESTART IDENTITY CASCADE`);
+      await knex.raw(`DROP TABLE ${model} CASCADE`)
+        .then(() => {
+          console.log(`\x1b[36mRemoved table "${model}"\x1b[0m`);
+        })
+        .catch(err => {
+          console.log(`\x1b[31mError removing table "${model}"\x1b[0m`);
+          console.log(err);
+        });
+    }
   }  
 };

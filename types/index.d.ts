@@ -14,6 +14,9 @@ type controllers =
   | 'update'
   | 'create'
   | 'upload'
+  | 'login'
+  | 'logout'
+  | 'register'
 type methods = 'get' | 'post' | 'put' | 'delete'
 type controllerWithOptions = [controllers, any]
 type populateControllers =
