@@ -207,7 +207,7 @@ const UrlQueryBuilder = (req, row) => {
     switch (key) {
       case 'limit': // (number)
       case 'start': // (number)
-        queries[key] = Number(config.query[key]);
+        Q[key] = Number(config.query[key]);
         break;
       case 'sort': // (column|columns, direction, nulls)
         // https://knexjs.org/#Builder-orderBy
@@ -236,7 +236,7 @@ const UrlQueryBuilder = (req, row) => {
         if (typeof config.query[key] === 'string') {
           // clear $ signs
           config.query[key] = config.query[key].replace(/\$/g, '');
-          
+
           // split the query into groups
           const reg = /-and-|-or-|\sand\s|\sor\s/g;
           const groupCount = config.query[key].split(reg).length;
