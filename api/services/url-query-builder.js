@@ -15,6 +15,7 @@ const UrlQueryBuilder = (req, row) => {
   const { config, params, query } = req;
   const defaultQuery = { where: [] };
   const lockReg = /lock|\$/g;
+  const isLocked = query => typeof query === 'string' && query.match(lockReg);
 
   if (query && typeof query !== 'string' && !Array.isArray(query)) {
     // merge req.query and config.query
@@ -31,7 +32,7 @@ const UrlQueryBuilder = (req, row) => {
           const [q, state] = config.query[key];
 
           // use predefined query
-          if (state.match(lockReg)) {
+          if (isLocked(state)) {
             config.query[key] = q.replace(/\$/g, ''); // remove $ if user forget to remove it. because its already internal where query.
           }
 
@@ -42,7 +43,7 @@ const UrlQueryBuilder = (req, row) => {
         }
 
         // let incomming query
-        else if (config.query[key].match(lockReg) === null) {
+        else if (!isLocked(config.query[key])) {
           // concatinate unique where queries and detect locked columns
           if (key === 'where') {
             // split the query into groups
@@ -94,7 +95,7 @@ const UrlQueryBuilder = (req, row) => {
         }
 
         // remove query type
-        else if (config.query[key].match(lockReg)) {
+        else if (isLocked(config.query[key])) {
           if (key === 'where')
             config.query[key] = []; // where should be an array
           else delete config.query[key];
@@ -105,7 +106,7 @@ const UrlQueryBuilder = (req, row) => {
         config.query[key] = query[key];
       }
     }
-  } else if (!config || !config.query || config.query.match(lockReg)) {
+  } else if (!config || !config.query || isLocked(config.query)) {
     return (config.query = defaultQuery);
   }
 
@@ -223,11 +224,11 @@ const UrlQueryBuilder = (req, row) => {
     ? Object.keys(config.query)
       .filter(key => {
         // where query should be an array even if its locked
-        if (key === 'where' && config.query[key].match(lockReg)) {
+        if (key === 'where' && isLocked(config.query[key])) {
           config.query[key] = [];
         }
 
-        return config.query[key].match(lockReg) === null;
+        return !isLocked(config.query[key]);
       })
       .reduce((Q, key) => {
         switch (key) {
@@ -342,5 +343,4 @@ const UrlQueryBuilder = (req, row) => {
       }, defaultQuery)
     : defaultQuery;
 };
-
 module.exports = UrlQueryBuilder;
