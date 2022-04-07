@@ -3,16 +3,101 @@
  * @description $query should not mutated directly. Instead allocate a new array and return it.
  */
 //  const UrlQueryBuilder = async (query, columns, { context, params, row })
-const UrlQueryBuilder = async (req, row) => {
+const UrlQueryBuilder = (req, row) => {
   const { config, params, query } = req;
 
-  if (query && typeof config.query !== 'string') {
-    // assign req.query
-    // pre-defined queries can't change by req.query
-    config.query = await { ...query, ...config.query };
-  }
-  else if (!config || !config.query || config.query === 'off') {
-    return (config.query = {});
+  if (query && typeof query !== 'string' && !Array.isArray(query)) {
+    // merge req.query and config.query
+    for (const key in query) {
+      if(typeof config.query === 'undefined') config.query = {};
+
+      // if req.query predefined in config.query
+      if (key in config.query) {
+        // check predefined query with its state
+        // example: { query: { limit: [5, 'on'] } }
+        // limit is 5 but can be overwritten by the incomming query
+        // /posts?limit=10 will change the limit to 10
+        // off = internal query
+        if (Array.isArray(config.query[key])) {
+          const [q, state] = config.query[key];
+
+          // let incomming query
+          if (state !== 'off') {
+            config.query[key] = query[key];
+          }
+
+          // use predefined query
+          else if (state === 'off') {
+            config.query[key] = q.replace(/\$/g, ''); // remove $ if user forget to remove it. because its already internal where query.
+          }
+        }
+
+        // let incomming query
+        else if (config.query[key] !== 'off') {
+          // concatinate unique where queries and detect off columns
+          if (key === 'where') {
+            // split the query into groups
+            const reg = /-and-|-or-|\sand\s|\sor\s/g;
+            const c_where = config.query[key].split(reg);
+            const q_where = query[key].split(reg);
+            const affected_cols = [];
+
+            /** TODO:
+             * check conjuctives. right now only 'and' works
+             */
+            c_where.forEach(cw_str => {
+              const [$cw_col] = cw_str.split('-'); // might be off column
+              const isOff = $cw_col.slice(0, 1) === '$'; // dolar sign means off column
+              const cw_col = isOff ? $cw_col.slice(1) : $cw_col; // real colum name
+
+              // if internal where query is off, that means req.query.where cannot overwrite to that column
+              // config column is not off:
+              if (!isOff) {
+                // find the same column in incomming where query
+                let qw_str = q_where.find(qw_str => {
+                  const [qw_col] = qw_str.split('-');
+                  return qw_col === cw_col;
+                });
+
+                // req.query.where column is defined in config.query.where
+                if (qw_str) {
+                  // update query:
+                  config.query[key] = config.query[key].replace(cw_str, qw_str); // replace cw_str with the qw_str
+                  affected_cols.push(qw_str.split('-')[0]); // keep the incomming where query
+                }
+              } else {
+                affected_cols.push(cw_col);
+              }
+            });
+
+            q_where
+              .filter(qw_str => !affected_cols.includes(qw_str.split('-')[0]))
+              .forEach(qw_str => {
+                // concatinate queries
+                config.query[key] = config.query[key] + `-and-${qw_str}`;
+              });
+          }
+
+          // other queries
+          else {
+            config.query[key] = query[key];
+          }
+        }
+
+        // remove query type
+        else if (config.query[key] === 'off') {
+          if (key === 'where')
+            config.query[key] = []; // where should be an array
+          else delete config.query[key];
+        }
+      }
+      // config.query not defined, let incomming query
+      else {
+        config.query[key] = query[key];
+      }
+    }
+  } else if (!config || !config.query || config.query === 'off') {
+    return (config.query = { where: [] });
   }
 
   const createParameters = group => {
@@ -29,13 +114,10 @@ const UrlQueryBuilder = async (req, row) => {
       condition = 'eq'; // default condition is 'equal'
     }
 
-    // condition and value is not specified
-    if (condition == value) {
-      value = null;
-    }
-
-    // value is null
+    // have to parse these values:
     if (value === 'null') value = null;
+    else if (value === 'true') value = true;
+    else if (value === 'false') value = false;
     else if (value === 'undefined') value = null;
 
     // convert the condition into operator so that knex can understand it
@@ -73,10 +155,9 @@ const UrlQueryBuilder = async (req, row) => {
     if (!Array.isArray(group.params)) return [];
 
     // assign special variables to the query
-    return group.params
-      .filter(p => p != null)
-      .map(p => {
-        let key;
+    return group.params.map(p => {
+      let key;
+      if (typeof p === 'string') {
         if (p === '#context') {
           // replace `#context` with the current context
           // context is the parent model name
@@ -122,19 +203,20 @@ const UrlQueryBuilder = async (req, row) => {
             p = params[key];
           }
         }
+      }
 
-        return p;
-      });
+      return p;
+    });
   };
 
   // Build url queries
-  const promises = Object.keys(config.query)
-    .filter(key => config.query[key] !== 'off') // exclude 'off' queries
-    .map(async key => {
+  return config.query ? Object.keys(config.query)
+    .filter(key => config.query[key] !== 'off')
+    .reduce((Q, key) => {
       switch (key) {
         case 'limit': // (number)
         case 'start': // (number)
-          config.query[key] = Number(config.query[key]);
+          Q[key] = Number(config.query[key]);
           break;
         case 'sort': // (column|columns, direction, nulls)
           // https://knexjs.org/#Builder-orderBy
@@ -145,7 +227,7 @@ const UrlQueryBuilder = async (req, row) => {
 
           if (typeof config.query[key] === 'string') {
             const Groups = config.query[key].split(':');
-            config.query[key] = [];
+            Q[key] = [];
 
             for (const group of Groups) {
               let [column, order] = group.split('-');
@@ -153,7 +235,7 @@ const UrlQueryBuilder = async (req, row) => {
               order = order || 'asc';
               // nulls = nulls || 'last' // not works idk why
 
-              config.query[key].push({ column, order });
+              Q[key].push({ column, order });
             }
           }
           break;
@@ -161,6 +243,9 @@ const UrlQueryBuilder = async (req, row) => {
           // examples:
           // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
           if (typeof config.query[key] === 'string') {
+            // clear $ signs
+            config.query[key] = config.query[key].replace(/\$/g, '');
+
             // split the query into groups
             const reg = /-and-|-or-|\sand\s|\sor\s/g;
             const groupCount = config.query[key].split(reg).length;
@@ -171,6 +256,7 @@ const UrlQueryBuilder = async (req, row) => {
               part: config.query[key],
               params: createParameters({ part: config.query[key] }),
             };
+
             // whereNull can be used because null values can't be compared by the operators like `=`
             if (Groups[0].params[2] === null) {
               if (Groups[0].params[1] === '=') {
@@ -183,14 +269,16 @@ const UrlQueryBuilder = async (req, row) => {
             if (groupCount > 1) {
               let i = 1;
               const matches = [...config.query[key].matchAll(reg)];
+
               for (const match of matches) {
                 const conjuctive = match[0].replace(/-|\s/g, '');
                 const index = match.index + match[0].length;
                 const nextIndex = matches[i] ? matches[i].index : undefined;
 
-                Groups[i].exec = `${conjuctive}Where`;
-                Groups[i].part = config.query[key].slice(index, nextIndex);
-                Groups[i].params = createParameters(Groups[i]);
+                const exec = `${conjuctive}Where`;
+                const part = config.query[key].slice(index, nextIndex);
+                const params = createParameters({ part });
+                Groups[i] = { exec, part, params };
 
                 // whereNull can be used because null values can't be compared by the operators like `=`
                 if (Groups[i].params[2] === null) {
@@ -212,10 +300,10 @@ const UrlQueryBuilder = async (req, row) => {
             }
 
             for (let i = 0; i <= Groups.length - 1; i++) {
-              Groups[i].params = await getSpecialParameters(Groups[i]);
+              Groups[i].params = getSpecialParameters(Groups[i]);
             }
 
-            config.query[key] = Groups;
+            Q[key] = Groups;
           }
           break;
         case 'exclude':
@@ -233,11 +321,8 @@ const UrlQueryBuilder = async (req, row) => {
           break;
       }
 
-      return config.query[key];
-    });
-
-  await Promise.all(promises);
-  return config.query;
+      return Q;
+    }, {}) : {};
 };
 
 module.exports = UrlQueryBuilder;

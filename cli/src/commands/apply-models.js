@@ -93,6 +93,7 @@ const db = {
    * @param {(options: {noSeed: boolean}) => any} options
    */
   apply: async (options = {}) => {
+    await db.createTriggerFunctions($config.database);
     await knex.schema.hasTable(modelsTable).then(async exists => {
       if (!exists) {
         // create new database state for detecting model file changes
@@ -563,8 +564,6 @@ const db = {
           // ### end compare models with database state ###
         });
     });
-
-    await db.createTriggerFunctions($config.database);
   },
   /**
    * @description Seed models if not seeded or wanted to seed:

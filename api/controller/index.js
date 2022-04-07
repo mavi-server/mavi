@@ -95,11 +95,12 @@ module.exports = (req, res) => {
   return {
     count: async () => {
       // Url Query Builder:
-      req.config.query = await UrlQueryBuilder(req);
-      const { query } = req.config;
+      const query = UrlQueryBuilder(req);
+      
+      // console.log(JSON.stringify(query, null, 2));
 
       // handle where clause | open `where` for inner queries
-      if (!query.where || query.where === 'off') query.where = [];
+      if (!query.where) query.where = [];
 
       // is-owner
       if (req.owner) {
@@ -133,10 +134,7 @@ module.exports = (req, res) => {
       // req.config.query = {...req.query, ...req.config.query};
 
       // Url Query Builder:
-      req.config.query = await UrlQueryBuilder(req);
-      const { query } = req.config;
-
-      // console.log('req.config.query:', JSON.stringify(req.config.query, null, 2));
+      const query = UrlQueryBuilder(req);
 
       if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns);
 
@@ -150,7 +148,7 @@ module.exports = (req, res) => {
         queryBuilder.limit(query.limit || 10);
       }
       // handle where clause | open `where` for inner queries
-      if (!query.where || query.where === 'off') query.where = [];
+      if (!query.where) query.where = [];
 
       // is-owner
       if (req.owner) {
@@ -389,13 +387,13 @@ module.exports = (req, res) => {
             if (req.user) {
               data.user = req.user.id;
             }
-  
+
             // data.id = Number((Math.random() * 10000).toFixed());
             data.url = `/uploads/${childFolder}/` + file.newFilename;
             data.alt =
               req.body.alt ||
               file.originalFilename.split('.').shift().replace(/-/g, ' ');
-  
+
             // file uploaded
             if (file) {
               // send file informations
@@ -405,7 +403,7 @@ module.exports = (req, res) => {
                   data,
                 });
               }
-  
+
               // register file to database
               // and send file informations
               else {
@@ -413,7 +411,7 @@ module.exports = (req, res) => {
                   .insert(data)
                   .returning(columns)
                   .catch(handleControllerError);
-  
+
                 return resolve({
                   status: 201,
                   data: result,
