@@ -10,7 +10,7 @@ module.exports = async function(populateIt = true) {
 
   // select if there is no predefined query builder
   // *some query builders can have their own select if you defined them in middlewares
-  if (!this.req.queryBuilder) {
+  if(this.req.isQueryBuilderDefined === false) {
     this.req.queryBuilder.select(columns);
   }
 
