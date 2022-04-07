@@ -30,19 +30,18 @@ module.exports = (req, res) => {
     count: async () => {
       // Url Query Builder:
       const query = UrlQueryBuilder(req);
-      console.log(JSON.stringify(query, 2, null));
 
       // handle where clause | open `where` for inner queries
       if (!query.where) query.where = [];
 
       // is-owner
       if (req.owner) {
-        if (model === 'users')
+        if (model === 'users') {
           query.where.push({
             exec: 'where',
             params: ['id', '=', req.owner.id],
           });
-        else
+        } else
           query.where.push({
             exec: 'where',
             params: ['user', '=', req.owner.id],
@@ -68,7 +67,7 @@ module.exports = (req, res) => {
 
       // select if there is no predefined query builder
       // *some query builders can have their own select if you defined them in middlewares
-      if(!req.queryBuilder) {
+      if (!req.queryBuilder) {
         queryBuilder.select(columns);
       }
 
@@ -86,12 +85,12 @@ module.exports = (req, res) => {
 
       // is-owner
       if (req.owner) {
-        if (model === 'users')
+        if (model === 'users') {
           query.where.push({
             exec: 'where',
             params: ['id', '=', req.owner.id],
           });
-        else
+        } else
           query.where.push({
             exec: 'where',
             params: ['user', '=', req.owner.id],
@@ -124,21 +123,43 @@ module.exports = (req, res) => {
         data,
       };
     },
-    findOne: async (populateIt = true) => {
-      const where = {};
-      let { id, name, username } = req.params;
+    findOne: async (id, populateIt = true) => {
+      // Url Query Builder:
+      const query = UrlQueryBuilder(req);
 
-      if (id) where.id = id;
-      else if (name) {
-        name = name.replace(/%20|%|\+|\s|-/g, ' ');
-        where.name = name;
-      } else if (username) where.username = username;
-      if (req.owner) where.user = req.owner.id;
+      // handle where clause | open `where` for inner queries
+      if (!query.where) query.where = [];
 
-      let data = await queryBuilder
-        .first(columns)
-        .where(where)
-        .catch(handleControllerError);
+      if (id) {
+        // is-owner
+        if (req.owner) {
+          if (model === 'users') {
+            id = req.owner.id;
+          } else {
+            query.where.push({
+              exec: 'where',
+              params: ['user', '=', req.owner.id],
+            });
+          }
+        }
+
+        query.where.push({
+          exec: 'where',
+          params: ['id', '=', id],
+        });
+      } else {
+        return {
+          status: 400,
+          data: 'Id is required',
+        };
+      }
+
+      // append where clauses
+      for (const group of query.where) {
+        queryBuilder[group.exec](...group.params);
+      }
+
+      let data = await queryBuilder.first(columns).catch(handleControllerError);
 
       // populate options
       if (populateIt && data && populate && Array.isArray(populate)) {
@@ -163,7 +184,6 @@ module.exports = (req, res) => {
     },
     create: async (body, populateIt = true) => {
       // You can send data via parameters or via body.
-
       if (req.params) {
         if (!body) body = {};
         body = { ...body, ...req.params };
@@ -196,19 +216,43 @@ module.exports = (req, res) => {
       };
     },
     update: async (id, body, populateIt = true) => {
-      const where = {};
-      if (id) where.id = id;
-      if (req.owner) {
-        if (model === 'users') {
-          where.id = req.owner.id;
-        } else {
-          where.user = req.owner.id;
+      // Url Query Builder:
+      const query = UrlQueryBuilder(req);
+
+      // handle where clause | open `where` for inner queries
+      if (!query.where) query.where = [];
+
+      if (id) {
+        // is-owner
+        if (req.owner) {
+          if (model === 'users') {
+            id = req.owner.id;
+          } else {
+            query.where.push({
+              exec: 'where',
+              params: ['user', '=', req.owner.id],
+            });
+          }
         }
+
+        query.where.push({
+          exec: 'where',
+          params: ['id', '=', id],
+        });
+      } else {
+        return {
+          status: 400,
+          data: 'Id is required',
+        };
+      }
+
+      // append where clauses
+      for (const group of query.where) {
+        queryBuilder[group.exec](...group.params);
       }
 
       let [data] = await queryBuilder
         .update(body)
-        .where(where)
         .returning(columns)
         .catch(handleControllerError);
 
@@ -234,19 +278,43 @@ module.exports = (req, res) => {
       };
     },
     delete: async (id, populateIt = true) => {
-      const where = {};
-      if (id) where.id = id;
-      if (req.owner) {
-        if (model === 'users') {
-          where.id = req.owner.id;
-        } else {
-          where.user = req.owner.id;
+      // Url Query Builder:
+      const query = UrlQueryBuilder(req);
+
+      // handle where clause | open `where` for inner queries
+      if (!query.where) query.where = [];
+
+      if (id) {
+        // is-owner
+        if (req.owner) {
+          if (model === 'users') {
+            id = req.owner.id;
+          } else {
+            query.where.push({
+              exec: 'where',
+              params: ['user', '=', req.owner.id],
+            });
+          }
         }
+
+        query.where.push({
+          exec: 'where',
+          params: ['id', '=', id],
+        });
+      } else {
+        return {
+          status: 400,
+          data: 'Id is required',
+        };
+      }
+
+      // append where clauses
+      for (const group of query.where) {
+        queryBuilder[group.exec](...group.params);
       }
 
       let [data] = await queryBuilder
         .delete()
-        .where(where)
         .returning(columns)
         .catch(handleControllerError);
 

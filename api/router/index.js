@@ -94,7 +94,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
 
   // Set required fields for every route
   const $routesConfig = await hydrateRoutes({ routes, define }, options);
-  
+
   // Generate router from hydrated routes configuration
   for (const path in $routesConfig) {
     const model = path.replace(/\/+/g, '');
@@ -152,7 +152,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
             req.config =
               typeof req.config === 'object'
                 ? { ...route, ...req.config }
-                : {...route};
+                : { ...route };
 
             // debug route:
             // console.log(JSON.stringify(route, null, 2));
@@ -168,7 +168,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
                 })
               );
             }
-            
+
             // Use controller directly which is defined in routes[x].controller
             if (typeof route.controller === 'function') {
               return route.controller(req, res);
@@ -190,12 +190,12 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
               switch (route.controller) {
                 case 'find':
                 case 'count':
-                case 'findOne':
                   $arguments = [];
                   break;
                 case 'create':
                   $arguments = [body];
                   break;
+                case 'findOne':
                 case 'delete':
                   $arguments = [id];
                   break;
@@ -212,14 +212,15 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
               }
 
               // execute default controller
-              await req.app.controller(req, res)
+              await req.app
+                .controller(req, res)
                 [route.controller](...$arguments)
                 .then(async res => {
                   // set response
                   response = await res;
                 })
                 .catch(async err => {
-                  if(process.env.NODE_ENV === 'development') {
+                  if (process.env.NODE_ENV === 'development') {
                     console.log(err);
                   }
                   response = await err;
