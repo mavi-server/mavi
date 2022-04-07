@@ -4,6 +4,14 @@
  */
 //  const UrlQueryBuilder = async (query, columns, { context, params, row })
 const UrlQueryBuilder = (req, row) => {
+  // overwrite the req.query with the api.config.query
+  if (typeof req.config.query === 'object') {
+    req.config.query = { ...req.query, ...req.config.query };
+    // Check if there is a pre-configured query
+    // Pre-configured queries can be defined inside of the "api.routes"
+    // All pre-configured queries should be strings
+  }
+  
   const { config, params, query } = req;
 
   if (query && typeof query !== 'string' && !Array.isArray(query)) {

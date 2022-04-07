@@ -30,6 +30,7 @@ module.exports = (req, res) => {
     count: async () => {
       // Url Query Builder:
       const query = UrlQueryBuilder(req);
+      console.log(JSON.stringify(query, 2, null));
 
       // handle where clause | open `where` for inner queries
       if (!query.where) query.where = [];
