@@ -182,39 +182,47 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
 
             // Use default controllers
             else if (controllers.find(ctrl => ctrl === route.controller)) {
+              // no need to send user id on the client side:
+              if (req.owner) {
+                if (req.config.model === 'users') {
+                  req.params.id = req.owner.id; // for update, delete controllers
+                } else {
+                  req.body.user = req.owner.id; // for create, update, delete controllers
+                }
+              }
+
               const { id, folder } = req.params;
               const { body } = req;
-              let $arguments = [];
+              let args = [];
 
-              // set $arguments for default controllers
+              // set arguments for default controllers
               switch (route.controller) {
                 case 'find':
                 case 'count':
-                  $arguments = [];
+                  args = [];
                   break;
                 case 'create':
-                  $arguments = [body];
-                  break;
-                case 'findOne':
-                case 'delete':
-                  $arguments = [id];
-                  break;
-                case 'update':
-                  $arguments = [id, body];
-                  break;
-                case 'upload':
-                  $arguments = [folder, body];
-                  break;
                 case 'login':
                 case 'logout':
                 case 'register':
-                  $arguments = [req, res];
+                  args = [body];
+                  break;
+                case 'findOne':
+                case 'delete':
+                  args = [id];
+                  break;
+                case 'update':
+                  args = [id, body];
+                  break;
+                case 'upload':
+                  args = [folder, body];
+                  break;
               }
 
               // execute default controller
               await req.app
                 .controller(req, res)
-                [route.controller](...$arguments)
+                [route.controller](...args)
                 .then(async res => {
                   // set response
                   response = await res;
