@@ -6,11 +6,11 @@
 const UrlQueryBuilder = (req, row) => {
   const { config, params, query } = req;
 
-  if (!config || !config.query || config.query === 'off') {
-    return (config.query = {});
-  } else if (query) {
+  if (query && typeof query !== 'string' && !Array.isArray(query)) {
     // merge req.query and config.query
     for (const key in query) {
+      if(typeof config.query === 'undefined') config.query = {};
+
       // if req.query predefined in config.query
       if (key in config.query) {
         // check predefined query with its state
@@ -86,13 +86,18 @@ const UrlQueryBuilder = (req, row) => {
 
         // remove query type
         else if (config.query[key] === 'off') {
-          // if(key == 'where') config.query[key] = []; // where should be an array
-          delete config.query[key];
+          if (key === 'where')
+            config.query[key] = []; // where should be an array
+          else delete config.query[key];
         }
-      } else {
+      }
+      // config.query not defined, let incomming query
+      else {
         config.query[key] = query[key];
       }
     }
+  } else if (!config || !config.query || config.query === 'off') {
+    return (config.query = { where: [] });
   }
 
   const createParameters = group => {
@@ -110,9 +115,9 @@ const UrlQueryBuilder = (req, row) => {
     }
 
     // have to parse these values:
-    if(value === 'null') value = null;
-    else if(value === 'true') value = true;
-    else if(value === 'false') value = false;
+    if (value === 'null') value = null;
+    else if (value === 'true') value = true;
+    else if (value === 'false') value = false;
     else if (value === 'undefined') value = null;
 
     // convert the condition into operator so that knex can understand it
@@ -205,7 +210,7 @@ const UrlQueryBuilder = (req, row) => {
   };
 
   // Build url queries
-  return Object.keys(config.query)
+  return config.query ? Object.keys(config.query)
     .filter(key => config.query[key] !== 'off')
     .reduce((Q, key) => {
       switch (key) {
@@ -317,7 +322,7 @@ const UrlQueryBuilder = (req, row) => {
       }
 
       return Q;
-    }, {});
+    }, {}) : {};
 };
 
 module.exports = UrlQueryBuilder;

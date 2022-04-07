@@ -83,7 +83,7 @@ const SubController = function (req, { populate, data, parent }) {
         // build pre-defined clauses into the queries
         // queries will be used to build sub sql query
         // Url Query Builder:
-        query = UrlQueryBuilder({ config }, parent);
+        query = UrlQueryBuilder({ config, query: {} }, parent);
 
         // handle where clause | open `where` for inner queries
         if (!query.where) query.where = [];
