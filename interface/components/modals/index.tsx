@@ -2,7 +2,7 @@ import { Box, Grid, Stack, Button, Typography, Modal } from '@mui/material'
 
 import Model from './model'
 import Controller from './controller'
-import View from './view'
+// import View from './view'
 import Middleware from './middleware'
 import Populate from './populate'
 
@@ -27,11 +27,11 @@ const Modals: any = {
     description: 'Build deep SQL queries under the hood',
     content: <Populate />,
   },
-  View: {
-    title: 'Views',
-    description: 'Write your own SQL queries (not actual RDB views)',
-    content: <View />,
-  },
+  // View: {
+  //   title: 'Views',
+  //   description: 'Write your own SQL queries (not actual RDB views)',
+  //   content: <View />,
+  // },
 }
 type ButtonAction = {
   icon: any

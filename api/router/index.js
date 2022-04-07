@@ -94,7 +94,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
 
   // Set required fields for every route
   const $routesConfig = await hydrateRoutes({ routes, define }, options);
-  
+
   // Generate router from hydrated routes configuration
   for (const path in $routesConfig) {
     const model = path.replace(/\/+/g, '');
@@ -152,7 +152,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
             req.config =
               typeof req.config === 'object'
                 ? { ...route, ...req.config }
-                : {...route};
+                : { ...route };
 
             // debug route:
             // console.log(JSON.stringify(route, null, 2));
@@ -181,68 +181,63 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
             }
 
             // Use default controllers
-            else if (controllers.includes(route.controller) || route.view) {
+            else if (controllers.find(ctrl => ctrl === route.controller)) {
+              // no need to send user id on the client side:
+              if (req.owner) {
+                if (req.config.model === 'users') {
+                  req.params.id = req.owner.id; // for update, delete controllers
+                } else {
+                  req.body.user = req.owner.id; // for create, update, delete controllers
+                }
+              }
+
               const { id, folder } = req.params;
               const { body } = req;
-              let $arguments = [];
+              let args = [];
 
-              // set $arguments for default controllers
+              // set arguments for default controllers
               switch (route.controller) {
                 case 'find':
                 case 'count':
-                case 'findOne':
-                  $arguments = [];
+                  args = [];
                   break;
                 case 'create':
-                  $arguments = [body];
-                  break;
-                case 'delete':
-                  $arguments = [id];
-                  break;
-                case 'update':
-                  $arguments = [id, body];
-                  break;
-                case 'upload':
-                  $arguments = [folder, body];
-                  break;
                 case 'login':
                 case 'logout':
                 case 'register':
-                  $arguments = [req, res];
+                  args = [body];
+                  break;
+                case 'findOne':
+                case 'delete':
+                  args = [id];
+                  break;
+                case 'update':
+                  args = [id, body];
+                  break;
+                case 'upload':
+                  args = [folder, body];
+                  break;
               }
 
-              if (route.view && !route.controller) {
-                // execute controller with only view
-                await req.app
-                  .controller(req, res)
-                  .find(false) // false to disable sub-controllers
-                  .then(async res => (response = await res))
-                  .catch(async err => {
-                    if(process.env.NODE_ENV === 'development') {
-                      console.log(err);
-                    }
-                    
-                    return (response = await err);
-                  });
-              } else {
-                // execute default controller
-                await req.app
-                  .controller(req, res)
-                  [route.controller](...$arguments)
-                  .then(async res => (response = await res))
-                  .catch(async err => {
-                    if(process.env.NODE_ENV === 'development') {
-                      console.log(err);
-                    }
-
-                    return (response = await err);
-                  });
-              }
+              // execute default controller
+              await req.app
+                .controller(req, res)
+                [route.controller](...args)
+                .then(async res => {
+                  // set response
+                  response = await res;
+                })
+                .catch(async err => {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log(err);
+                  }
+                  response = await err;
+                });
             } else {
               // controller not found
               response = {
-                status: 404,
-                data: 'Controller not found',
+                status: 500,
+                data: `Controller "${route.controller}" not found`,
               };
             }
 

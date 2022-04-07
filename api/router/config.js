@@ -137,14 +137,12 @@ module.exports = {
   //     path: '/channels/:id',
   //     method: 'get',
   //     controller: 'find',
-  //     view: 'channel_feeds',
   //     populate: ['bookmark', 'user', 'thumbnail', 'responseCount'],
   //   },
   //   {
   //     path: '/channels/:id/count',
   //     method: 'get',
   //     controller: 'count',
-  //     view: 'channel_feeds',
   //   },
   // ],
   // communities: [

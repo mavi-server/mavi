@@ -97,8 +97,9 @@ export type Define = {
   populate: Populate.Columns
   utils?: object
   /**
-   * Middlewares for the api routes
-   *
+   * Define middlewares for this api route.
+   * You can extend/customize the controllers by using middlewares.
+   * 
    * See details: https://expressjs.com/en/guide/using-middleware.html
    */
   middlewares?: {
@@ -193,14 +194,6 @@ export declare interface Route {
    * Column selection should be optional. Needs improvement.
    * */
   utils?: utils[]
-  /**
-   * Extends the query builder.
-   *
-   * You can write your advanced sql queries and call via view.
-   *
-   * If not defined, the controller name will be used.
-   */
-  view?: string
   serve?: {
     folder?: string
     fullpath?: string

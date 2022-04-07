@@ -10,7 +10,6 @@ import RouteIcon from '@mui/icons-material/AccountTree'
 import PuzzleIcon from '@mui/icons-material/Extension'
 import LayersIcon from '@mui/icons-material/Layers'
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
-import PreviewIcon from '@mui/icons-material/Preview'
 
 import ModalContainer from './modals'
 
@@ -20,7 +19,6 @@ const actions = [
   { icon: <PuzzleIcon />, name: 'Populate' },
   { icon: <LayersIcon />, name: 'Controller' },
   { icon: <DynamicFeedIcon />, name: 'Middleware' },
-  { icon: <PreviewIcon />, name: 'View' },
 ]
 
 export default function AddButton() {

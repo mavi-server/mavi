@@ -13,3 +13,4 @@ types/*.js
 # remove later
 features.md
 list.yml
+git.sh
