@@ -18,30 +18,13 @@ module.exports = (req, res) => {
     };
   }
 
-  // overwrite the req.query with the api.config.query
-  if (typeof req.config.query === 'object') {
-    req.config.query = { ...req.query, ...req.config.query };
-    // Check if there is a pre-configured query
-    // Pre-configured queries can be defined inside of the "api.routes"
-    // All pre-configured queries should be strings
-  }
-
   const { db } = req.app; // request config
   const { model, populate, columns } = req.config;
-
-  // console.log("populate:", JSON.stringify(populate, null, 1));
 
   // SQL Query Builder:
   // you can pass queryBuilder to the request object
   // and build queries on top of it
   let queryBuilder = req.queryBuilder || db(model);
-  
-  if (!Boolean(req.queryBuilder)) {
-    return {
-      status: 500,
-      data: 'Controller: req.queryBuilder should be a query builder',
-    };
-  }
 
   return {
     count: async () => {
@@ -82,7 +65,11 @@ module.exports = (req, res) => {
       // Url Query Builder:
       const query = UrlQueryBuilder(req);
 
-      queryBuilder.select(columns);
+      // select if there is no predefined query builder
+      // *some query builders can have their own select if you defined them in middlewares
+      if(!req.queryBuilder) {
+        queryBuilder.select(columns);
+      }
 
       if (query.sort) {
         queryBuilder.orderBy(query.sort);
