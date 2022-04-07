@@ -14,6 +14,7 @@ const UrlQueryBuilder = (req, row) => {
 
   const { config, params, query } = req;
   const defaultQuery = { where: [] };
+  const lockReg = /lock|\$/g;
 
   if (query && typeof query !== 'string' && !Array.isArray(query)) {
     // merge req.query and config.query
@@ -23,27 +24,26 @@ const UrlQueryBuilder = (req, row) => {
       // if req.query predefined in config.query
       if (key in config.query) {
         // check predefined query with its state
-        // example: { query: { limit: [5, 'on'] } }
-        // limit is 5 but can be overwritten by the incomming query
-        // /posts?limit=10 will change the limit to 10
-        // off = internal query
+        // example: { query: { limit: [5, 'lock'] } }
+        // limit is 5 but cannot be overwritten by the incomming query
+        // /posts?limit=10 will not change the limit
         if (Array.isArray(config.query[key])) {
           const [q, state] = config.query[key];
 
-          // let incomming query
-          if (state !== 'off') {
-            config.query[key] = query[key];
+          // use predefined query
+          if (state.match(lockReg)) {
+            config.query[key] = q.replace(/\$/g, ''); // remove $ if user forget to remove it. because its already internal where query.
           }
 
-          // use predefined query
-          else if (state === 'off') {
-            config.query[key] = q.replace(/\$/g, ''); // remove $ if user forget to remove it. because its already internal where query.
+          // let incomming query
+          else {
+            config.query[key] = query[key];
           }
         }
 
         // let incomming query
-        else if (config.query[key] !== 'off') {
-          // concatinate unique where queries and detect off columns
+        else if (config.query[key].match(lockReg) === null) {
+          // concatinate unique where queries and detect locked columns
           if (key === 'where') {
             // split the query into groups
             const reg = /-and-|-or-|\sand\s|\sor\s/g;
@@ -55,13 +55,13 @@ const UrlQueryBuilder = (req, row) => {
              * check conjuctives. right now only 'and' works
              */
             c_where.forEach(cw_str => {
-              const [$cw_col] = cw_str.split('-'); // might be off column
-              const isOff = $cw_col.slice(0, 1) === '$'; // dolar sign means off column
-              const cw_col = isOff ? $cw_col.slice(1) : $cw_col; // real colum name
+              const [$cw_col] = cw_str.split('-'); // might be locked column
+              const isLocked = $cw_col.slice(0, 1) === '$'; // dolar sign means locked column
+              const cw_col = isLocked ? $cw_col.slice(1) : $cw_col; // real colum name
 
-              // if internal where query is off, that means req.query.where cannot overwrite to that column
-              // config column is not off:
-              if (!isOff) {
+              // if internal where query is locked, that means req.query.where cannot overwrite to that column
+              // config column is not locked:
+              if (!isLocked) {
                 // find the same column in incomming where query
                 let qw_str = q_where.find(qw_str => {
                   const [qw_col] = qw_str.split('-');
@@ -94,7 +94,7 @@ const UrlQueryBuilder = (req, row) => {
         }
 
         // remove query type
-        else if (config.query[key] === 'off') {
+        else if (config.query[key].match(lockReg)) {
           if (key === 'where')
             config.query[key] = []; // where should be an array
           else delete config.query[key];
@@ -105,7 +105,7 @@ const UrlQueryBuilder = (req, row) => {
         config.query[key] = query[key];
       }
     }
-  } else if (!config || !config.query || config.query === 'off') {
+  } else if (!config || !config.query || config.query.match(lockReg)) {
     return (config.query = defaultQuery);
   }
 
@@ -222,12 +222,12 @@ const UrlQueryBuilder = (req, row) => {
   return config.query
     ? Object.keys(config.query)
       .filter(key => {
-        // where query should be an array even if its off
-        if (key === 'where' && config.query[key] === 'off') {
+        // where query should be an array even if its locked
+        if (key === 'where' && config.query[key].match(lockReg)) {
           config.query[key] = [];
         }
 
-        return config.query[key] !== 'off';
+        return config.query[key].match(lockReg) === null;
       })
       .reduce((Q, key) => {
         switch (key) {
