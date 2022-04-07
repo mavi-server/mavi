@@ -19,7 +19,7 @@ export type DialogProps = {
 export type DialogData = {
   type?: SupportedDialogTypes
   params: {
-    name: 'routes' | 'models' | 'controllers' | 'views' | 'middlewares'
+    name: 'routes' | 'models' | 'controllers' | 'middlewares'
     selectedListItems?: (number | any)[]
     depth?: number
     inputText?: string

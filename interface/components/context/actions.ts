@@ -31,7 +31,6 @@ export default {
             populate: [],
             utils: [],
             query: {},
-            view: null
           }
         }
       })
@@ -51,7 +50,6 @@ export default {
     //       populate: [],
     //       utils: [],
     //       query: {},
-    //       view: null
     //     }
     //   })
     // }

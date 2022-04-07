@@ -51,11 +51,6 @@ module.exports = {
           populate: ['user'],
         },
         {
-          path: '/posts-from-view',
-          method: 'get',
-          view: 'example_view', // can be combined with the controller as well
-        },
-        {
           path: '/posts/count',
           method: 'get',
           controller: 'count',
@@ -278,16 +273,6 @@ module.exports = {
         greetings: function (req, res, next) {
           console.log('Hello from middleware!');
           next();
-        },
-      },
-      // Views are used in routes to extend controller methods.
-      // Views will give the ability to make custom queries and can be combined with controllers.
-      // Views are not intended to replace the actual views of the RDBMS (for now)
-      views: {
-        example_view: (knex, params) => {
-          // refer to this doc for the usage of knex: https://knexjs.org/
-          // you can also return a raw sql string as well
-          return knex.select('*').from('users').where('id', params.id);
         },
       },
     },

@@ -94,7 +94,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
 
   // Set required fields for every route
   const $routesConfig = await hydrateRoutes({ routes, define }, options);
-  
+
   // Generate router from hydrated routes configuration
   for (const path in $routesConfig) {
     const model = path.replace(/\/+/g, '');
@@ -152,7 +152,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
             req.config =
               typeof req.config === 'object'
                 ? { ...route, ...req.config }
-                : {...route};
+                : { ...route };
 
             // debug route:
             // console.log(JSON.stringify(route, null, 2));
@@ -181,7 +181,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
             }
 
             // Use default controllers
-            else if (controllers.includes(route.controller) || route.view) {
+            else if (controllers.includes(route.controller)) {
               const { id, folder } = req.params;
               const { body } = req;
               let $arguments = [];
@@ -211,33 +211,18 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
                   $arguments = [req, res];
               }
 
-              if (route.view && !route.controller) {
-                // execute controller with only view
-                await req.app
-                  .controller(req, res)
-                  .find(false) // false to disable sub-controllers
-                  .then(async res => (response = await res))
-                  .catch(async err => {
-                    if(process.env.NODE_ENV === 'development') {
-                      console.log(err);
-                    }
-                    
-                    return (response = await err);
-                  });
-              } else {
-                // execute default controller
-                await req.app
-                  .controller(req, res)
-                  [route.controller](...$arguments)
-                  .then(async res => (response = await res))
-                  .catch(async err => {
-                    if(process.env.NODE_ENV === 'development') {
-                      console.log(err);
-                    }
+              // execute default controller
+              await req.app
+                .controller(req, res)
+                [route.controller](...$arguments)
+                .then(async res => (response = await res))
+                .catch(async err => {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log(err);
+                  }
 
-                    return (response = await err);
-                  });
-              }
+                  return (response = await err);
+                });
             } else {
               // controller not found
               response = {

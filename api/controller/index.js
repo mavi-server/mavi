@@ -26,8 +26,8 @@ module.exports = (req, res) => {
     // All pre-configured queries should be strings
   }
 
-  const { $config, db } = req.app; // request config
-  const { model, populate, columns, view, controller } = req.config;
+  const { db } = req.app; // request config
+  const { model, populate, columns } = req.config;
 
   // console.log("populate:", JSON.stringify(populate, null, 1));
 
@@ -35,69 +35,18 @@ module.exports = (req, res) => {
   // you can pass queryBuilder to the request object
   // and build queries on top of it
   let queryBuilder = req.queryBuilder || db(model);
-
-  // *
-  // *view feature needs improvements*
-  // "views" can be defined inside of the "api.define.view" config
-  // this will give the ability to make custom queries
-  // they are not intended to replace the actual view of the RDBMS (for now)
-  // *
-  if (
-    view &&
-    $config.api.define &&
-    $config.api.define.views &&
-    typeof $config.api.define.views === 'object'
-  ) {
-    // if view is defined
-    // queryBuilder = db
-
-    // Be sure id parameter is number
-    if (req.params.id) {
-      req.params.id = Number(req.params.id);
-    }
-    // Other params are not checked
-    // a view function is gets `knex` and `params` as arguments
-
-    // Expecting to return knex object
-    // On some url queries you may need to refer your columns with alias_table_name.column_name
-    // (e.g. ?where=id=users.id)
-    queryBuilder = $config.api.define.views[view](db, req.params, req.user);
-
-    // If not, assume that view function is an sql query:
-    if (typeof queryBuilder === 'string' || controller === 'count') {
-      // String sql views have some obstacles.
-      // Some url queries may not be supported.
-      // Like where, orderBy, etc.
-
-      // wrap the query string and convert into knex object
-      const sql = `(${queryBuilder}) as ${view}`;
-      queryBuilder = db.from(db.raw(sql));
-    }
-
-    // console.log(queryBuilder.toString());
-
-    // if there is no controller defined, then use the default view controller
-    // if (!controller) {
-    //   return async (populateIt = true) => {
-    //     let data = await queryBuilder.catch(handleControllerError)
-    //     // populate options
-    //     if (populateIt && data && data.length && populate && Array.isArray(populate)) {
-    //       data = await SubController(req, { populate, data }).catch(handleControllerError)
-    //     }
-    // return {
-    //   status: 200,
-    //   data,
-    // };
-    //   }
-    // }
+  
+  if (!Boolean(req.queryBuilder)) {
+    return {
+      status: 500,
+      data: 'Controller: req.queryBuilder should be a query builder',
+    };
   }
 
   return {
     count: async () => {
       // Url Query Builder:
       const query = UrlQueryBuilder(req);
-      
-      // console.log(JSON.stringify(query, null, 2));
 
       // handle where clause | open `where` for inner queries
       if (!query.where) query.where = [];
@@ -130,13 +79,10 @@ module.exports = (req, res) => {
       };
     },
     find: async (populateIt = true) => {
-      // temporary
-      // req.config.query = {...req.query, ...req.config.query};
-
       // Url Query Builder:
       const query = UrlQueryBuilder(req);
 
-      if (!view && !Boolean(req.queryBuilder)) queryBuilder.select(columns);
+      queryBuilder.select(columns);
 
       if (query.sort) {
         queryBuilder.orderBy(query.sort);
