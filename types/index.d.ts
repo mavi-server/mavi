@@ -99,7 +99,7 @@ export type Define = {
   /**
    * Define middlewares for this api route.
    * You can extend/customize the controllers by using middlewares.
-   * 
+   *
    * See details: https://expressjs.com/en/guide/using-middleware.html
    */
   middlewares?: {
@@ -125,14 +125,13 @@ export declare interface MaviApi {
   plugins?: object
 }
 
-export type MaviQuery =
-  | {
-      start: string | 'off'
-      limit: string | 'off'
-      where: string | 'off'
-      order: string | 'off'
-    }
-  | 'off'
+export type queryStr = '$' | 'lock' | 'locked' 
+export type MaviQuery = {
+  start: queryStr
+  limit: queryStr
+  where: queryStr
+  order: queryStr
+} | queryStr
 
 /**
  * Will transformed into the API routes
