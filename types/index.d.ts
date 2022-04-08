@@ -130,8 +130,8 @@ export type MaviQuery = {
   start: queryStr
   limit: queryStr
   where: queryStr
-  order: queryStr
-} | queryStr
+  sort: queryStr
+}
 
 /**
  * Will transformed into the API routes
@@ -411,7 +411,8 @@ export type HydrateRoutes = (
 export type UrlQueryBuilder = (
   req: {
     config: Populate.Properties
-    params?: any
+    params?: object
+    query?: object
   },
   row: any
 ) => Promise<MaviQuery>

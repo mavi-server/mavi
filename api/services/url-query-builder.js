@@ -4,112 +4,196 @@
  */
 //  const UrlQueryBuilder = async (query, columns, { context, params, row })
 const UrlQueryBuilder = (req, row) => {
-  // overwrite the req.query with the api.config.query
-  if (typeof req.config.query === 'object') {
-    req.config.query = { ...req.query, ...req.config.query };
-    // Check if there is a pre-configured query
-    // Pre-configured queries can be defined inside of the "api.routes"
-    // All pre-configured queries should be strings
-  }
-
   const { config, params, query } = req;
   const defaultQuery = { where: [] };
   const lockReg = /lock|\$/g;
-  const isLocked = query => typeof query === 'string' && query.match(lockReg);
+  const isQueryLocked = str =>
+    Boolean(
+      ['$', 'lock', 'locked', '$lock', '$locked'].find(
+        locked => str === locked
+      )
+    );
+  const isColumnLocked = str =>
+    typeof str === 'string' && (str.startsWith('$') || str.match(lockReg));
+  let Q = {}; // main query
 
-  if (query && typeof query !== 'string' && !Array.isArray(query)) {
-    // merge req.query and config.query
-    for (const key in query) {
-      if (typeof config.query === 'undefined') config.query = defaultQuery;
+  const mergeAndSecureQueries = () => {
+    // internal query = config.query
+    // incoming query = req.query
 
-      // if req.query predefined in config.query
-      if (key in config.query) {
-        // check predefined query with its state
-        // example: { query: { limit: [5, 'lock'] } }
-        // limit is 5 but cannot be overwritten by the incomming query
-        // /posts?limit=10 will not change the limit
-        if (Array.isArray(config.query[key])) {
-          const [q, state] = config.query[key];
+    if (query && typeof query !== 'string' && !Array.isArray(query)) {
+      // if internal query is not defined, use incoming query
+      if (typeof config.query === 'undefined') {
+        Q = { ...query };
+      }
 
-          // use predefined query
-          if (isLocked(state)) {
-            config.query[key] = q.replace(/\$/g, ''); // remove $ if user forget to remove it. because its already internal where query.
+      // there is no incoming query
+      // use internal queries
+      else if (Object.keys(query).length === 0) {
+        for (const key in config.query) {
+          // if array syntax
+          if (Array.isArray(config.query[key])) {
+            const [q] = config.query[key];
+
+            // use pre-configured query
+            if (key === 'where') {
+              Q[key] = q.replace(/\$/g, ''); // clear uneccessary $ signs because query is completely locked
+            } else Q[key] = q;
           }
 
-          // let incomming query
+          // query is completely locked
+          else if (isQueryLocked(config.query[key])) {
+            if (key === 'where') {
+              // default where should be an empty array
+              Q[key] = [];
+            }
+          }
+
+          // not locked
           else {
-            config.query[key] = query[key];
+            // some where columns can be locked
+            if (key === 'where') {
+              // remove lock signs
+              Q[key] = config.query[key].replace(/\$/g, '');
+            }
           }
-        }
-
-        // let incomming query
-        else if (!isLocked(config.query[key])) {
-          // concatinate unique where queries and detect locked columns
-          if (key === 'where') {
-            // split the query into groups
-            const reg = /-and-|-or-|\sand\s|\sor\s/g;
-            const c_where = config.query[key].split(reg);
-            const q_where = query[key].split(reg);
-            const affected_cols = [];
-
-            /** TODO:
-             * check conjuctives. right now only 'and' works
-             */
-            c_where.forEach(cw_str => {
-              const [$cw_col] = cw_str.split('-'); // might be locked column
-              const isLocked = $cw_col.slice(0, 1) === '$'; // dolar sign means locked column
-              const cw_col = isLocked ? $cw_col.slice(1) : $cw_col; // real colum name
-
-              // if internal where query is locked, that means req.query.where cannot overwrite to that column
-              // config column is not locked:
-              if (!isLocked) {
-                // find the same column in incomming where query
-                let qw_str = q_where.find(qw_str => {
-                  const [qw_col] = qw_str.split('-');
-                  return qw_col === cw_col;
-                });
-
-                // req.query.where column is defined in config.query.where
-                if (qw_str) {
-                  // update query:
-                  config.query[key] = config.query[key].replace(cw_str, qw_str); // replace cw_str with the qw_str
-                  affected_cols.push(qw_str.split('-')[0]); // keep the incomming where query
-                }
-              } else {
-                affected_cols.push(cw_col);
-              }
-            });
-
-            q_where
-              .filter(qw_str => !affected_cols.includes(qw_str.split('-')[0]))
-              .forEach(qw_str => {
-                // concatinate queries
-                config.query[key] = config.query[key] + `-and-${qw_str}`;
-              });
-          }
-
-          // other queries
-          else {
-            config.query[key] = query[key];
-          }
-        }
-
-        // remove query type
-        else if (isLocked(config.query[key])) {
-          if (key === 'where')
-            config.query[key] = []; // where should be an array
-          else delete config.query[key];
         }
       }
-      // config.query not defined, let incomming query
+      // merge incoming query and internal query
       else {
-        config.query[key] = query[key];
-      }
-    }
-  } else if (!config || !config.query || isLocked(config.query)) {
-    return (config.query = defaultQuery);
-  }
+        // pass incoming queries if they're not locked
+        for (const key in config.query) {
+          // the incoming query has pre-configured
+          if (key in query) {
+            // If array syntax, means locked
+            // example: { query: { limit: [5] } }
+            // limit is 5 but cannot be overwritten by the incoming query
+            // /posts?limit=10 will not change the limit
+            if (Array.isArray(config.query[key])) {
+              const [q] = config.query[key];
 
+              // use pre-configured query
+              if (key === 'where') {
+                Q[key] = q.replace(/\$/g, ''); // clear uneccessary $ signs because query is completely locked
+              } else {
+                Q[key] = q;
+              }
+            }
+
+            // query is locked
+            else if (isQueryLocked(config.query[key])) {
+              // where should be an empty array
+              if (key === 'where') {
+                Q[key] = [];
+              }
+            }
+
+            // not locked
+            // pass incoming query (other then 'where')
+            // will check locked columns for 'where'
+            else {
+              // concatinate unique where queries and detect locked columns
+              if (key === 'where') {
+                const reg = /-and-|-or-|\sand\s|\sor\s/g; // where syntax splitter
+                const c_where = config.query[key].split(reg); // internal|req.config where
+                const q_where = query[key].split(reg); // incoming|req.query where
+
+                // assign default where string
+                Q[key] = config.query[key];
+
+                /** TODO:
+                 * check conjuctives too. right now only 'and' works, 'or' not.
+                 */
+                for (const qw_str of q_where) {
+                  const [qw_col] = qw_str.split('-');
+
+                  // config column is not locked:
+                  // pass incoming where queries that are not locked
+                  for (const cw_str of c_where) {
+                    const [$cw_col] = cw_str.split('-'); // might be locked column
+                    const cw_col = $cw_col.replace(/\$/g, ''); // real colum name
+
+                    // update 'where' if it is pre-defined:
+                    if (cw_col === qw_col) {
+                      // if internal where query is locked, that means req.query.where cannot overwrite to that column
+                      if (isColumnLocked($cw_col)) {
+                        // skip
+                        continue;
+                      }
+
+                      // update
+                      Q[key] = Q[key].replace(cw_str, qw_str); // replace cw_str with the qw_str
+                    }
+
+                    // concatinate new where query
+                    else {
+                      // add
+                      Q[key] = Q[key].concat(`-and-${qw_str}`);
+                    }
+                  }
+                }
+
+                // clear $ signs
+                Q[key] = Q[key].replace(/\$/g, '');
+              }
+
+              // pass query
+              else {
+                Q[key] = query[key];
+              }
+            }
+          }
+
+          // set internal queries
+          else {
+            // if array syntax
+            if (Array.isArray(config.query[key])) {
+              const [q] = config.query[key];
+
+              // use pre-configured query
+              if (key === 'where') {
+                Q[key] = q.replace(/\$/g, ''); // clear uneccessary $ signs because query is completely locked
+              } else Q[key] = q;
+            }
+
+            // query is locked
+            else if (isQueryLocked(config.query[key])) {
+              // where should be an empty array
+              if (key === 'where') {
+                Q[key] = [];
+              }
+            }
+            // set unlocked queries
+            else {
+              if (key === 'where') {
+                Q[key] = config.query[key].replace(/\$/g, '');
+              } else {
+                Q[key] = config.query[key];
+              }
+            }
+          }
+        }
+
+        // pass remained incoming queries
+        for (const key in query) {
+          if (!(key in config.query)) {
+            if (key === 'where') {
+              Q[key] = query[key].replace(/\$/g, '');
+            } else {
+              Q[key] = query[key];
+            }
+          }
+        }
+      }
+    } else if (!config || !config.query || isColumnLocked(config.query)) {
+      return (Q = defaultQuery);
+    }
+
+    // default where is always an empty array
+    if (!Q.where) {
+      Q.where = [];
+    }
+  };
   const createParameters = group => {
     if (!group || !group.part) return;
 
@@ -219,128 +303,117 @@ const UrlQueryBuilder = (req, row) => {
     });
   };
 
+  // Merge and secure queries
+  mergeAndSecureQueries();
+
   // Build url queries
-  return config.query
-    ? Object.keys(config.query)
-      .filter(key => {
-        // where query should be an array even if its locked
-        if (key === 'where' && isLocked(config.query[key])) {
-          config.query[key] = [];
+  for (const key in Q) {
+    switch (key) {
+      case 'limit': // (number)
+      case 'start': // (number)
+        Q[key] = Number(Q[key]);
+        break;
+      case 'sort': // (column|columns, direction, nulls)
+        // https://knexjs.org/#Builder-orderBy
+
+        // examples:
+        // simple sort: "name-asc"
+        // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
+
+        if (typeof Q[key] === 'string') {
+          const Groups = Q[key].split(':');
+          Q[key] = [];
+
+          for (const group of Groups) {
+            let [column, order] = group.split('-');
+            column = column || 'id';
+            order = order || 'asc';
+            // nulls = nulls || 'last' // not works idk why
+
+            Q[key].push({ column, order });
+          }
         }
+        break;
+      case 'where': // (column, operator, value|values)
+        // examples:
+        // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
+        if (typeof Q[key] === 'string') {
+          // split the query into groups
+          const reg = /-and-|-or-|\sand\s|\sor\s/g;
+          const groupCount = Q[key].split(reg).length;
+          const Groups = new Array(groupCount).fill({});
 
-        return !isLocked(config.query[key]);
-      })
-      .reduce((Q, key) => {
-        switch (key) {
-          case 'limit': // (number)
-          case 'start': // (number)
-            Q[key] = Number(config.query[key]);
-            break;
-          case 'sort': // (column|columns, direction, nulls)
-            // https://knexjs.org/#Builder-orderBy
+          Groups[0] = {
+            exec: 'where',
+            part: Q[key],
+            params: createParameters({ part: Q[key] }),
+          };
 
-            // examples:
-            // simple sort: "name-asc"
-            // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
-
-            if (typeof config.query[key] === 'string') {
-              const Groups = config.query[key].split(':');
-              Q[key] = [];
-
-              for (const group of Groups) {
-                let [column, order] = group.split('-');
-                column = column || 'id';
-                order = order || 'asc';
-                // nulls = nulls || 'last' // not works idk why
-
-                Q[key].push({ column, order });
-              }
+          // whereNull can be used because null values can't be compared by the operators like `=`
+          if (Groups[0].params[2] === null) {
+            if (Groups[0].params[1] === '=') {
+              Groups[0].exec = 'whereNull';
+            } else if (Groups[0].params[1] === '<>') {
+              Groups[0].exec = 'whereNotNull';
             }
-            break;
-          case 'where': // (column, operator, value|values)
-            // examples:
-            // simple where: where=id-1-and-community-eq-1-or-name-like-%test%
-            if (typeof config.query[key] === 'string') {
-              // clear $ signs
-              config.query[key] = config.query[key].replace(/\$/g, '');
+          }
 
-              // split the query into groups
-              const reg = /-and-|-or-|\sand\s|\sor\s/g;
-              const groupCount = config.query[key].split(reg).length;
-              const Groups = new Array(groupCount).fill({});
+          if (groupCount > 1) {
+            let i = 1;
+            const matches = [...Q[key].matchAll(reg)];
 
-              Groups[0] = {
-                exec: 'where',
-                part: config.query[key],
-                params: createParameters({ part: config.query[key] }),
-              };
+            for (const match of matches) {
+              const conjuctive = match[0].replace(/-|\s/g, '');
+              const index = match.index + match[0].length;
+              const nextIndex = matches[i] ? matches[i].index : undefined;
+
+              const exec = `${conjuctive}Where`;
+              const part = Q[key].slice(index, nextIndex);
+              const params = createParameters({ part });
+              Groups[i] = { exec, part, params };
 
               // whereNull can be used because null values can't be compared by the operators like `=`
-              if (Groups[0].params[2] === null) {
-                if (Groups[0].params[1] === '=') {
-                  Groups[0].exec = 'whereNull';
-                } else if (Groups[0].params[1] === '<>') {
-                  Groups[0].exec = 'whereNotNull';
+              if (Groups[i].params[2] === null) {
+                if (Groups[i].params[1] === '=') {
+                  Groups[i].exec =
+                    conjuctive == 'or' ? `orWhereNull` : `whereNull`; // knex doesn't support andWhereNull
+                } else if (Groups[i].params[1] === '<>') {
+                  Groups[i].exec =
+                    conjuctive == 'or' ? 'orWhereNotNull' : 'whereNotNull'; // knex doesn't support andWhereNotNull
                 }
               }
-
-              if (groupCount > 1) {
-                let i = 1;
-                const matches = [...config.query[key].matchAll(reg)];
-
-                for (const match of matches) {
-                  const conjuctive = match[0].replace(/-|\s/g, '');
-                  const index = match.index + match[0].length;
-                  const nextIndex = matches[i] ? matches[i].index : undefined;
-
-                  const exec = `${conjuctive}Where`;
-                  const part = config.query[key].slice(index, nextIndex);
-                  const params = createParameters({ part });
-                  Groups[i] = { exec, part, params };
-
-                  // whereNull can be used because null values can't be compared by the operators like `=`
-                  if (Groups[i].params[2] === null) {
-                    if (Groups[i].params[1] === '=') {
-                      Groups[i].exec =
-                          conjuctive == 'or' ? `orWhereNull` : `whereNull`; // knex doesn't support andWhereNull
-                    } else if (Groups[i].params[1] === '<>') {
-                      Groups[i].exec =
-                          conjuctive == 'or' ? 'orWhereNotNull' : 'whereNotNull'; // knex doesn't support andWhereNotNull
-                    }
-                  }
-                  i++;
-                }
-
-                // update first part
-                const firstIndex = matches[0].index;
-                Groups[0].part = config.query[key].slice(0, firstIndex);
-                Groups[0].params = createParameters(Groups[0]);
-              }
-
-              for (let i = 0; i <= Groups.length - 1; i++) {
-                Groups[i].params = getSpecialParameters(Groups[i]);
-              }
-
-              Q[key] = Groups;
+              i++;
             }
-            break;
-          case 'exclude':
-            // Normally "exclude" option is defined inside of the "api.routes" config
-            // This will overwrite the existing "exclude" properties
 
-            // example query is: ?exclude=id:updated_at:created_at
-            const excludeColumns = config.query.exclude.split(/[:,]/gi);
-            config.columns.forEach((col, i) => {
-              // exclude columns
-              if (excludeColumns.find(C => col == C)) {
-                config.columns.splice(i, 1);
-              }
-            });
-            break;
+            // update first part
+            const firstIndex = matches[0].index;
+            Groups[0].part = Q[key].slice(0, firstIndex);
+            Groups[0].params = createParameters(Groups[0]);
+          }
+
+          for (let i = 0; i <= Groups.length - 1; i++) {
+            Groups[i].params = getSpecialParameters(Groups[i]);
+          }
+
+          Q[key] = Groups;
         }
+        break;
+      case 'exclude':
+        // Normally "exclude" option is defined inside of the "api.routes" config
+        // This will overwrite the existing "exclude" properties
 
-        return Q;
-      }, defaultQuery)
-    : defaultQuery;
+        // example query is: ?exclude=id:updated_at:created_at
+        const excludeColumns = Q[key].split(/[:,]/gi);
+        config.columns.forEach((col, i) => {
+          // exclude columns
+          if (excludeColumns.find(C => col == C)) {
+            config.columns.splice(i, 1);
+          }
+        });
+        break;
+    }
+  }
+
+  return Q;
 };
 module.exports = UrlQueryBuilder;
