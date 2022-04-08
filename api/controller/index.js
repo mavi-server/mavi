@@ -10,7 +10,11 @@ module.exports = (req, res) => {
   // SQL Query Builder:
   // you can pass queryBuilder to the request object
   // and build queries on top of it
-  req.queryBuilder = req.queryBuilder || req.app.db(req.config.model);
+  req.isQueryBuilderDefined = Boolean(req.queryBuilder); // is not defined if not passed
+
+  if(req.isQueryBuilderDefined === false) {
+    req.queryBuilder = req.app.db(req.config.model); // create a new query builder
+  }
 
   return {
     count: require('./count').bind({ req, res }),
