@@ -6,7 +6,13 @@ Create an abstracted and extendible server from one JSON file!
 
 This module aims to lift repetitive works that you have made every time building a server from scratch.
 
-`Important`: The package is still in development. I do not recommend to use in production. I have plans to make this module more user friendly and I am open to collaborations. You can [email](mailto:emrreyalcin@gmail.com) me or open an issue if you decided to contribute.
+---
+
+Mavi is born from my social network project. When I was developing my project's API, I realized I have some reusable and easy-to-understand patterns in my architecture. So I want it to be open-sourced and shared with the world.
+
+You can visit my social network platforms' [API](https://api.lorinto.com) and the [Web](https://lorinto.com) to see what Mavi can offer.
+
+`Important`: Mavi is still in development. I do not recommend use in production. I have plans to make this module more user-friendly and I am open to collaborations. You can directly [email](mailto:emrreyalcin@gmail.com) me or open an issue. Also, let me know if you need help, or having trouble.🙂
 
 ---
 
@@ -23,7 +29,7 @@ After you setup your database, you can start using the package.
 
 There are two ways to use this module:
 
-### 1 - NPM
+### 1 - [NPM](https://www.npmjs.com/package/mavi)
 
 `npm install -g mavi`
 
