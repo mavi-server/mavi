@@ -4,8 +4,7 @@
 
 let app;
 const request = require('supertest');
-// const { createServer } = require('mavi');
-const { createServer } = require('../dist/index');
+const { createServer } = require('../dist');
 
 /**
  * @type {import('../types').MaviConfig} config
@@ -126,38 +125,3 @@ describe('Controllers', () => {
       });
   });
 });
-
-// it('should find new customers named Will', () => {
-//   return await request(app)
-//     .get('/customers')
-//     .query({
-//       where: 'name-like-%Will%', // where=name-John%Doe | where=name-eq-John%Doe
-//     })
-//     .expect(res => {
-//       expect(res.status).toBe(200);
-//       expect(res.body).toEqual(
-//         expect.arrayContaining([
-//           expect.objectContaining({
-//             name: expect.stringContaining('John'),
-//           }),
-//         ])
-//       );
-//     });
-// });
-// it('should find customers status larger than 1', () => {
-//   return await request(app)
-//     .get('/customers')
-//     .query({
-//       where: 'status-lg-1',
-//     })
-//     .expect(res => {
-//       expect(res.status).toBe(200);
-//       expect(res.body).toEqual(
-//         expect.arrayContaining([
-//           expect.objectContaining({
-//             status: expect.not.objectContaining({ id: 1 }),
-//           }),
-//         ])
-//       );
-//     });
-// });
