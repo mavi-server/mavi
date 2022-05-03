@@ -29,7 +29,7 @@ const models = modelsDirExists
   : config.api.define.models; // get all models
 
 // Database connection
-const knex = require(path.join(__dirname, '../../../database'))(config.database);
+const knex = require('../../../database')(config.database);
 
 const assignHashesAndWrite = async model => {
   let newHashAssigned = false;
@@ -582,6 +582,8 @@ const db = {
         modelSeed = require(path.join(modelsPath, seedFile));
       else if (config.api.define.seeds && model in config.api.define.seeds) {
         modelSeed = config.api.define.seeds[model];
+      } else {
+        console.error(`${model} seeds are not available`);
       }
 
       // if seed data exists, seed the model table

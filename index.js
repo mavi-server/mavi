@@ -81,10 +81,13 @@ const createServer = async object => {
     await createRouter(config.api, { name: 'Mavi', debug: true })
   );
 
-  app.listen(PORT, HOST, () => {
-    console.log(`\x1b[34m${config.poweredBy} is running\x1b[0m`);
-    console.log(`\x1b[34mNetwork:\x1b[0m http://${HOST}:${PORT}`);
-  });
+  // Start the server
+  if(process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, HOST, () => {
+      console.log(`\x1b[34m${config.poweredBy} is running\x1b[0m`);
+      console.log(`\x1b[34mNetwork:\x1b[0m http://${HOST}:${PORT}`);
+    });
+  }
 
   return app;
 };
