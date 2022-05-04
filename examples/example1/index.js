@@ -93,9 +93,10 @@ module.exports = {
         //   posts: require('./posts'),
         // }
         // but if you use them here, you should assign `hash` properties manually
+        // a hash can be random value, but it should be unique for each column
         // after that, if you change table/column names or add new tables/columns, or change your column properties
-        // mavi will update your database automatically.
-        // be careful if you drop/rename your hash property, dependent entity will be deleted entirely from your database (0.5.4 and previous versions)
+        // mavi will update your database automatically with `mavi apply`
+        // be careful if you drop/rename your hash property, dependent entity will be deleted entirely from your database (0.5.4 and further versions)
         users: {
           id: { type: 'increments', constraints: ['primary'], hash: 'WzE2NDMyMTk4NjY1MDRddXNlcnMuaWQ' },
           username: { type: 'string', constraints: ['unique'], maxlength: 18, hash: 'WzE2NDMyMTk4Nzc0MjRddXNlcnMudXNlcm5hbWU' },

@@ -1,13 +1,28 @@
 #!/usr/bin/env node
 
-const path = require('path');
-const readline = require('readline');
-// const $config = require('../../config');
-const config = require(path.join(process.cwd(), './index'));
 const command = process.argv[2];
-const { version } = require(path.join(__dirname, '../../package.json'));
 const mode = process.env.NODE_ENV || 'development';
-let options;
+const readline = require('readline');
+const { join } = require('path');
+
+// Default config
+const $config = require('../../config');
+
+// User config
+const config = require(join(process.cwd(), './index'));
+
+// Default options
+const options = {
+  modelsDir: join(process.cwd(), './models/'),
+};
+
+// Package version
+const { version } = require(join(__dirname, '../../package.json'));
+
+// Assign default DB_STATE table name
+if (!process.env.DB_STATE) {
+  process.env.DB_STATE = 'mavi_db_state';
+}
 
 if (!config) {
   console.log('No config file found. Please create a config file at ./index.js');
@@ -15,7 +30,7 @@ if (!config) {
 }
 
 // neccessary for finding some relative paths in the config file
-config.__dirname = path.join(__dirname, '../../config');
+config.__dirname = join(__dirname, '../../config');
 
 switch (command) {
   case '-v':
@@ -29,10 +44,10 @@ switch (command) {
   case 'start':
   default:
     if (command === 'dev') {
-      const mavi = require(path.join(__dirname, `../../index.js`));
+      const mavi = require(`../../index.js`);
       mavi.createServer(config);
     } else {
-      const mavi = require(path.join(__dirname, `../../dist/index.js`));
+      const mavi = require(`../../dist/index.js`);
       mavi.createServer(config);
     }
 
@@ -44,56 +59,81 @@ switch (command) {
     if (!process.argv.find(arg => applycommands.find(c => c === arg))) {
       break;
     }
-  case 'apply':
-    const db = require(path.join(__dirname, `../src/commands/apply-models.js`));
+  case 'apply': {
+    const applyModels = require(`../src/commands/apply`);
+    const seedModels = require('../src/commands/seed');
 
     // log:
     console.log(`\x1b[36mLooking for changes...\x1b[0m`);
 
-    // options:
-    options = {
-      noSeed: Boolean(
-        process.argv.find(
-          arg =>
-            arg == '-no-seed' ||
-            arg == '--no-seed' ||
-            arg == '-ns' ||
-            arg == '--ns'
-        )
-      ),
-    };
+    // check if 'no seed' argument provided
+    const noSeed = Boolean(
+      process.argv.find(arg =>
+        [
+          '-no-seed',
+          '-no-seeds',
+          '--no-seed',
+          '--no-seeds',
+          '-ns',
+          '--ns',
+        ].find(c => c === arg)
+      )
+    );
 
     // run:
-    db.apply(options).then(() => {
-      if (command === 'apply') process.exit(0);
-      else {
+    applyModels(config, options)
+      .then(() => {
         console.log(`\x1b[36mApply completed!\x1b[0m`);
-        console.log(`\x1b[36mStarting Mavi ${version} ${mode}...\x1b[0m`);
-      }
-    });
+      })
+      .then(async () => {
+        // Break the case if --no-seed indicated:
+        if (!noSeed) {
+          // run:
+          await seedModels(config, options).then(() => {
+            console.log(`\x1b[36mSeed completed!\x1b[0m`);
+            process.exit(0);
+          });
+        }
+      })
+      .then(() => {
+        // Apply
+        if (command === 'apply') {
+          process.exit(0);
+        }
+
+        // else, start the server
+      });
 
     break;
-  case 'remove':
+  }
+  case 'seed': {
+    const seedModels = require('../src/commands/seed');
+
+    // run:
+    seedModels(config, options).then(() => {
+      console.log(`\x1b[36mSeed completed!\x1b[0m`);
+      process.exit(0);
+    });
+    break;
+  }
+  case 'clear': {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
 
     rl.question(
-      `\x1b[31mAre you sure you want to remove your "${mode} database"?\x1b[0m (yes/no): `,
+      `\x1b[31mClear all \x1b[36m${mode}\x1b[0m \x1b[31mdatabase?\x1b[0m (yes/no): `,
       answer => {
         if (answer.toLocaleLowerCase() === 'yes') {
-          const removeModels = require(path.join(
-            __dirname,
-            `../src/commands/remove-models.js`
-          ));
+          const clearTables = require(`../src/commands/clear`);
 
           // log:
-          console.log(`\x1b[31mRemoving Models...\x1b[0m`);
+          console.log(`\x1b[31mClearing Tables...\x1b[0m`);
 
           // run:
-          removeModels().then(() => {
-            console.log(`\x1b[36mRemove completed!\x1b[0m`);
+          clearTables(config).then(() => {
+            console.log(`\x1b[36mCleaning completed!\x1b[0m`);
             process.exit(0);
           });
         } else {
@@ -104,4 +144,34 @@ switch (command) {
     );
 
     break;
+  }
+  case 'drop': {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    rl.question(
+      `\x1b[31mDrop all \x1b[36m${mode}\x1b[0m \x1b[31mdatabase?\x1b[0m (yes/no): `,
+      answer => {
+        if (answer.toLocaleLowerCase() === 'yes') {
+          const dropModels = require(`../src/commands/drop`);
+
+          // log:
+          console.log(`\x1b[31mDropping Models...\x1b[0m`);
+
+          // run:
+          dropModels(config).then(() => {
+            console.log(`\x1b[36mDropping completed!\x1b[0m`);
+            process.exit(0);
+          });
+        } else {
+          console.log('\x1b[36mAborting...\x1b[0m');
+          process.exit(0);
+        }
+      }
+    );
+
+    break;
+  }
 }

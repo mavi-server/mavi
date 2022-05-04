@@ -88,6 +88,12 @@ export type Define = {
    */
   models: Model.Tables
   /**
+   * Define default table data
+   */
+  seeds?: {
+    [tableName: string]: Array<object>
+  }   
+  /**
     - Every fragment(column) is like a sub route used by the parent routes
     - Each parent column can be used for populating relational data or datasets from these sub routes
     - This parent column is usually an id or a virtual column
@@ -125,7 +131,7 @@ export declare interface MaviApi {
   plugins?: object
 }
 
-export type queryStr = '$' | 'lock' | 'locked' 
+export type queryStr = '$' | 'lock' | 'locked'
 export type MaviQuery = {
   start: queryStr
   limit: queryStr
