@@ -2,12 +2,12 @@ module.exports = {
   id: {
     type: 'integer',
     constraints: ['primary'],
-    hash: 'WzE2NDM2Mzc0MTMzODBdY3VzdG9tZXJzLmlk',
+    hash: 'WzE2NTE2NjI0ODk3NThdY3VzdG9tZXJzLmlk',
   },
   name: {
     type: 'string',
     maxLength: 100,
-    hash: 'WzE2NDM2Mzc0MTMzODBdY3VzdG9tZXJzLm5hbWU',
+    hash: 'WzE2NTE2NjI0NTIyNzJdY3VzdG9tZXJzLm5hbWU',
   },
   email: {
     type: 'string',
