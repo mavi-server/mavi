@@ -517,7 +517,7 @@ The file above will create the entire server. You need to connect your database 
 
 `mavi apply --no-seeds` # builds the db without without the seeds
 
-`mavi seed` # Seeds the database with your `models/model_name.seed.js` files
+`mavi seed` # Seeds the database with your `models/{model_name}.seed.js` files
 
 `mavi drop` # Drops the database
 
