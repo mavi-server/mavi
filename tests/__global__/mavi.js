@@ -1,9 +1,7 @@
-// const db = require('../../cli/src/commands/apply-models');
-
 (async () => {
   const { createServer } = require('../../index');
   const config = require('../../examples/example2');
-  
+
   // Database connection for testing
   // Be sure you have a database configured in local machine
   config.database.test = {
@@ -15,11 +13,13 @@
     },
   };
 
-
   const mavi = {
     config,
     server: await createServer(config),
-    // db,
+    cli: {
+      apply: require('../../cli/src/commands/apply'),
+      seed: require('../../cli/src/commands/seed'),
+    },
   };
 
   global.mavi = mavi;

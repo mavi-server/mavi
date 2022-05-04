@@ -2,25 +2,6 @@
 // Tests doesn't cover all the functionality yet.
 // You can also use `mavi` npm package to run tests.
 
-let app;
-const request = require('supertest');
-const { createServer } = require('../dist');
-
-/**
- * @type {import('../types').MaviConfig} config
- */
-const config = require('../examples/example2/index');
-
-// Database connection for testing
-config.database.test = {
-  client: 'pg',
-  connection: {
-    database: 'mavi-test',
-    user: 'postgres',
-    password: 'admin',
-  },
-};
-
 const customer = expect.objectContaining({
   id: expect.any(Number),
   name: expect.any(String),
@@ -37,14 +18,6 @@ const customer = expect.objectContaining({
   updated_at: expect.any(String),
 });
 
-// Initialize mavi
-beforeAll(async () => {
-  /**
-   * @type {import('../types').Mavi.createServer} app
-   */
-  app = await createServer(config);
-});
-
 const data = {
   id: 3,
   name: 'Will Smith',
@@ -53,9 +26,14 @@ const data = {
   status: 1,
 };
 
+// beforeAll(async () => {
+//   // generate table and seed
+//   await mavi.db.apply();
+// });
+
 describe('Controllers', () => {
   it('should `create` a customer', async () => {
-    return await request(app)
+    return request(mavi.server)
       .post('/customers')
       .send(data)
       .then(res => {
@@ -65,7 +43,7 @@ describe('Controllers', () => {
   });
   it('should `find` customers', async () => {
     // default limit is 10
-    return await request(app)
+    return request(mavi.server)
       .get('/customers')
       .then(res => {
         expect(res.status).toBe(200);
@@ -73,7 +51,7 @@ describe('Controllers', () => {
       });
   });
   it('should `count` customers', async () => {
-    return await request(app)
+    return request(mavi.server)
       .get('/customers/count')
       .then(res => {
         expect(res.status).toBe(200);
@@ -91,7 +69,7 @@ describe('Controllers', () => {
       updated_at: expect.any(String),
     });
 
-    return await request(app)
+    return request(mavi.server)
       .get(`/customers/${data.id}`)
       .then(res => {
         expect(res.status).toBe(200);
@@ -102,7 +80,7 @@ describe('Controllers', () => {
     const name = (data.name = 'Chris Rock');
     const email = (data.email = 'chris@doe.com');
 
-    return await request(app)
+    return request(mavi.server)
       .put(`/customers/${data.id}`)
       .send({ name, email })
       .then(res => {
@@ -117,11 +95,17 @@ describe('Controllers', () => {
       });
   });
   it('should `delete` customer', async () => {
-    return await request(app)
+    return request(mavi.server)
       .delete(`/customers/${data.id}`)
       .then(res => {
         expect(res.status).toBe(200);
         expect(res.body).toEqual(customer);
       });
   });
+
+
+  // afterAll(async () => {
+  //   // drop tables
+  //   await mavi.db.remove();
+  // });
 });
