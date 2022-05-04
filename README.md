@@ -1,6 +1,4 @@
-
 <img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/logo-variant-1.svg" alt="Mavi logo" width="200px" style="text-align: center;" />
-
 
 Create an abstracted and extendible server from one JSON file!
 
@@ -29,26 +27,31 @@ There are two ways to use this module:
 
 You just have to define `index.js` file in your project root.
 This file should contain and export your server configurations.
-[*See example configuration below*](#server-configuration-example)
+[_See example configuration below_](#server-configuration-example)
 
 Use `mavi start` command then you ready to go!
 
-### 2- Sub module 
+### 2- Sub module
 
 1. Clone this repository `https://github.com/m-emre-yalcin/mavi`
 2. Install dependencies `npm install`
 3. Define your server config inside of the `./index.js`
-4. Start your app with `nodemon -e js,ts,json ./mavi/cli/bin/mavi.js`
+4. Start your app with `node ./mavi/cli/bin/mavi.js`
 
 ---
 
 ## Example
 
-The file below will create the entire server. You need to connect your database first then you can add some routes.
+An example server configuration file:
 
-<a name="server-configuration-example">An example server configuration file</a>
+<details>
+<summary>
+<a name="server-configuration-example">index.js</a>
+</summary>
 
 ```js
+// index.js
+
 const Package = require('./package.json')
 module.exports = {
   poweredBy: 'mavi v'.concat(Package.version),
@@ -56,9 +59,18 @@ module.exports = {
   port: 3001,
   cors: {
     // Check the cors module for more options: https://www.npmjs.com/package/cors
-    origin: [process.env.CLIENT_URL || 'http://localhost:3000', process.env.SERVER_URL || 'http://localhost:3001'],
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    allowedHeaders: ['x-access-token', 'x-refresh-token', 'token', 'content-type', 'accept'],
+    origin: [
+      process.env.CLIENT_URL || 'http://localhost:3000',
+      process.env.SERVER_URL || 'http://localhost:3001',
+    ],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    allowedHeaders: [
+      'x-access-token',
+      'x-refresh-token',
+      'token',
+      'content-type',
+      'accept',
+    ],
   },
   database: {
     development: {
@@ -96,7 +108,13 @@ module.exports = {
           method: 'get',
           controller: 'find',
           exclude: ['content'],
-          populate: ['bookmark', 'user', 'community', 'thumbnail', 'responseCount'],
+          populate: [
+            'bookmark',
+            'user',
+            'community',
+            'thumbnail',
+            'responseCount',
+          ],
           middlewares: ['greetings'],
         },
         {
@@ -108,14 +126,28 @@ module.exports = {
           path: '/posts/:id',
           method: 'get',
           controller: 'findOne',
-          populate: ['bookmark', 'user', 'community', 'thumbnail', 'responseCount', 'tags'],
+          populate: [
+            'bookmark',
+            'user',
+            'community',
+            'thumbnail',
+            'responseCount',
+            'tags',
+          ],
         },
         {
           path: '/posts/:id',
           method: 'put',
           controller: 'update',
           middlewares: ['is-owner'],
-          populate: ['bookmark', 'user', 'community', 'thumbnail', 'responseCount', 'tags'],
+          populate: [
+            'bookmark',
+            'user',
+            'community',
+            'thumbnail',
+            'responseCount',
+            'tags',
+          ],
         },
         {
           path: '/posts/:id',
@@ -230,7 +262,11 @@ module.exports = {
             maxlength: 255,
             hash: 'dXNlcnMuYmlv',
           },
-          blocked: { type: 'boolean', default: false, hash: 'dXNlcnMuYmxvY2tlZA' },
+          blocked: {
+            type: 'boolean',
+            default: false,
+            hash: 'dXNlcnMuYmxvY2tlZA',
+          },
           avatar: { type: 'string', hash: 'dXNlcnMuYXZhdGFy' },
           token: { type: 'text', private: true, hash: 'dXNlcnMudG9rZW4' },
           refresh: { type: 'text', private: true, hash: 'dXNlcnMucmVmcmVzaA' },
@@ -377,7 +413,14 @@ module.exports = {
           select: 'user',
           from: 'users',
           type: 'object',
-          columns: ['id', 'username', 'email', 'avatar', 'fullname', 'created_at'],
+          columns: [
+            'id',
+            'username',
+            'email',
+            'avatar',
+            'fullname',
+            'created_at',
+          ],
         },
         community: {
           select: 'community',
@@ -431,7 +474,7 @@ module.exports = {
           from: 'bookmarks', // current model name.
           on: 'references', // references = row.id
           query: {
-            where: 'type-eq-#context' // #context = parent model name
+            where: 'type-eq-#context', // #context = parent model name
             // eg: if populate `bookmark` used in posts, parent model name will be posts.
           },
           type: 'token-reference',
@@ -448,6 +491,32 @@ module.exports = {
     },
   },
 }
+```
+
+</details>
+
+The file above will create the entire server. You need to connect your database before you can use the server.
+
+### Start the server
+
+```sh
+# Start your server and apply the models:
+`mavi start -a`
+```
+
+### Some useful commands
+
+```sh
+`mavi apply` # builds the database from your models and seeds
+
+`mavi apply --no-seeds` # builds the db without without the seeds
+
+`mavi seed` # Seeds the database with your `models/model_name.seed.js` files
+
+`mavi drop` # Drops the database
+
+# You need to re-run `mavi apply` to update
+# the database when you change your models.
 ```
 
 The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc.
