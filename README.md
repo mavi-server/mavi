@@ -215,16 +215,22 @@ module.exports = {
       // Models generates your database table and api responses
       // Api responses can be customized by the route configs
       models: {
-        // an important note here: all the `hash` properties are automatically assigned if you put your models in the `models` folder and export with their name in index file
+        // an important note here: all the `hash` properties are automatically
+        // assigned if you put your models in the `models` folder and export with their name in index file
         // example models/index.js:
         // module.exports = {
         //   users: require('./users'),
         //   posts: require('./posts'),
         // }
         // but if you use them here, you should assign `hash` properties manually
-        // after that, if you change table/column names or add new tables/columns, or change your column properties
-        // mavi will update your database automatically on restart (if you using nodemon, it will update after you save it).
-        // *** be careful if you drop/rename your hash property, dependent entity will be deleted entirely from your database (0.5.4 and previous versions) ***
+        // hashes are unique strings for each column and model
+        // after that, if you change table/column names, add new tables/columns, or change column properties
+        // mavi will update your database automatically on re-apply (there is no --watch option for now).
+        // 
+        // ***
+        // ** be careful if you drop/rename your hash property, dependent entity
+        // ** will be deleted entirely from your database (0.5.4 and previous versions)
+        // ***
         users: {
           id: {
             type: 'increments',
