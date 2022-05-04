@@ -26,10 +26,6 @@ const data = {
   status: 1,
 };
 
-// beforeAll(async () => {
-//   // generate table and seed
-//   await mavi.db.apply();
-// });
 
 describe('Controllers', () => {
   it('should `create` a customer', async () => {
@@ -102,10 +98,4 @@ describe('Controllers', () => {
         expect(res.body).toEqual(customer);
       });
   });
-
-
-  // afterAll(async () => {
-  //   // drop tables
-  //   await mavi.db.remove();
-  // });
 });

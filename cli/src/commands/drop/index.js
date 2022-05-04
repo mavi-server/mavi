@@ -10,18 +10,17 @@ module.exports = async config => {
   });
 
   // Drop model tables:
-  for (const model in config.api.define.models) {
-    const exists = await knex.schema.hasTable(model);
+  for (const key in config.api.define.models) {
+    const exists = await knex.schema.hasTable(key);
 
     if (exists) {
-      // await knex.raw(`TRUNCATE TABLE ${model} RESTART IDENTITY CASCADE`);
       await knex
-        .raw(`DROP TABLE ${model} CASCADE`)
+        .raw(`DROP TABLE ${key} CASCADE`)
         .then(() => {
-          console.log(`Dropped table \x1b[31m${model}\x1b[0m`);
+          console.log(`Dropped table \x1b[31m${key}\x1b[0m`);
         })
         .catch(err => {
-          console.log(`\x1b[31mError dropping table "${model}"\x1b[0m`);
+          console.log(`\x1b[31mError dropping table "${key}"\x1b[0m`);
           console.log(err);
         });
     }

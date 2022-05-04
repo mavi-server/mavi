@@ -2,7 +2,7 @@
  * @description Check if models are already applied and apply them if not.
  * @param {import('../../../../types').Mavi.config} config
  * @param {{
- * dir: string
+ * modelsDir: string
  * }} options
  */
 module.exports = async (config, { modelsDir }) => {

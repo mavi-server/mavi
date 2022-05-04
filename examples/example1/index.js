@@ -277,37 +277,5 @@ module.exports = {
         },
       },
     },
-    // Static path under api
-    static: [
-      {
-        base: '/static', // virtual path
-        folder: 'public', // pysical path (also can be fullpath)
-        options: {
-          dotfiles: 'ignore',
-          etag: false,
-          extensions: [
-            'html',
-            'htm',
-            'css',
-            'js',
-            'png',
-            'jpg',
-            'jpeg',
-            'gif',
-            'ico',
-            'svg',
-            'eot',
-            'ttf',
-            'woff',
-            'woff2',
-            'otf',
-          ],
-          maxAge: '1d',
-          setHeaders: function (res, path, stat) {
-            res.set('x-timestamp', Date.now());
-          },
-        },
-      },
-    ],
   },
 };

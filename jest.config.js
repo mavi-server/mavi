@@ -54,10 +54,10 @@ module.exports = {
   // forceCoverageMatch: [],
 
   // A path to a module which exports an async function that is triggered once before all test suites
-  // globalSetup: './tests/app.tes.js',
+  // globalSetup: './tests/__global__/maviSetup.js',
 
   // A path to a module which exports an async function that is triggered once after all test suites
-  // globalTeardown: undefined,
+  // globalTeardown: './tests/__global__/maviTearDown.js',
 
   // A set of global variables that need to be available in all test environments
   globals: {
@@ -65,10 +65,10 @@ module.exports = {
       tsconfig: 'tsconfig.json',
     },
   },
-  testSequencer: './tests/_global/testSequencer.js',
+  testSequencer: './tests/__global__/testSequencer.js',
 
   // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
-  // maxWorkers: "50%",
+  maxWorkers: "1",
 
   // An array of directory names to be searched recursively up from the requiring module's location
   // moduleDirectories: [
@@ -130,7 +130,7 @@ module.exports = {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  setupFiles: ['./tests/_global/mavi.js'],
+  // setupFiles: ['./tests/__global__/mavi.js'],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   // setupFilesAfterEnv: [],
@@ -142,7 +142,7 @@ module.exports = {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  testEnvironment: "node",
+  testEnvironment: "./tests/__global__/testEnvironment.js",
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
@@ -189,7 +189,7 @@ module.exports = {
   // unmockedModulePathPatterns: undefined,
 
   // Indicates whether each individual test should be reported during the run
-  // verbose: true,
+  verbose: false,
 
   // An array of regexp patterns that are matched against all source file paths before re-running tests in watch mode
   // watchPathIgnorePatterns: [],
