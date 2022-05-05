@@ -30,7 +30,7 @@ export declare namespace Mavi {
   /**
    * Creates a mavi instance.
    */
-  type createServer = (config: MaviConfig) => Application
+  type createServer = (config: MaviConfig) => Promise<Application>
   type config = MaviConfig
 }
 

@@ -24,7 +24,7 @@ module.exports = async function (body, populateIt = true) {
 
   // populate options
   if (populateIt && data && populate && Array.isArray(populate)) {
-    data = await SubController(this.req, {
+    [data] = await SubController(this.req, {
       populate,
       data,
     }).catch(handleControllerError);

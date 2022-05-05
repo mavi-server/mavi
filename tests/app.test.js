@@ -10,4 +10,6 @@ describe('app', () => {
   it('mavi cli is defined', () => {
     expect(mavi.cli).toBeDefined();
   });
+
+  afterAll(() => mavi.server.close());
 });

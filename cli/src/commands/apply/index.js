@@ -126,7 +126,7 @@ module.exports = async config => {
             await hashModels({
               model: models[model],
               key: model,
-              dir: modelsDirExists,
+              workdir: config.workdir,
             });
           }
 
