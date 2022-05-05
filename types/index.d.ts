@@ -1,6 +1,7 @@
 import { CorsOptions } from 'cors'
 import { ServeStaticOptions } from 'serve-static'
-import { Request, Response, NextFunction, Application } from 'express'
+import { Request, Response, NextFunction } from 'express'
+import { Server } from 'http'
 export default Mavi
 
 type middleware = (req: Request, res: Response, next: NextFunction) => any
@@ -30,7 +31,7 @@ export declare namespace Mavi {
   /**
    * Creates a mavi instance.
    */
-  type createServer = (config: MaviConfig) => Promise<Application>
+  type createServer = (config: MaviConfig) => Promise<Server>
   type config = MaviConfig
 }
 
@@ -96,7 +97,7 @@ export type Define = {
    */
   seeds?: {
     [tableName: string]: Array<object>
-  }   
+  }
   /**
     - Every fragment(column) is like a sub route used by the parent routes
     - Each parent column can be used for populating relational data or datasets from these sub routes
