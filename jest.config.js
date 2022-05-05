@@ -68,7 +68,7 @@ module.exports = {
   testSequencer: './tests/__global__/testSequencer.js',
 
   // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
-  maxWorkers: "4",
+  maxWorkers: '4',
 
   // An array of directory names to be searched recursively up from the requiring module's location
   // moduleDirectories: [
@@ -142,7 +142,7 @@ module.exports = {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  testEnvironment: "./tests/__global__/testEnvironment.js",
+  testEnvironment: './tests/__global__/testEnvironment.js',
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
@@ -157,7 +157,15 @@ module.exports = {
   // ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/interface/', 'tests/queries'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    '/interface/',
+    'tests/queries/exclude.test.js',
+    'tests/queries/locks.test.js',
+    'tests/queries/sort.test.js',
+    'tests/queries/where.test.js',
+  ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
   // testRegex: [],

@@ -1,3 +1,5 @@
+require('../__global__/serverSetup');
+
 describe('sort', () => {
   it(`should sort the results by id`, () => {
     return false;

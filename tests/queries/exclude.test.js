@@ -1,3 +1,5 @@
+require('../__global__/serverSetup');
+
 describe('exclude', () => {
   it(`should exclude the status from the results`, () => {
     return false;
