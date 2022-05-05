@@ -1,13 +1,12 @@
 // # Main api file
 const express = require('express');
-const { resolve } = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const responseTime = require('response-time');
 const app = express();
 
 // Env variables
-require('dotenv').config({ path: resolve('.env') });
+require('dotenv');
 
 // Functionality
 const createDatabase = require('./database');

@@ -26,6 +26,22 @@ const data = {
   status: 1,
 };
 
+beforeAll(async () => {
+  // Create database and with datasets
+  await mavi.apply(mavi.config);
+  await mavi.seed(mavi.config);
+
+  // Start server
+  global.mavi.server = await mavi.start(mavi.config);
+});
+afterAll(async () => {
+  // Drop test database
+  await mavi.drop(mavi.config);
+
+  // Close server
+  global.mavi.server.close();
+});
+
 describe('Controllers', () => {
   it('should `find` customers', () => {
     // default limit is 10
@@ -92,6 +108,4 @@ describe('Controllers', () => {
         expect(res.body).toEqual(customer);
       });
   });
-
-  afterAll(() => mavi.server.close());
 });

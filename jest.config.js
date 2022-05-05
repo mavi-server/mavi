@@ -54,10 +54,10 @@ module.exports = {
   // forceCoverageMatch: [],
 
   // A path to a module which exports an async function that is triggered once before all test suites
-  // globalSetup: './tests/__global__/maviSetup.js',
+  // globalSetup: './tests/__global__/setup.js',
 
   // A path to a module which exports an async function that is triggered once after all test suites
-  // globalTeardown: './tests/__global__/maviTearDown.js',
+  // globalTeardown: './tests/__global__/tearDown.js',
 
   // A set of global variables that need to be available in all test environments
   globals: {
@@ -68,7 +68,7 @@ module.exports = {
   testSequencer: './tests/__global__/testSequencer.js',
 
   // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
-  maxWorkers: "1",
+  maxWorkers: "4",
 
   // An array of directory names to be searched recursively up from the requiring module's location
   // moduleDirectories: [
@@ -130,10 +130,10 @@ module.exports = {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  // setupFiles: ['./tests/__global__/mavi.js'],
+  // setupFiles: ['./tests/__global__/setup.js'],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  // setupFilesAfterEnv: [],
+  setupFilesAfterEnv: [],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,
