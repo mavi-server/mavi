@@ -1,25 +1,19 @@
 const NodeEnvironment = require('jest-environment-node');
-const { createServer } = require('../../index');
 const { join } = require('path');
 const request = require('supertest');
-const config = require('../../examples/example2');
 const mavi = {
-  cli: {
-    apply: require('../../cli/src/commands/apply'),
-    seed: require('../../cli/src/commands/seed'),
-    clear: require('../../cli/src/commands/clear'),
-    drop: require('../../cli/src/commands/drop'),
-  },
-  config,
+  start: require('../../index').createServer,
+  apply: require('../../cli/src/commands/apply'),
+  seed: require('../../cli/src/commands/seed'),
+  clear: require('../../cli/src/commands/clear'),
+  drop: require('../../cli/src/commands/drop'),
+  config: require('../../examples/example2'),
   server: undefined,
 };
 
-// Set working directory
-config.workdir = join(process.cwd(), 'examples/example2');
-
 // Database connection for testing
 // Be sure you have a database configured in local machine
-config.database.test = {
+mavi.config.database.test = {
   client: 'pg',
   connection: {
     database: 'test',
@@ -31,15 +25,18 @@ config.database.test = {
 class CustomEnvironment extends NodeEnvironment {
   constructor(config) {
     super(config);
+
+    // Set working directory
+    mavi.config.workdir = join(process.cwd(), 'examples/example2');
   }
 
   async setup() {
     // Create database and with datasets
-    await mavi.cli.apply(mavi.config);
-    await mavi.cli.seed(mavi.config);
+    await mavi.apply(mavi.config);
+    await mavi.seed(mavi.config);
 
     // Create server
-    mavi.server = await createServer(mavi.config);
+    mavi.server = await mavi.start(mavi.config);
 
     // Set global variables
     this.global.mavi = mavi;
@@ -48,12 +45,15 @@ class CustomEnvironment extends NodeEnvironment {
 
   async teardown() {
     // Drop test database
-    await mavi.cli.drop(mavi.config);
+    await mavi.drop(mavi.config);
+
+    this.global.mavi = null;
+    this.global.request = null;
   }
 
-  runScript(script) {
-    return super.runScript(script);
-  }
+  // runScript(script) {
+  //   return super.runScript(script);
+  // }
 }
 
 module.exports = CustomEnvironment;

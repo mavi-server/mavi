@@ -26,18 +26,8 @@ const data = {
   status: 1,
 };
 
-
 describe('Controllers', () => {
-  it('should `create` a customer', async () => {
-    return request(mavi.server)
-      .post('/customers')
-      .send(data)
-      .then(res => {
-        expect(res.status).toBe(201);
-        expect(res.body).toEqual(customer);
-      });
-  });
-  it('should `find` customers', async () => {
+  it('should `find` customers', () => {
     // default limit is 10
     return request(mavi.server)
       .get('/customers')
@@ -46,15 +36,24 @@ describe('Controllers', () => {
         expect(res.body).toEqual(expect.arrayContaining([customer]));
       });
   });
-  it('should `count` customers', async () => {
+  it('should `count` customers', () => {
     return request(mavi.server)
       .get('/customers/count')
       .then(res => {
         expect(res.status).toBe(200);
-        expect(res.body.count).toEqual(3);
+        expect(res.body.count).toEqual(2);
       });
   });
-  it('should `findOne` customer', async () => {
+  it('should `create` a customer', () => {
+    return request(mavi.server)
+      .post('/customers')
+      .send(data)
+      .then(res => {
+        expect(res.status).toBe(201);
+        expect(res.body).toEqual(customer);
+      });
+  });
+  it('should `findOne` customer', () => {
     // finds new added customer
     // status is populated, so its id will become an object like below:
     data.status = expect.objectContaining({
@@ -72,7 +71,7 @@ describe('Controllers', () => {
         expect(res.body).toEqual(expect.objectContaining(data));
       });
   });
-  it('should `update` customer', async () => {
+  it('should `update` customer', () => {
     const name = (data.name = 'Chris Rock');
     const email = (data.email = 'chris@doe.com');
 
@@ -83,12 +82,9 @@ describe('Controllers', () => {
         expect(res.status).toBe(201);
         expect(res.body).toEqual(customer);
         // expect(res.body).toEqual(expect.objectContaining(data));
-      })
-      .catch(err => {
-        throw err;
       });
   });
-  it('should `delete` customer', async () => {
+  it('should `delete` customer', () => {
     return request(mavi.server)
       .delete(`/customers/${data.id}`)
       .then(res => {
