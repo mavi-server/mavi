@@ -1,1 +1,1 @@
-default static paths
+Default static paths

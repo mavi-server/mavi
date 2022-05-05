@@ -1,20 +1,14 @@
 #!/usr/bin/env node
-
 const command = process.argv[2];
 const mode = process.env.NODE_ENV || 'development';
 const readline = require('readline');
 const { join } = require('path');
 
-// Default config
-const $config = require('../../config');
-
-// User config
+// Get user config
+/**
+ * @type {import('../../types/index').MaviConfig}
+ */
 const config = require(join(process.cwd(), './index'));
-
-// Default options
-const options = {
-  modelsDir: join(process.cwd(), './models/'),
-};
 
 // Package version
 const { version } = require(join(__dirname, '../../package.json'));
@@ -29,8 +23,8 @@ if (!config) {
   process.exit(1);
 }
 
-// neccessary for finding some relative paths in the config file
-config.__dirname = join(__dirname, '../../config');
+// mavi root directory
+config.rootdir = join(__dirname, '../../'); // from /cli/bin to root dir
 
 switch (command) {
   case '-v':
@@ -81,7 +75,7 @@ switch (command) {
     );
 
     // run:
-    applyModels(config, options)
+    applyModels(config)
       .then(() => {
         console.log(`\x1b[36mApply completed!\x1b[0m`);
       })
@@ -89,7 +83,7 @@ switch (command) {
         // Break the case if --no-seed indicated:
         if (!noSeed) {
           // run:
-          await seedModels(config, options).then(() => {
+          await seedModels(config).then(() => {
             console.log(`\x1b[36mSeed completed!\x1b[0m`);
             process.exit(0);
           });
@@ -110,7 +104,7 @@ switch (command) {
     const seedModels = require('../src/commands/seed');
 
     // run:
-    seedModels(config, options).then(() => {
+    seedModels(config).then(() => {
       console.log(`\x1b[36mSeed completed!\x1b[0m`);
       process.exit(0);
     });

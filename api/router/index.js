@@ -109,14 +109,18 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
 
       // Generate static routes: // https://expressjs.com/en/4x/api.html#express.static
       if ('serve' in route) {
+        if (!options.root) {
+          throw Error('Please define createRouter options.root');
+        }
+
         // virtual path
         const Base = `${base || ''}/${route.path}`.replace(/\/+/g, '/');
 
         // physical path
-        const Path = (
-          route.fullpath ||
-          join(options.__dirname || process.cwd(), route.folder)
-        ).replace(/\\+/g, '/');
+        const path = route.folder
+          ? join(options.root, route.folder)
+          : route.fullpath;
+        const Path = path.replace(/\\+/g, '/');
 
         // set static folder
         $router.use(

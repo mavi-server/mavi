@@ -135,8 +135,10 @@ module.exports = async ({ routes, define }, options) => {
             // serve options will be used inside of express.static
             // https://expressjs.com/en/4x/api.html#express.static
 
-            if (!route.serve)
+            if (!route.serve) {
               throw Error(`Please define mavi routes['${path}'].serve`);
+            }
+
             if (!route.serve.folder && !route.serve.fullpath) {
               throw Error(
                 `Please define routes['${path}'].serve.folder or routes['${path}'].serve.fullpath`

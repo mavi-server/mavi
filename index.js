@@ -1,13 +1,13 @@
 // # Main api file
 const express = require('express');
-const path = require('path');
+const { resolve } = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const responseTime = require('response-time');
 const app = express();
 
 // Env variables
-require('dotenv').config({ path: path.resolve('.env') });
+require('dotenv').config({ path: resolve('.env') });
 
 // Functionality
 const createDatabase = require('./database');
@@ -20,10 +20,8 @@ const validateConfig = require('./api/services/validate-config');
 // Db instance
 let database = null;
 
-// jsdoc function type:
 /**
  * @type {import('./types').Mavi.createServer}
- * @returns {Express}
  * @description Initializes the app with the given config.
  */
 const createServer = async object => {
@@ -58,11 +56,6 @@ const createServer = async object => {
         models: {},
       },
     };
-    const options = {
-      name: 'UI',
-      __dirname: config.__dirname, // to use main files
-      debug: true,
-    };
 
     // if its a string, it can be one of the predefined static paths: interface, welcome
     if (typeof config.page === 'string') {
@@ -71,18 +64,29 @@ const createServer = async object => {
       settings.routes['/'] = [];
     }
 
-    app.use(await createRouter(settings, options));
+    // Mavi - Interface Router
+    app.use(
+      await createRouter(settings, {
+        root: config.rootdir || __dirname, // using root directory
+        name: 'UI',
+        debug: true,
+      })
+    );
   }
 
   // Mavi - Primary router
   app.use(
     `${config.api.base}`,
     timer,
-    await createRouter(config.api, { name: 'Mavi', debug: true })
+    await createRouter(config.api, {
+      root: config.workdir || process.cwd(), // using work directory
+      name: 'Mavi',
+      debug: true,
+    })
   );
 
   // Start the server
-  if(process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, HOST, () => {
       console.log(`\x1b[34m${config.poweredBy} is running\x1b[0m`);
       console.log(`\x1b[34mNetwork:\x1b[0m http://${HOST}:${PORT}`);

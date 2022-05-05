@@ -1,10 +1,9 @@
 /**
  * @description Seed models if not seeded
  * @param {import('../../../../types').Mavi.config} config
- * @param {{modelsDir: string}} options
  * @returns {Promise<void>}
  */
-module.exports = async (config, { modelsDir }) => {
+module.exports = async config => {
   const { existsSync } = require('fs');
   const { join } = require('path');
 
@@ -42,7 +41,7 @@ module.exports = async (config, { modelsDir }) => {
         if (!isSeededBefore) {
           let seeds = []; // seed dataset
           const seedFile = `${key}.seed.js`;
-          const seedFilePath = join(modelsDir, seedFile);
+          const seedFilePath = join(config.workdir, `models/${seedFile}`);
           const seedFileExists = existsSync(seedFilePath);
 
           if (seedFileExists) {

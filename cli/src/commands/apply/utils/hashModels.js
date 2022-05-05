@@ -5,10 +5,11 @@
  * @type {({
  *  model: import('../../../../../types').Model.Properties,
  *  key: string,
- *  dir: string
+ *  dir: boolean
  * }) => void}
  */
 module.exports = async ({ model, key, dir }) => {
+  const { join } = require('path');
   let newHashAssigned = false;
 
   if (!model.hash) {
@@ -34,17 +35,18 @@ module.exports = async ({ model, key, dir }) => {
   if (newHashAssigned) {
     const { writeFile } = require('fs');
     const util = require('util');
-  
+
     // overwrite assigned hashed to the model file
     if (dir) {
-      const filename = `${dir}/${key}.js`;
+      const filename = `${key}.js`;
+      const path = join(process.cwd(), `models/${filename}`);
       const content = `module.exports = ${util.inspect(model, false, 2)}`;
       const cb = err => {
         if (err) throw err;
         console.log(`\x1b[32m[${key}.js updated]\x1b[0m`);
       };
 
-      writeFile(filename, content, cb);
+      writeFile(path, content, cb);
     }
     // else { // to index.js (not working yet)
     //   config.api.define.model = model

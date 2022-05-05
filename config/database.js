@@ -27,5 +27,5 @@ module.exports = {
       max: 10,
     },
     debug: false,
-  },  
+  },
 };

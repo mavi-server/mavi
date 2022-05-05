@@ -27,28 +27,28 @@ module.exports = function (config) {
     // assign default api configs if not provided
     for (const key in $config.api) {
       switch (key) {
-      case 'base':
-        if (config['base']) {
+        case 'base':
+          if (config['base']) {
           // append / from the beggining
-          if (!config['base'].startsWith('/'))
-            config['base'] = `/${config['base']}`;
+            if (!config['base'].startsWith('/'))
+              config['base'] = `/${config['base']}`;
 
-          // remove / from the end
-          if (config['base'].endsWith('/'))
-            config['base'] = config['base'].slice(0, -1);
-        }
-        break;
-      case 'define':
-        for (const key in $config.api.define) {
-          // assign missing keys:
-          if (!(key in config.api.define)) {
-            config.api.define[key] = $config.api.define[key];
+            // remove / from the end
+            if (config['base'].endsWith('/'))
+              config['base'] = config['base'].slice(0, -1);
           }
-        }
-        break;
-      default:
+          break;
+        case 'define':
+          for (const key in $config.api.define) {
+          // assign missing keys:
+            if (!(key in config.api.define)) {
+              config.api.define[key] = $config.api.define[key];
+            }
+          }
+          break;
+        default:
         // assign default api configs if not provided
-        if (!config.api[key]) config.api[key] = $config.api[key];
+          if (!config.api[key]) config.api[key] = $config.api[key];
       }
 
       if (!config.api[key]) config.api[key] = $config.api[key];

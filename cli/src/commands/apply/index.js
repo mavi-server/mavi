@@ -1,11 +1,8 @@
 /**
  * @description Check if models are already applied and apply them if not.
  * @param {import('../../../../types').Mavi.config} config
- * @param {{
- * modelsDir: string
- * }} options
  */
-module.exports = async (config, { modelsDir }) => {
+module.exports = async config => {
   const { existsSync } = require('fs');
   const { join } = require('path');
 
@@ -21,9 +18,9 @@ module.exports = async (config, { modelsDir }) => {
   const debug = false; // debug generated schema sql's
 
   // -
-  const modelsDirExists = existsSync(modelsDir);
+  const modelsDirExists = existsSync(join(config.workdir, 'models'));
   const models = modelsDirExists
-    ? require(join(modelsDir, './index.js'))
+    ? require(join(config.workdir, 'models/index.js'))
     : config.api.define.models; // get all models
 
   // Utils
@@ -38,14 +35,14 @@ module.exports = async (config, { modelsDir }) => {
   // Database connection
   const knex = require('../../../../database')(config.database);
 
-  // Create Triggers
-  await createTriggers(knex);
-
   // Compare models with database state
   await knex.schema.hasTable(process.env.DB_STATE).then(async exists => {
     // Check if database state exists, if not create it
     if (!exists) {
-      // create new database state for detecting model file changes
+      // Create Default Triggers for models
+      await createTriggers(knex);
+
+      // Create new database state for detecting model file changes
       await knex.schema.createTable(process.env.DB_STATE, table => {
         table.string('model_hash', 128).primary();
         table.string('model_name', 128).unique();
@@ -129,7 +126,7 @@ module.exports = async (config, { modelsDir }) => {
             await hashModels({
               model: models[model],
               key: model,
-              dir: modelsDir,
+              dir: modelsDirExists,
             });
           }
 

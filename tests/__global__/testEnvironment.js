@@ -3,7 +3,6 @@ const { createServer } = require('../../index');
 const { join } = require('path');
 const request = require('supertest');
 const config = require('../../examples/example2');
-const modelsDir = join(process.cwd(), '/examples/example2/models');
 const mavi = {
   cli: {
     apply: require('../../cli/src/commands/apply'),
@@ -12,9 +11,11 @@ const mavi = {
     drop: require('../../cli/src/commands/drop'),
   },
   config,
-  modelsDir,
   server: undefined,
 };
+
+// Set working directory
+config.workdir = join(process.cwd(), 'examples/example2');
 
 // Database connection for testing
 // Be sure you have a database configured in local machine
@@ -34,8 +35,8 @@ class CustomEnvironment extends NodeEnvironment {
 
   async setup() {
     // Create database and with datasets
-    await mavi.cli.apply(mavi.config, { modelsDir });
-    await mavi.cli.seed(mavi.config, { modelsDir });
+    await mavi.cli.apply(mavi.config);
+    await mavi.cli.seed(mavi.config);
 
     // Create server
     mavi.server = await createServer(mavi.config);

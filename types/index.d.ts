@@ -71,6 +71,10 @@ export declare interface MaviConfig {
   page?: 'interface' | 'welcome' | Static
   poweredBy?: string
   timer?: boolean
+  /**
+   * Fullpath of the root directory.
+   */
+  rootdir?: string
   [any: string]: any
 }
 export type Routes = {
