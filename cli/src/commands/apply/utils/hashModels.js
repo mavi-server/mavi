@@ -5,10 +5,10 @@
  * @type {({
  *  model: import('../../../../../types').Model.Properties,
  *  key: string,
- *  dir: boolean
+ *  workdir: string
  * }) => void}
  */
-module.exports = async ({ model, key, dir }) => {
+module.exports = async ({ model, key, workdir }) => {
   const { join } = require('path');
   let newHashAssigned = false;
 
@@ -37,9 +37,9 @@ module.exports = async ({ model, key, dir }) => {
     const util = require('util');
 
     // overwrite assigned hashed to the model file
-    if (dir) {
+    if (workdir) {
       const filename = `${key}.js`;
-      const path = join(process.cwd(), `models/${filename}`);
+      const path = join(workdir, `models/${filename}`);
       const content = `module.exports = ${util.inspect(model, false, 2)}`;
       const cb = err => {
         if (err) throw err;

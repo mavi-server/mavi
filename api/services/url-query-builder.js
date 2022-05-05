@@ -260,7 +260,7 @@ const UrlQueryBuilder = (req, row) => {
           // in some cases the `context` can be defined as a special string
           // eg. parentPopulateObject: { from: row.key, populate: ['x'] }
           // x's `context` will be 'row.key'
-          if (config.context.startsWith('row.')) {
+          if (config.context && config.context.startsWith('row.')) {
             key = config.context.split('row.')[1];
           }
         } else if (p.startsWith('row.')) {

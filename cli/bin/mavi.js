@@ -24,7 +24,7 @@ if (!config) {
 }
 
 // mavi root directory
-config.rootdir = join(__dirname, '../../'); // from /cli/bin to root dir
+config.rootdir = join(__dirname, '../../'); // from /cli/bin to root directory
 
 switch (command) {
   case '-v':
@@ -56,7 +56,8 @@ switch (command) {
   case 'apply': {
     const applyModels = require(`../src/commands/apply`);
     const seedModels = require('../src/commands/seed');
-
+    
+    
     // log:
     console.log(`\x1b[36mLooking for changes...\x1b[0m`);
 
@@ -73,7 +74,10 @@ switch (command) {
         ].find(c => c === arg)
       )
     );
-
+        
+    // set working directory
+    config.workdir = process.cwd();
+        
     // run:
     applyModels(config)
       .then(() => {
@@ -102,6 +106,9 @@ switch (command) {
   }
   case 'seed': {
     const seedModels = require('../src/commands/seed');
+
+    // set working directory
+    config.workdir = process.cwd();
 
     // run:
     seedModels(config).then(() => {

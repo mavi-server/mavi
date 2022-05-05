@@ -80,13 +80,11 @@ describe('Controllers', () => {
       .put(`/customers/${data.id}`)
       .send({ name, email })
       .then(res => {
-        console.log(res.body);
         expect(res.status).toBe(201);
         expect(res.body).toEqual(customer);
         // expect(res.body).toEqual(expect.objectContaining(data));
       })
       .catch(err => {
-        console.log(err);
         throw err;
       });
   });

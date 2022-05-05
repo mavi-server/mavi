@@ -151,11 +151,9 @@ module.exports = async ({ routes, define }, options) => {
             }
             if (!route.folder && route.serve.folder) {
               route.folder = route.serve.folder.replace(/\/+/g, '/');
-              delete route.serve.folder;
             }
             if (!route.fullpath && route.serve.fullpath) {
               route.fullpath = route.serve.fullpath.replace(/\/+/g, '/');
-              delete route.serve.fullpath;
             }
           }
 
