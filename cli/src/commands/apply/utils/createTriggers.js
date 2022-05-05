@@ -4,7 +4,8 @@
  */
 module.exports = async knex => {
   const triggerFunctions = {
-    // default trigger:
+    // default triggers:
+    // ON_UPDATE_TIMESTAMP_SQL is required for postgres
     ON_UPDATE_TIMESTAMP_SQL: `
       CREATE OR REPLACE FUNCTION on_update_timestamp()
         RETURNS trigger AS $$
