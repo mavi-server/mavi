@@ -43,16 +43,9 @@ class CustomEnvironment extends NodeEnvironment {
     this.global.request = request;
   }
 
-  async teardown() {
-    // Drop test database
-    await mavi.drop(mavi.config);
-
-    this.global.mavi = null;
-    this.global.request = null;
-  }
-
-  // runScript(script) {
-  //   return super.runScript(script);
+  // async teardown() {
+  //   // Drop test database
+  //   await mavi.drop(mavi.config);
   // }
 }
 

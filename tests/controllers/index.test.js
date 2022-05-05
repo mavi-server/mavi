@@ -92,4 +92,6 @@ describe('Controllers', () => {
         expect(res.body).toEqual(customer);
       });
   });
+
+  afterAll(() => mavi.server.close());
 });
