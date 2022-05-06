@@ -41,7 +41,7 @@ describe('Controllers', () => {
       .get('/customers/count')
       .then(res => {
         expect(res.status).toBe(200);
-        expect(res.body.count).toEqual(2);
+        expect(res.body.count).toBeGreaterThan(0);
       });
   });
   it('should `create` a customer', () => {
