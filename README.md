@@ -231,7 +231,7 @@ module.exports = {
         // but if you use them here, you should assign `hash` properties manually
         // hashes are unique strings for each column and model
         // after that, if you change table/column names, add new tables/columns, or change column properties
-        // mavi will update your database automatically on re-apply (there is no --watch option for now).
+        // mavi will update your database automatically on build (there is no --watch option for now).
         // 
         // ***
         // ** be careful if you drop/rename your hash property, dependent entity
@@ -512,22 +512,22 @@ The file above will create the entire server. You need to connect your database 
 ### Start the server
 
 ```sh
-# Start your server and apply the models:
-`mavi start -a`
+# Start your server and build the models:
+`mavi start -b`
 ```
 
 ### Some useful commands
 
 ```sh
-`mavi apply` # builds the database from your models and seeds
+`mavi build` # builds the database from your models and seeds
 
-`mavi apply --no-seeds` # builds the db without without the seeds
+`mavi build --no-seeds` # builds the db without without the seeds
 
 `mavi seed` # Seeds the database with your `models/{model_name}.seed.js` files
 
 `mavi drop` # Drops the database
 
-# You need to re-run `mavi apply` to update
+# You need to re-run `mavi build` to update
 # the database when you change your models.
 ```
 

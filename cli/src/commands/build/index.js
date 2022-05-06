@@ -1,5 +1,5 @@
 /**
- * @description Check if models are already applied and apply them if not.
+ * @description Check if models are already built and build them if not.
  * @param {import('../../../../types').Mavi.config} config
  */
 module.exports = async config => {

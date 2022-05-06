@@ -5,7 +5,7 @@ const workdir = join(process.cwd(), 'examples/example2');
 
 const mavi = {
   start: require('../../index').createServer,
-  apply: require('../../cli/src/commands/apply'),
+  build: require('../../cli/src/commands/build'),
   seed: require('../../cli/src/commands/seed'),
   clear: require('../../cli/src/commands/clear'),
   drop: require('../../cli/src/commands/drop'),
@@ -37,7 +37,7 @@ class CustomEnvironment extends NodeEnvironment {
 
   async setup() {
     // Create database and with datasets
-    await mavi.apply(mavi.config);
+    await mavi.build(mavi.config);
     await mavi.seed(mavi.config);
 
     // Set global variables
