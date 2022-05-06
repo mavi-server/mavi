@@ -24,6 +24,9 @@ mavi.config.database.test = {
   },
 };
 
+// Special routes for testing query lock features
+mavi.config.api.routes['/lock'] = require('../__mocks__/lock-routes/data');
+
 // Set working directory
 mavi.config.workdir = workdir;
 
@@ -42,15 +45,15 @@ class CustomEnvironment extends NodeEnvironment {
     this.global.request = request;
 
     // Start server
-    this.global.mavi.server = await mavi.start(mavi.config);    
+    this.global.mavi.server = await mavi.start(mavi.config);
   }
 
   async teardown() {
     // If server is active
-    if(this.global.mavi.server && "close" in this.global.mavi.server) {
-    // Drop test database
-    // await mavi.drop(mavi.config); (not working on multiple tests)
-    
+    if (this.global.mavi.server && 'close' in this.global.mavi.server) {
+      // Drop test database
+      // await mavi.drop(mavi.config); (not working on multiple tests)
+
       // Close server
       await this.global.mavi.server.close();
     }

@@ -19,7 +19,7 @@ const customer = expect.objectContaining({
 });
 
 const data = {
-  id: 3,
+  id: 5,
   name: 'Will Smith',
   email: 'will@doe.com',
   gender: 'male',
@@ -42,6 +42,14 @@ describe('Controllers', () => {
       .then(res => {
         expect(res.status).toBe(200);
         expect(res.body.count).toBeGreaterThan(0);
+      });
+  });
+  it('should `count` customers where status is 2', () => {
+    return request(mavi.server)
+      .get('/customers/count?where=status-eq-2')
+      .then(res => {
+        expect(res.status).toBe(200);
+        expect(res.body.count).toBe(1);
       });
   });
   it('should `create` a customer', () => {
