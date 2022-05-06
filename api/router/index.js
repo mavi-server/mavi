@@ -213,7 +213,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
                   args = [id, body];
                   break;
                 case 'upload':
-                  args = [folder, body];
+                  args = [folder, body, options.root];
                   break;
               }
 

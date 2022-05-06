@@ -4,7 +4,7 @@ const { join } = require('path');
 const { v4: uuidv4 } = require('uuid');
 const handleControllerError = require('./utils/handle-controller-error');
 
-module.exports = async function (childFolder, data) {
+module.exports = async function (childFolder, data, workdir) {
   const { model, columns } = this.req.config;
 
   if (childFolder) {
@@ -25,7 +25,7 @@ module.exports = async function (childFolder, data) {
     const options = {
       multiples: false,
       keepExtensions: true,
-      uploadDir: join(process.cwd(), `/uploads/${childFolder}/`),
+      uploadDir: join(workdir, `/uploads/${childFolder}/`),
       maxFileSize: 5242880, // bytes = 5mb
       allowEmptyFiles: false,
       filter: function ({ name, originalFilename, mimetype }) {
