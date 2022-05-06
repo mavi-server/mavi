@@ -214,17 +214,29 @@ const UrlQueryBuilder = (req, row) => {
     else if (value === 'false') value = false;
     else if (value === 'undefined') value = null;
 
+    // Is value not a number? (string)
+    if (isNaN(Number(value))) {
+      operator = 'like';
+
+      if (!value.includes('%')) value = `%${value}%`;
+    }
+    // Is value a number? (number)
+    else value = Number(value);
+
     // convert the condition into operator so that knex can understand it
     switch (condition) {
-      case 'like':
-        operator = 'like';
+      default:
+      case 'eq': // case insensitive
+        if (typeof value === 'string') operator = 'ilike';
+        else operator = '=';
+        break;
+      case 'eqs': // case sensitive
+        if (typeof value === 'string') operator = 'like';
+        else operator = '=';
         break;
       case 'not':
       case 'neq':
         operator = '<>';
-        break;
-      case 'eq':
-        operator = '=';
         break;
       case 'lg':
         operator = '>';
@@ -237,9 +249,6 @@ const UrlQueryBuilder = (req, row) => {
         break;
       case 'sme':
         operator = '<=';
-        break;
-      default:
-        operator = '=';
         break;
     }
 
