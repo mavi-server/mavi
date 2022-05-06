@@ -20,16 +20,21 @@ const UrlQueryBuilder = (req, row) => {
   const mergeAndSecureQueries = () => {
     // internal query = config.query
     // incoming query = req.query
-
+    
     if (query && typeof query !== 'string' && !Array.isArray(query)) {
-      // if internal query is not defined, use incoming query
+      // If config query is locked
+      if(isColumnLocked(config.query)) {
+        return (Q = defaultQuery);
+      }
+
+      // If internal query is not defined, use incoming query
       if (typeof config.query === 'undefined') {
         Q = { ...query };
       }
 
-      // there is no incoming query
-      // use internal queries
-      else if (Object.keys(query).length === 0) {
+      // There is no incoming query
+      // Use internal queries
+      else if (Object.keys(query).length === 0) {      
         for (const key in config.query) {
           // if array syntax
           if (Array.isArray(config.query[key])) {
@@ -57,9 +62,9 @@ const UrlQueryBuilder = (req, row) => {
               Q[key] = config.query[key].replace(/\$/g, '');
             }
           }
-        }
+        }        
       }
-      // merge incoming query and internal query
+      // Merge incoming query and internal query
       else {
         // pass incoming queries if they're not locked
         for (const key in config.query) {
@@ -189,7 +194,7 @@ const UrlQueryBuilder = (req, row) => {
       return (Q = defaultQuery);
     }
 
-    // default where is always an empty array
+    // Default where is always an empty array
     if (!Q.where) {
       Q.where = [];
     }
@@ -320,7 +325,7 @@ const UrlQueryBuilder = (req, row) => {
   };
 
   // Merge and secure queries
-  mergeAndSecureQueries();
+  mergeAndSecureQueries();  
 
   // Build url queries
   for (const key in Q) {
@@ -337,7 +342,7 @@ const UrlQueryBuilder = (req, row) => {
         // multiple sort: "name-desc:created_at-asc-first:id-desc-last"
 
         if (typeof Q[key] === 'string') {
-          const Groups = Q[key].split(':');
+          const Groups = Q[key].split(/[:,]/gi);
           Q[key] = [];
 
           for (const group of Groups) {
