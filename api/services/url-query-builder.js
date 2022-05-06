@@ -234,9 +234,14 @@ const UrlQueryBuilder = (req, row) => {
         if (typeof value === 'string') operator = 'like';
         else operator = '=';
         break;
-      case 'not':
+      // case 'not': // not should be moved to exec part
       case 'neq':
-        operator = '<>';
+        if (typeof value === 'string') operator = 'not ilike';
+        else operator = '<>';
+        break;
+      case 'neqs':
+        if (typeof value === 'string') operator = 'not like';
+        else operator = '<>';
         break;
       case 'lg':
         operator = '>';
