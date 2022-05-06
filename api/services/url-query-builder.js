@@ -200,12 +200,10 @@ const UrlQueryBuilder = (req, row) => {
     let [column, condition, value] = group.part.split('-');
     let operator = '='; // default
     column = column || 'id';
-    condition = condition || 'eq';
 
     // if condition is not specified, value would be false
     if (typeof value === 'undefined') {
       value = condition; // condition become actual value
-      condition = 'eq'; // default condition is 'equal'
     }
 
     // have to parse these values:
@@ -214,34 +212,26 @@ const UrlQueryBuilder = (req, row) => {
     else if (value === 'false') value = false;
     else if (value === 'undefined') value = null;
 
-    // Is value not a number? (string)
-    if (isNaN(Number(value))) {
-      operator = 'like';
-
-      if (!value.includes('%')) value = `%${value}%`;
-    }
-    // Is value a number? (number)
-    else value = Number(value);
-
     // convert the condition into operator so that knex can understand it
     switch (condition) {
-      default:
-      case 'eq': // case insensitive
-        if (typeof value === 'string') operator = 'ilike';
-        else operator = '=';
+      case 'in': // includes (case insensitive)
+        operator = 'ilike';
         break;
-      case 'eqs': // case sensitive
-        if (typeof value === 'string') operator = 'like';
-        else operator = '=';
+      case 'ins': // includes (case sensitive)
+        operator = 'like';
+        break;
+      case 'nin': // not includes (case insensitive)
+        operator = 'not ilike';
+        break;
+      case 'nins': // not includes (case sensitive)
+        operator = 'not like';
+        break;
+      case 'eq':
+        operator = '=';
         break;
       // case 'not': // not should be moved to exec part
       case 'neq':
-        if (typeof value === 'string') operator = 'not ilike';
-        else operator = '<>';
-        break;
-      case 'neqs':
-        if (typeof value === 'string') operator = 'not like';
-        else operator = '<>';
+        operator = '<>';
         break;
       case 'lg':
         operator = '>';
@@ -255,6 +245,18 @@ const UrlQueryBuilder = (req, row) => {
       case 'sme':
         operator = '<=';
         break;
+      default: // default is equal
+        // Is string?
+        if (isNaN(Number(value)))
+          operator = 'ilike'; // default is insensitive like
+        // Is number?
+        else operator = '=';
+        break;
+    }
+
+    // Default like wildcards
+    if (operator.includes('like')) {
+      if (!value.includes('%')) value = `%${value}%`;
     }
 
     return [column, operator, value];
