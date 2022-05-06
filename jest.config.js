@@ -161,7 +161,6 @@ module.exports = {
     '/node_modules/',
     '/dist/',
     '/interface/',
-    'tests/queries/locks.test.js',
   ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
