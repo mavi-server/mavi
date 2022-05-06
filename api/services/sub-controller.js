@@ -109,7 +109,7 @@ const SubController = function (req, { populate, data, parent }) {
             params: [on || select, '=', row.id],
           });
 
-          // apply where queries
+          // build where queries
           for (const group of $where) {
             queryBuilder[group.exec](...group.params);
           }
@@ -147,7 +147,7 @@ const SubController = function (req, { populate, data, parent }) {
               }
             );
 
-            // apply where queries
+            // build where queries
             for (const group of $where) {
               queryBuilder[group.exec](...group.params);
             }
@@ -208,7 +208,7 @@ const SubController = function (req, { populate, data, parent }) {
             params: ['id', '=', row[select]],
           });
 
-          // apply where queries
+          // build where queries
           for (const group of $where) {
             queryBuilder[group.exec](...group.params);
           }
@@ -266,7 +266,7 @@ const SubController = function (req, { populate, data, parent }) {
             queryBuilder.limit(query.limit || 10);
           }
 
-          // apply where queries
+          // build where queries
           for (const group of $where) {
             queryBuilder[group.exec](...group.params);
           }

@@ -49,13 +49,13 @@ switch (command) {
     console.log(`\x1b[36mStarting Mavi ${version} ${mode}...\x1b[0m`);
 
     // if not includes parameters, switch to the next command:
-    const applycommands = ['-apply', '--apply', '-a', '--a'];
-    if (!process.argv.find(arg => applycommands.find(c => c === arg))) {
+    const buildcommands = ['-build', '--build', '-b', '--b'];
+    if (!process.argv.find(arg => buildcommands.find(c => c === arg))) {
       break;
     }
-  case 'apply': {
-    const applyModels = require(`../src/commands/apply`);
-    const seedModels = require('../src/commands/seed');
+  case 'build': {
+    const buildDatabase = require(`../src/commands/build`);
+    const seedDatabase = require('../src/commands/seed');
     
     
     // log:
@@ -79,23 +79,23 @@ switch (command) {
     config.workdir = process.cwd();
         
     // run:
-    applyModels(config)
+    buildDatabase(config)
       .then(() => {
-        console.log(`\x1b[36mApply completed!\x1b[0m`);
+        console.log(`\x1b[36mBuild completed!\x1b[0m`);
       })
       .then(async () => {
         // Break the case if --no-seed indicated:
         if (!noSeed) {
           // run:
-          await seedModels(config).then(() => {
+          await seedDatabase(config).then(() => {
             console.log(`\x1b[36mSeed completed!\x1b[0m`);
             process.exit(0);
           });
         }
       })
       .then(() => {
-        // Apply
-        if (command === 'apply') {
+        // Build
+        if (command === 'build') {
           process.exit(0);
         }
 
@@ -105,13 +105,13 @@ switch (command) {
     break;
   }
   case 'seed': {
-    const seedModels = require('../src/commands/seed');
+    const seedDatabase = require('../src/commands/seed');
 
     // set working directory
     config.workdir = process.cwd();
 
     // run:
-    seedModels(config).then(() => {
+    seedDatabase(config).then(() => {
       console.log(`\x1b[36mSeed completed!\x1b[0m`);
       process.exit(0);
     });
