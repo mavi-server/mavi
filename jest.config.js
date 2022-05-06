@@ -130,7 +130,7 @@ module.exports = {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  // setupFiles: ['./tests/__global__/setup.js'],
+  // setupFiles: ['./tests/__global__/serverSetup.js'],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   setupFilesAfterEnv: [],
@@ -161,9 +161,7 @@ module.exports = {
     '/node_modules/',
     '/dist/',
     '/interface/',
-    'tests/queries/exclude.test.js',
     'tests/queries/locks.test.js',
-    'tests/queries/sort.test.js',
     'tests/queries/where.test.js',
   ],
 

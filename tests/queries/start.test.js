@@ -1,5 +1,3 @@
-require('../__global__/serverSetup');
-
 describe('start', () => {
   it('should start the results from the 3th result', () => {
     return request(mavi.server)

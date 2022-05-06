@@ -1,5 +1,3 @@
-require('../__global__/serverSetup');
-
 describe('query locks', () => {
   it('should not evaluate any given query', () => {
     return false;

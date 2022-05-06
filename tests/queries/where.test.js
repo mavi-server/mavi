@@ -1,5 +1,3 @@
-require('../__global__/serverSetup');
-
 describe('where', () => {
   it(`should find where the name is equal to 'john'`, () => {
     return request(mavi.server).get('/customers?where=name-eq-john')

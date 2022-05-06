@@ -18,6 +18,6 @@ describe('app', () => {
     expect(mavi.config).toBeDefined();
   });
   it('mavi server is not defined', () => {
-    expect(mavi.server).toBeUndefined();
+    expect(mavi.server).toBeDefined();
   });
 });

@@ -33,9 +33,27 @@ class CustomEnvironment extends NodeEnvironment {
   }
 
   async setup() {
+    // Create database and with datasets
+    await mavi.apply(mavi.config);
+    await mavi.seed(mavi.config);
+
     // Set global variables
     this.global.mavi = mavi;
     this.global.request = request;
+
+    // Start server
+    this.global.mavi.server = await mavi.start(mavi.config);    
+  }
+
+  async teardown() {
+    // If server is active
+    if(this.global.mavi.server && "close" in this.global.mavi.server) {
+    // Drop test database
+    // await mavi.drop(mavi.config); (not working on multiple tests)
+    
+      // Close server
+      await this.global.mavi.server.close();
+    }
   }
 }
 

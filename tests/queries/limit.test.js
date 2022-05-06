@@ -1,5 +1,3 @@
-require('../__global__/serverSetup');
-
 describe('limit', () => {
   it('should limit the number of results to 2', () => {
     return request(mavi.server)

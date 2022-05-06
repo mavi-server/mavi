@@ -26,8 +26,6 @@ const data = {
   status: 1,
 };
 
-require('../__global__/serverSetup');
-
 describe('Controllers', () => {
   it('should `find` customers', () => {
     // default limit is 10
