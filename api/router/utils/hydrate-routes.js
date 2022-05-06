@@ -13,8 +13,22 @@ const setDefaultColumns = async (route, define) => {
   // allocate new memory for each route
   // const route = {...Route}; // clone route object
   const model = route.model || route.from; // from is used in sub routes
-  const setFragments = column => {
-    return { ...define.populate[column] } || column;
+  const getPopulateObject = async column => {
+    let route;
+
+    if (typeof column === 'string' && column in define.populate) {
+      route = { ...define.populate[column] };
+    }
+    else route = column;
+
+    // set default columns for this populate route:
+    route = await setDefaultColumns(route, define);
+
+    // set context for populate objects
+    route.context = model;
+
+    // hydrated route is returned
+    return route;
   };
 
   // if route uses one of these controllers, then it should have a model
@@ -26,53 +40,39 @@ const setDefaultColumns = async (route, define) => {
     throw new Error(
       `Please define a model for the '${model}' which is used in '${route.path}' path`
     );
-  } else {
-    if (!route.exclude) route.exclude = [];
-    if (!route.columns) route.columns = [];
-    route.context = model; // set context (used as #context in populate queries)
+  }
 
-    // Set columns:
-    for (const column in define.models[model]) {
-      // Select all by default and exclude the "hash" & "private" fields
-      if (column == 'hash' || define.models[model][column].private) continue;
+  // Set context (used as #context in populate queries)
+  route.context = model;
 
-      // Don't include the excluded columns
-      // Prevent duplicate columns
-      if (!route.exclude.includes(column) && !route.columns.includes(column)) {
-        route.columns.push(column);
-      }
+  // Set default columns/exclude
+  if (!route.exclude) route.exclude = [];
+  if (!route.columns) route.columns = [];
+
+  // Set columns:
+  for (const column in define.models[model]) {
+    // Select all by default and exclude the "hash" & "private" fields
+    if (column == 'hash' || define.models[model][column].private) continue;
+
+    // Don't include the excluded columns
+    // Prevent duplicate columns
+    if (!route.exclude.includes(column) && !route.columns.includes(column)) {
+      route.columns.push(column);
     }
+  }
 
-    // count type doesn't needs columns
-    if (route.type && route.type === 'count') route.columns = [];
+  // Type `count` doesn't needs columns
+  if (route.type && route.type === 'count') route.columns = [];
 
-    // if populate is defined, set default columns for it
-    if (route.populate) {
-      // convert into array if populate is an object
-      if (!Array.isArray(route.populate)) route.populate = [route.populate];
+  // If populate is defined, set default columns for it
+  if (route.populate) {
+    // Convert into array if populate is an object
+    if (!Array.isArray(route.populate)) route.populate = [route.populate];
 
-      // combine sub route fragments with populate names in array
-      route.populate = await Promise.all(route.populate.map(setFragments));
-
-      // set default columns
-      route.populate = await Promise.all(
-        route.populate.map(async route => {
-          // set default columns for this populate route:
-          route = await setDefaultColumns(route, define);
-
-          // set context for populate objects
-          route.context = model;
-
-          // hydrated route is returned
-          return route;
-        })
-      );
-
-      // ********* delete later **********
-      // if (route.path === '/followings/:user') {
-      //   console.log(JSON.stringify(route.populate, null, 2));
-      // }
-    }
+    // Get populate objects from their populate keys
+    route.populate = await Promise.all(
+      route.populate.map(async column => await getPopulateObject(column))
+    );
   }
 
   return route;

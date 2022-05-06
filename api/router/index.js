@@ -129,11 +129,8 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
           express.static(Path, route.serve)
         );
 
-        if (options.debug) {
-          routers.static++;
-          // colorful log:
-          // console.log(`\x1b[36mServing  \x1b[32m[${route.method}]${route.path}\x1b[36m path from \x1b[35m${Path}\x1b[0m`,)
-        }
+        // Counter
+        routers.static++;
       }
 
       // Generate api routes:
@@ -157,9 +154,6 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
               typeof req.config === 'object'
                 ? { ...route, ...req.config }
                 : { ...route };
-
-            // debug route:
-            // console.log(JSON.stringify(route, null, 2));
 
             // execute utils
             if (route.utils) {
@@ -258,13 +252,8 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
         );
       }
 
-      // Debug:
-      if (options.debug) {
-        // colorful log:
-        // console.log(
-        //   `\x1b[36mCreating \x1b[32m[${route.method}] ${route.path}\x1b[36m ${options.name} path\x1b[0m`)
-        routers.api++;
-      }
+      // Counter
+      routers.api++;
     }
   }
 
