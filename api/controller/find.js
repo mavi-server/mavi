@@ -53,7 +53,7 @@ module.exports = async function(populateIt = true) {
       populate &&
       Array.isArray(populate)
   ) {
-    [data] = await SubController(this.req, {
+    data = await SubController(this.req, {
       populate,
       data,
     }).catch(handleControllerError);
