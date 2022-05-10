@@ -161,6 +161,10 @@ module.exports = {
     '/node_modules/',
     '/dist/',
     '/interface/',
+    '/tests/database',
+    '/tests/controllers/sub-controllers',
+    '/tests/controllers/upload.test.js',
+    '/tests/controllers/auth.test.js',
   ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
