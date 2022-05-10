@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/logo-variant-1.svg" alt="Mavi logo" width="200px" style="text-align: center;" />
+<img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/mavi.svg" alt="Mavi logo" width="200px" align="center">
 
 Create an abstracted and extendible server from one JSON file!
 
