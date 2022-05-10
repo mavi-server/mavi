@@ -1,5 +1,5 @@
 describe('app', () => {
-  it("should connect to a database");
+  it("should connect to the database");
   it("should validate mavi config file");
   it("should create router object");
   it("should hydrate the router object");

@@ -527,6 +527,8 @@ The file above will create the entire server. You need to connect your database 
 
 `mavi drop` # Drops the database
 
+`mavi clear` # Truncates the database
+
 # You need to re-run `mavi build` to update
 # the database when you change your models.
 ```

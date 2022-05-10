@@ -1,3 +1,4 @@
+// * These routes are used to test lock feature
 module.exports = [
   {
     model: 'customers',

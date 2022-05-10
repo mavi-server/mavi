@@ -1,3 +1,5 @@
+// `lock/*` routes are defined in testEnvironment
+
 describe('query locks', () => {
   it('should not process any given query', () => {
     // will not use any given query
