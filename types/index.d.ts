@@ -5,7 +5,7 @@ import { Server } from 'http'
 export default Mavi
 
 type middleware = (req: Request, res: Response, next: NextFunction) => any
-type utils = 'detect-language'
+type utils = 'sanitize'
 type middlewares = 'authorization' | 'is-owner'
 type controllers =
   | 'find'

@@ -1,7 +1,7 @@
 import { Grid, TextField, Autocomplete, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 import Populate from '../../../../../routes/populate'
 import Models from '../../../../../models/index'
-const utils = ['sanitize', 'detect-language']
+const utils = ['sanitize']
 const middlewares = ['authorization', 'is-owner', 'interceptor']
 
 type RouteEditProps = {

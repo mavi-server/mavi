@@ -16,7 +16,6 @@
     "cli",
     "database",
     "config",
-    "interface",
     "public",
     "dist",
     "LICENSE",
@@ -52,7 +51,6 @@
     "formidable": "^2.0.1",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
-    "languagedetect": "^2.0.0",
     "pg": "^8.7.1",
     "response-time": "^2.3.2",
     "uuid": "^8.3.2"
