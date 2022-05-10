@@ -96,7 +96,6 @@ const state: MaviConfig = {
           method: 'post',
           controller: 'create',
           middlewares: ['authorization'],
-          utils: ['detect-language'],
           populate: ['bookmark', 'user', 'community', 'thumbnail'],
         },
       ],

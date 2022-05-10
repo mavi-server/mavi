@@ -13,7 +13,6 @@ const middlewares = {
 
 // Default utils
 const utils = {
-  'detect-language': require('../utils/detect-language'),
   sanitize: require('../utils/sanitize'),
 };
 

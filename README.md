@@ -1,5 +1,7 @@
 <img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/mavi.svg" alt="Mavi logo" width="200px" align="center">
 
+<br>
+
 Create an abstracted and extendible server from one JSON file!
 
 This module aims to lift repetitive works that you have made every time building a server from scratch.
@@ -166,7 +168,6 @@ module.exports = {
           method: 'post',
           controller: 'create',
           middlewares: ['authorization'],
-          utils: ['detect-language'],
           populate: ['bookmark', 'user', 'community', 'thumbnail'],
         },
       ],
@@ -529,8 +530,7 @@ The file above will create the entire server. You need to connect your database 
 
 `mavi clear` # Truncates the database
 
-# You need to re-run `mavi build` to update
-# the database when you change your models.
+# You need to re-run `mavi build` to update the database when you change your models.
 ```
 
 The Object above will generates a lot of things; from building your relational database to generate static/virtual api paths with the some default controllers or extended queries. This controllers also have a query building feature by default, like; you can do sort, filter, limit .etc.

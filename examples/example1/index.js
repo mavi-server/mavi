@@ -79,7 +79,6 @@ module.exports = {
           method: 'post',
           controller: 'create',
           middlewares: ['authorization'],
-          utils: ['detect-language'],
           populate: ['user'],
         },
       ],
