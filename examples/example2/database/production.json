@@ -1,0 +1,8 @@
+{
+  "client": "pg",
+  "connection": {
+    "database": "test",
+    "user": "postgres",
+    "password": "admin"
+  }
+}
