@@ -56,29 +56,6 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
     }
   }
 
-  // Set plugins
-  if (plugins && typeof plugins === 'object') {
-    // Check plugins configuration
-    for (const plugin in plugins) {
-      if (!plugins[plugin]) throw Error(`Please define mavi plugins.${plugin}`);
-      if (!plugins[plugin].base)
-        throw Error(`Please define mavi plugins.${plugin}.base`);
-      if (!plugins[plugin].routes)
-        throw Error(`Please define mavi routes for ${plugin}`);
-
-      // const $plugin = {
-      //   base: plugins[plugin].base || plugin,
-      //   routes: { [plugin]: plugins[plugin].routes },
-      //   define: plugins[plugin].define || define // uses api define if not defined
-      // }
-
-      // Set plugin as Router
-
-      // let slash = $plugin.base.startsWith('/') ? '' : '/'
-      // app.use(`${config.api.base}${slash}${$plugin.base}`, timer, createRouter($plugin, { name: plugin, isPlugin: true, debug: true }))
-    }
-  }
-
   // http methods:
   const methods = [
     'get',
