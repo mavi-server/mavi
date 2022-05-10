@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/logo-variant-1.svg" alt="Mavi logo" width="200px" style="text-align: center;" />
+<img src="https://raw.githubusercontent.com/m-emre-yalcin/mavi/main/public/mavi.svg" alt="Mavi logo" width="200px" align="center">
 
 Create an abstracted and extendible server from one JSON file!
 
@@ -526,6 +526,8 @@ The file above will create the entire server. You need to connect your database 
 `mavi seed` # Seeds the database with your `models/{model_name}.seed.js` files
 
 `mavi drop` # Drops the database
+
+`mavi clear` # Truncates the database
 
 # You need to re-run `mavi build` to update
 # the database when you change your models.

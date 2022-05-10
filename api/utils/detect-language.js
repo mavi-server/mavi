@@ -1,5 +1,6 @@
 // detect content language
 // only supported for "content" column
+// this util will be removed later
 
 const LanguageDetect = require("languagedetect");
 const lngDetector = new LanguageDetect();
