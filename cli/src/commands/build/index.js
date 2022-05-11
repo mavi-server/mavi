@@ -19,7 +19,8 @@ module.exports = async config => {
 
   // -
   const modelsDirExists = existsSync(join(config.workdir, 'models'));
-  const models = modelsDirExists
+  const modelIndexFileExists = existsSync(join(config.workdir, 'models/index.js')); // in index file user can sort his/her models by importing them
+  const models = modelIndexFileExists
     ? require(join(config.workdir, 'models/index.js'))
     : config.api.define.models; // get all models
 

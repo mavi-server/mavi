@@ -510,6 +510,11 @@ module.exports = {
 
 The file above will create the entire server. You need to connect your database before you can use the server.
 
+> You can also create a folder for each `routes`, `populate`, `controllers`, `middlewares`, `models`, `utils`, `database` config and use their each key as a new file name then put their value inside.
+>  
+> This file can be `.js` or `.json`. If you use js, you should export your configs. After starting the server, mavi will combine your configs automatically.
+> Please see the [example](https://github.com/mavi-server/mavi/tree/main/examples/example2) here.
+
 ### Start the server
 
 ```sh

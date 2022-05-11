@@ -40,6 +40,10 @@ export declare namespace Mavi {
  */
 export declare interface MaviConfig {
   /**
+   * Api base path
+   */
+  base: string
+  /**
    * Port to listen on
    */
   port?: number | string
@@ -120,8 +124,7 @@ export type Define = {
     [functionName: string]: middleware
   }
 }
-export declare interface MaviApi {
-  base: string
+export declare interface MaviApi {  
   /**
     - Used by req.config
     - Generates the api with the given config
@@ -133,7 +136,6 @@ export declare interface MaviApi {
    *
    */
   define: Define
-  plugins?: object
 }
 
 export type queryStr = '$' | 'lock' | 'locked'

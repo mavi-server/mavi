@@ -75,7 +75,7 @@ const createServer = async object => {
 
   // Mavi - Primary router
   app.use(
-    `${config.api.base}`,
+    `${config.base}`,
     timer,
     await createRouter(config.api, {
       root: config.workdir || process.cwd(), // using work directory

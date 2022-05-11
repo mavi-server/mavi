@@ -3,12 +3,14 @@ const command = process.argv[2];
 const mode = process.env.NODE_ENV || 'development';
 const readline = require('readline');
 const { join } = require('path');
+const cwd = process.cwd();
+const glue = require('../src/utils/glue');
 
-// Get user config
 /**
  * @type {import('../../types/index').MaviConfig}
  */
-const config = require(join(process.cwd(), './index'));
+// Validate mavi.config and combine it with the projection files
+const config = glue({ cwd });
 
 // Package version
 const { version } = require(join(__dirname, '../../package.json'));
@@ -16,11 +18,6 @@ const { version } = require(join(__dirname, '../../package.json'));
 // Assign default DB_STATE table name
 if (!process.env.DB_STATE) {
   process.env.DB_STATE = 'mavi_db_state';
-}
-
-if (!config) {
-  console.log('No config file found. Please create a config file at ./index.js');
-  process.exit(1);
 }
 
 // mavi root directory
@@ -56,8 +53,7 @@ switch (command) {
   case 'build': {
     const buildDatabase = require(`../src/commands/build`);
     const seedDatabase = require('../src/commands/seed');
-    
-    
+
     // log:
     console.log(`\x1b[36mLooking for changes...\x1b[0m`);
 
@@ -74,10 +70,10 @@ switch (command) {
         ].find(c => c === arg)
       )
     );
-        
+
     // set working directory
-    config.workdir = process.cwd();
-        
+    config.workdir = cwd;
+
     // run:
     buildDatabase(config)
       .then(() => {
@@ -108,7 +104,7 @@ switch (command) {
     const seedDatabase = require('../src/commands/seed');
 
     // set working directory
-    config.workdir = process.cwd();
+    config.workdir = cwd;
 
     // run:
     seedDatabase(config).then(() => {
