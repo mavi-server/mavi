@@ -109,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: development
-      url: https://github.com/mavi-server/mavi/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
     needs:
       # - test
       # - lint
