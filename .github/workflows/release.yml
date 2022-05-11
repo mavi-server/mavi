@@ -97,7 +97,7 @@ jobs:
           semantic_version: 15.13.28 # version range
         id: semantic  # Need an `id` for output variables
         env:
-          token: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: '📊 package version'
