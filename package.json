@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bugs": {
-    "url": "https://github.com/m-emre-yalcin/mavi/issues",
+    "url": "https://github.com/mavi-server/mavi/issues",
     "email": "emrreyalcin@gmail.com"
   },
   "bin": {
@@ -24,17 +24,14 @@
     "CHANGELOG.md",
     ".env.example"
   ],
-  "homepage": "https://github.com/m-emre-yalcin/mavi",
+  "homepage": "https://github.com/mavi-server/mavi",
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "lint:fix": "eslint --fix --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"interface\"",
     "lint": "eslint --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"interface\"",
     "test": "jest --watchAll"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mavi-server/mavi"
-  },
+  "repository": "https://github.com/mavi-server/mavi",
   "contributors": [
     {
       "name": "M. Emre Yalcin",
