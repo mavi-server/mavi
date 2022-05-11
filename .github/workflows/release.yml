@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: development
-      url: ${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
     needs:
       - build
     steps:
@@ -91,14 +91,14 @@ jobs:
           path: public/
 
       - name: '🚀 semantic release'
-        uses: cycjimmy/semantic-release-action@v3 # https://github.com/marketplace/actions/action-for-semantic-release
+        uses: cycjimmy/semantic-release-action@v3
         with:
           branch: main
           semantic_version: 15.13.28 # version range
         id: semantic  # Need an `id` for output variables
-        # env:
-        #   GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        #   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: '📊 package version'
         if: steps.semantic.outputs.new_release_published == 'true'
