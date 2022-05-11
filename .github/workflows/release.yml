@@ -140,7 +140,7 @@ jobs:
         with:
           branch: main
           semantic_version: 15.13.28 # version range
-        id: semantic   # Need an `id` for output variables
+        id: semantic  # Need an `id` for output variables
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
