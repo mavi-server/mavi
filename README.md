@@ -8,11 +8,7 @@ This module aims to lift repetitive works that you have made every time building
 
 ---
 
-Mavi is born from my social network project. When I was developing my project's API, I realized I have some reusable and easy-to-understand patterns in my architecture. So I want it to be open-sourced and shared with the world.
-
-You can visit my social network platforms' [API](https://api.lorinto.com) and the [Web](https://lorinto.com) to see what Mavi can offer.
-
-`Important`: Mavi is still in development. I do not recommend use in production. I have plans to make this module more user-friendly and I am open to collaborations. You can directly [email](mailto:emrreyalcin@gmail.com) me or open an issue. Also, let me know if you need help, or having trouble.🙂
+`Important`: Mavi is still in development. I do not recommend use in production. I have plans to make this module more user-friendly and I am open to collaborations. You can directly [email](mailto:emrreyalcin@gmail.com) me or open an issue. Please let me know if having trouble.🙂
 
 ---
 
@@ -233,7 +229,7 @@ module.exports = {
         // hashes are unique strings for each column and model
         // after that, if you change table/column names, add new tables/columns, or change column properties
         // mavi will update your database automatically on build (there is no --watch option for now).
-        // 
+        //
         // ***
         // ** be careful if you drop/rename your hash property, dependent entity
         // ** will be deleted entirely from your database (0.5.4 and previous versions)
@@ -511,7 +507,7 @@ module.exports = {
 The file above will create the entire server. You need to connect your database before you can use the server.
 
 > You can also create a folder for each `routes`, `populate`, `controllers`, `middlewares`, `models`, `utils`, `database` config and use their each key as a new file name then put their value inside.
->  
+>
 > This file can be `.js` or `.json`. If you use js, you should export your configs. After starting the server, mavi will combine your configs automatically.
 > Please see the [example](https://github.com/mavi-server/mavi/tree/main/examples/example2) here.
 
