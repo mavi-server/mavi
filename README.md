@@ -8,7 +8,7 @@ This module aims to lift repetitive works that you have made every time building
 
 ---
 
-`Important`: Mavi is still in development. I do not recommend use in production. I have plans to make this module more user-friendly and I am open to collaborations. You can directly [email](mailto:emrreyalcin@gmail.com) me or open an issue. Please let me know if having trouble.🙂
+`Important`: Mavi is still in development and not recommend to use in production. Don't hesitate to open an issue if encountered a problem
 
 ---
 
@@ -509,7 +509,7 @@ The file above will create the entire server. You need to connect your database 
 > You can also create a folder for each `routes`, `populate`, `controllers`, `middlewares`, `models`, `utils`, `database` config and use their each key as a new file name then put their value inside.
 >
 > This file can be `.js` or `.json`. If you use js, you should export your configs. After starting the server, mavi will combine your configs automatically.
-> Please see the [example](https://github.com/mavi-server/mavi/tree/main/examples/example2) here.
+> Please see the [suggested usage](https://github.com/mavi-server/mavi/tree/main/examples/example2) here.
 
 ### Start the server
 
