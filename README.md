@@ -6,6 +6,8 @@ Create an abstracted and extendible server from one JSON file!
 
 This module aims to lift repetitive works that you have made every time building a server from scratch.
 
+[Documentation](<[https://](https://mavi-docs.vercel.app/)>)
+
 ---
 
 `Important`: Mavi is still in development and not recommend to use in production. Don't hesitate to open an issue if encountered a problem
