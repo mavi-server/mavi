@@ -14,7 +14,7 @@ describe('where', () => {
       .get('/customers?where=name-ins-John')
       .then(res => {
         expect(res.status).toBe(200);
-        res.body.forEach(row => {          
+        res.body.forEach(row => {
           expect(row.name).toMatch(/John/);
         });
       });
@@ -24,7 +24,7 @@ describe('where', () => {
       .get('/customers?where=name-neq-John Doe')
       .then(res => {
         expect(res.status).toBe(200);
-        res.body.forEach(row => {          
+        res.body.forEach(row => {
           expect(row.name).not.toBe('John Doe');
         });
       });
@@ -34,7 +34,7 @@ describe('where', () => {
       .get('/customers?where=name-nins-John')
       .then(res => {
         expect(res.status).toBe(200);
-        res.body.forEach(row => {          
+        res.body.forEach(row => {
           expect(row.name).not.toBe(expect.stringMatching(/John/));
         });
       });
@@ -124,7 +124,7 @@ describe('where', () => {
   });
   it(`should find customers with the name contains 'john' or 'julia'`, () => {
     return request(mavi.server)
-      .get('/customers?where=name-john and status-lge-1')
+      .get('/customers?where=name-john or name-julia')
       .then(res => {
         expect(res.status).toBe(200);
         res.body.forEach(row => {

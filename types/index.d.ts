@@ -140,10 +140,10 @@ export declare interface MaviApi {
 
 export type queryStr = '$' | 'lock' | 'locked'
 export type MaviQuery = {
-  start: queryStr
-  limit: queryStr
-  where: queryStr
-  sort: queryStr
+  start: queryStr | Array<number>
+  limit: queryStr | Array<number>
+  where: queryStr | Array<string>
+  sort: queryStr | Array<string>
 }
 
 /**
