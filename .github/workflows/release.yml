@@ -100,8 +100,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+<<<<<<< Updated upstream
       - name: '📊 package version'
         if: steps.semantic.outputs.new_release_published == 'true'
+=======
+      - name: '📦 package version'
+        if: ${{ steps.semantic.outputs.new_release_published }}
+>>>>>>> Stashed changes
         run: |
           git config user.name "Release Bot"
           git config user.email "release@github.com"
