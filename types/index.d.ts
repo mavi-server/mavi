@@ -124,7 +124,7 @@ export type Define = {
     [functionName: string]: middleware
   }
 }
-export declare interface MaviApi {  
+export declare interface MaviApi {
   /**
     - Used by req.config
     - Generates the api with the given config
@@ -191,19 +191,18 @@ export declare interface Route {
    * It excludes specified columns from the columns array.
    */
   exclude?: string[]
+  /**
+   * idk why did i put this. it may removed soon.
+   */
   include?: string[]
   /**
-   * Populates response data with the given columns.
+   * Populates response data with the given colums.
    *
    * Be sure that columns are defined.
    */
   populate?: string[]
   /**
-   * Right now there is only one utility function.
-   *
-   * Detect language, detects the language of the `content` column.
-   *
-   * Column selection should be optional. Needs improvement.
+   * Right now mavi doesn't have any built-in utility functions
    * */
   utils?: utils[]
   serve?: {
@@ -299,13 +298,13 @@ export declare namespace Model {
      */
     defaultTo?: string | number | boolean
     /**
-     * Sets the comment for a table column.
+     * Sets comment for a table column.
      */
     comment?: string
     onDelete?: SQL_Foreign_Commands | SQL_Commands
     onUpdate?: SQL_Foreign_Commands | SQL_Commands
     /**
-     * References to "table" where the foreign key column is located
+     * References to another `model` where the foreign key column is located
      */
     references?: string
     /**
