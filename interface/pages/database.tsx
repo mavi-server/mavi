@@ -1,5 +1,6 @@
 import type { NextPage } from 'next'
 import { useState, useReducer } from 'react'
+<<<<<<< Updated upstream
 import {
   Grid,
   Button,
@@ -270,6 +271,18 @@ const Database: NextPage = () => {
               </FormGroup>
             </Grid>
           </Grid>
+=======
+import { Grid } from '@mui/material'
+import styles from './database.module.css'
+
+const Database: NextPage = () => {
+  return (
+    <Grid>
+      {/* general settings */}
+      <Grid container className={[styles.HeaderContainer, styles.Dark, styles.MainPad]} md={12}>
+        <Grid item md={12}>
+          <h1>Database</h1>
+>>>>>>> Stashed changes
         </Grid>
       </Grid>
     </Grid>
