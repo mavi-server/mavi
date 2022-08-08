@@ -35,7 +35,8 @@ const supportedClients = [
 
 const Database: NextPage = () => {
   const [settings, setSettings] = useState(initialState)
-  const [connectionDatabaseActive, setConnectionDatabaseActive] = useState(false)
+  const [connectionDatabaseActive, setConnectionDatabaseActive] =
+    useState(false)
 
   return (
     <Grid>
@@ -58,7 +59,10 @@ const Database: NextPage = () => {
               id="input-database-environment"
               size="medium"
               freeSolo
-              options={[...Object.keys(settings.database), 'process.env.NODE_ENV']}
+              options={[
+                ...Object.keys(settings.database),
+                'process.env.NODE_ENV',
+              ]}
               defaultValue={Object.keys(settings.database)[0]}
               renderInput={(params) => (
                 <TextField
@@ -70,12 +74,18 @@ const Database: NextPage = () => {
                 />
               )}
             />
-            <FormHelperText>Selected environment will be configured below</FormHelperText>
+            <FormHelperText>
+              Selected environment will be configured below
+            </FormHelperText>
           </Grid>
         </Grid>
       </Grid>
 
-      <Grid container className={`${styles.HeaderContainer} ${styles.Dark} ${styles.MainPad}`} md={12}>
+      <Grid
+        container
+        className={`${styles.HeaderContainer} ${styles.Dark} ${styles.MainPad}`}
+        md={12}
+      >
         <Grid className={styles.HeaderTextBox} md={4}>
           <h2>Connection</h2>
           <p>These settings are used to connect to the database.</p>
@@ -88,11 +98,19 @@ const Database: NextPage = () => {
               id="cors-origin"
               size="small"
               options={supportedClients}
-              defaultValue={supportedClients.filter(({ value }) => value === 'pg')[0]}
+              defaultValue={
+                supportedClients.filter(({ value }) => value === 'pg')[0]
+              }
               getOptionLabel={(option) => option.label}
               // getOptionDisabled={(option) => option.readonly}
               renderInput={(params) => (
-                <TextField {...params} required variant="standard" label="Client" placeholder="Client" />
+                <TextField
+                  {...params}
+                  required
+                  variant="standard"
+                  label="Client"
+                  placeholder="Client"
+                />
               )}
             />
             <FormHelperText>Database management system</FormHelperText>
@@ -158,7 +176,13 @@ const Database: NextPage = () => {
 
       <Grid container>
         {/* pool settings */}
-        <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} sm={12} md={8} xl={4}>
+        <Grid
+          item
+          className={`${styles.HeaderContainer} ${styles.MainPad}`}
+          sm={12}
+          md={8}
+          xl={4}
+        >
           <Grid className={styles.HeaderTextBox} md={12}>
             <h2>Pool</h2>
             <p>
@@ -170,7 +194,13 @@ const Database: NextPage = () => {
           </Grid>
 
           <Grid container>
-            <Grid container xs={12} className={styles.InputContainer} marginTop={2} marginLeft={0}>
+            <Grid
+              container
+              xs={12}
+              className={styles.InputContainer}
+              marginTop={2}
+              marginLeft={0}
+            >
               <Grid item xs={12} sm={5} className={styles.InputBox}>
                 <TextField
                   required
@@ -204,17 +234,36 @@ const Database: NextPage = () => {
         </Grid>
 
         {/* other settings */}
-        <Grid item className={`${styles.HeaderContainer} ${styles.MainPad}`} sm={12} md={8} xl={4}>
+        <Grid
+          item
+          className={`${styles.HeaderContainer} ${styles.MainPad}`}
+          sm={12}
+          md={8}
+          xl={4}
+        >
           <Grid item className={styles.HeaderTextBox} md={12}>
             <h2>Other</h2>
             <p>Other settings.</p>
           </Grid>
 
-          <Grid container spacing={2} className={styles.InputContainer} marginTop={2} marginLeft={0}>
+          <Grid
+            container
+            spacing={2}
+            className={styles.InputContainer}
+            marginTop={2}
+            marginLeft={0}
+          >
             <Grid item className={styles.InputBox}>
               <FormGroup>
                 <FormControlLabel
-                  control={<Checkbox required value={settings.timer} size="small" id="input-timer" />}
+                  control={
+                    <Checkbox
+                      required
+                      value={settings.timer}
+                      size="small"
+                      id="input-timer"
+                    />
+                  }
                   label="Debug"
                 />
                 <FormHelperText>Debug sql queries in console</FormHelperText>
