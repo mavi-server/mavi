@@ -14,7 +14,7 @@ describe('sort', () => {
   });
   it('should sort the customer ids as ascending and name as descending order', () => {
     return request(mavi.server)
-      .get('/customers?sort=id-desc')
+      .get('/customers?sort=id-asc:name-desc')
       .then(res => {
         expect(res.status).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
