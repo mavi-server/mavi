@@ -196,7 +196,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
               // execute default controller
               await req.app
                 .controller(req, res)
-                [route.controller](...args)
+              [route.controller](...args)
                 .then(async res => {
                   // set response
                   response = await res;
@@ -236,10 +236,8 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
   // Debug:
   if (options.debug) {
     console.log(
-      `\x1b[36m${options.name || 'Router'} is ready: \x1b[32m${
-        routers.api
-      } route ${routers.api ? 'is' : 'are'} created \x1b[33m${routers.static} ${
-        routers.static ? 'is' : 'are'
+      `\x1b[36m${options.name || 'Router'} is ready: \x1b[32m${routers.api
+      } route ${routers.api ? 'is' : 'are'} created \x1b[33m${routers.static} ${routers.static ? 'is' : 'are'
       } serving as a static path\x1b[0m`
     );
   }
