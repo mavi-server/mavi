@@ -1,6 +1,6 @@
 /**
  * @description Seed models if not seeded
- * @param {import('../../../../types').Mavi.config} config
+ * @param {import('../../../../../types').Mavi.config} config
  * @returns {Promise<void>}
  */
 module.exports = async config => {
@@ -11,7 +11,7 @@ module.exports = async config => {
   require('../../utils/checkEnv');
 
   // Database connection
-  const knex = require('../../../../database')(config.database);
+  const knex = require('knex')(config.database[config.mode]);
 
   // Utils
   const updateModelSeedStatus = (model, status) => {

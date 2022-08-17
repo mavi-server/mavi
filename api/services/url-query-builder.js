@@ -20,10 +20,10 @@ const UrlQueryBuilder = (req, row) => {
   const mergeAndSecureQueries = () => {
     // internal query = config.query
     // incoming query = req.query
-    
+
     if (query && typeof query !== 'string' && !Array.isArray(query)) {
       // If config query is locked
-      if(isColumnLocked(config.query)) {
+      if (isColumnLocked(config.query)) {
         return (Q = defaultQuery);
       }
 
@@ -34,7 +34,7 @@ const UrlQueryBuilder = (req, row) => {
 
       // There is no incoming query
       // Use internal queries
-      else if (Object.keys(query).length === 0) {      
+      else if (Object.keys(query).length === 0) {
         for (const key in config.query) {
           // if array syntax
           if (Array.isArray(config.query[key])) {
@@ -62,7 +62,7 @@ const UrlQueryBuilder = (req, row) => {
               Q[key] = config.query[key].replace(/\$/g, '');
             }
           }
-        }        
+        }
       }
       // Merge incoming query and internal query
       else {
@@ -325,7 +325,7 @@ const UrlQueryBuilder = (req, row) => {
   };
 
   // Merge and secure queries
-  mergeAndSecureQueries();  
+  mergeAndSecureQueries();
 
   // Build url queries
   for (const key in Q) {

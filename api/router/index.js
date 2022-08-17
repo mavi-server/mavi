@@ -112,7 +112,7 @@ const createRouter = async ({ base, routes, define, plugins }, options) => {
       // Generate api routes:
       else {
         $router[route.method](
-          route.path,
+          base + route.path,
           route.middlewares.map(setMiddlewares),
           async (req, res) => {
             /**

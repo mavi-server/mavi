@@ -1,23 +1,26 @@
-// # Main api file
+'use strict';
+
+require('dotenv');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const responseTime = require('response-time');
 const app = express();
 
-// Env variables
-require('dotenv');
-
-// Functionality
 const createDatabase = require('./database');
 const createRouter = require('./api/router');
 const controller = require('./api/controller');
-
-// Services
 const validateConfig = require('./api/services/validate-config');
 
-// Db instance
-let database = null;
+// timer util:
+const timer = responseTime((req, res, time) => {
+  if (req.app.$config.timer === true) {
+    console.log(
+      `\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.originalUrl} \x1b[0m(${res.statusCode
+      }) - ${time.toFixed(0)}ms`
+    );
+  }
+});
 
 /**
  * @type {import('./types').Mavi.createServer}
@@ -34,21 +37,19 @@ const createServer = async object => {
   const HOST = config.host || 'localhost';
   const PORT = config.port || 3000;
 
-  // Connect to the database
-  database = createDatabase(config.database);
-
   // Initialize
   app.use(express.json());
   app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
   app.use(cookieParser());
   app.use(cors(config.cors));
   app.use(initializer(config)); // Set req.app properties
+  let adminRouter, primaryRouter
 
-  // Mavi - Interface Router
+  // Mavi - Admin Router
   if (config.page) {
-    // user can't/shouldn't define config.page but can deactivate it
+    // user shouldn't define config.page but can deactivate it
 
-    const settings = {
+    const configAdmin = {
       base: '/',
       routes: {},
       define: {
@@ -56,33 +57,32 @@ const createServer = async object => {
       },
     };
 
-    // if its a string, it can be one of the predefined static paths: interface, welcome
+    // if its a string, it can be one of the predefined static paths: admin, welcome
     if (typeof config.page === 'string') {
-      settings.routes['/'] = require(`./config/static/${config.page}`);
+      configAdmin.routes['/'] = require(`./config/static/${config.page}`);
     } else {
-      settings.routes['/'] = [];
+      configAdmin.routes['/'] = [];
     }
 
-    // Mavi - Interface Router
-    app.use(
-      await createRouter(settings, {
-        root: config.rootdir || __dirname, // using root directory
-        name: 'UI',
-        debug: true,
-      })
-    );
+    adminRouter = await createRouter(configAdmin, {
+      root: __dirname, // using root directory
+      name: 'UI',
+      debug: true,
+    })
+
+    // Use router
+    app.use(adminRouter)
   }
 
   // Mavi - Primary router
-  app.use(
-    `${config.base}`,
-    timer,
-    await createRouter(config.api, {
-      root: config.workdir || process.cwd(), // using work directory
-      name: 'Mavi',
-      debug: true,
-    })
-  );
+  primaryRouter = await createRouter(config.api, {
+    root: process.cwd(), // using work directory
+    name: 'Mavi',
+    debug: true,
+  })
+
+  // Use router
+  app.use(primaryRouter, timer)
 
   // Start the server
   const server = app.listen(PORT, HOST, () => {
@@ -93,19 +93,10 @@ const createServer = async object => {
   return server;
 };
 
-const timer = responseTime((req, res, time) => {
-  if (req.app.$config.timer === true) {
-    console.log(
-      `\x1b[33m[${req.method}]\x1b[0m \x1b[34m${req.originalUrl} \x1b[0m(${
-        res.statusCode
-      }) - ${time.toFixed(0)}ms`
-    );
-  }
-});
 const initializer = config => (req, res, next) => {
   // set req.app properties
+  req.app.db = createDatabase(config.database);
   req.app.$config = config;
-  req.app.db = database;
   req.app.controller = controller;
 
   // app name

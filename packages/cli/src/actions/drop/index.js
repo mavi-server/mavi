@@ -1,6 +1,6 @@
 module.exports = async config => {
   // Database connection
-  const knex = require('../../../../database')(config.database);
+  const knex = require('../../../../../database')(config.database);
 
   // Drop database state:
   await knex.schema.hasTable(process.env.DB_STATE).then(exists => {

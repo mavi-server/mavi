@@ -2,14 +2,14 @@ const NodeEnvironment = require('jest-environment-node');
 const { join } = require('path');
 const request = require('supertest');
 const workdir = join(process.cwd(), 'examples/example2');
-const glue = require('../../cli/src/utils/glue');
+const glue = require('../../packages/cli/src/utils/glue');
 
 const mavi = {
   start: require('../../index').createServer,
-  build: require('../../cli/src/commands/build'),
-  seed: require('../../cli/src/commands/seed'),
-  clear: require('../../cli/src/commands/clear'),
-  drop: require('../../cli/src/commands/drop'),
+  build: require('../../packages/cli/src/actions/build'),
+  seed: require('../../packages/cli/src/actions/seed'),
+  clear: require('../../packages/cli/src/actions/clear'),
+  drop: require('../../packages/cli/src/actions/drop'),
   config: null,
   server: undefined,
 };

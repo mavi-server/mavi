@@ -10,25 +10,25 @@
     "email": "emrreyalcin@gmail.com"
   },
   "bin": {
-    "mavi": "cli/bin/mavi.js"
+    "mavi": "bin/mavi.js"
   },
   "files": [
-    "cli",
+    "bin",
     "database",
+    "types",
     "config",
     "public",
     "dist",
     "LICENSE",
     "README.md",
     "package.json",
-    "CHANGELOG.md",
     ".env.example"
   ],
-  "homepage": "https://github.com/mavi-server/mavi",
+  "homepage": "https://mavi-docs.vercel.app/",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "lint:fix": "eslint --fix --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"interface\"",
-    "lint": "eslint --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"interface\"",
+    "lint:fix": "eslint --fix --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"admin\"",
+    "lint": "eslint --ext \".js,.ts\" --ignore-path .gitignore . --ignore-pattern \"admin\"",
     "test": "jest --watchAll"
   },
   "repository": "https://github.com/mavi-server/mavi",

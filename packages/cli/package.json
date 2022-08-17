@@ -1,0 +1,28 @@
+{
+  "name": "mavi-cli",
+  "version": "1.0.1",
+  "description": "Control mavi commands",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mavi-server/mavi.git"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "private": false,
+  "keywords": [
+    "mavi",
+    "mavi-cli"
+  ],
+  "files": [
+    "src",
+    "index.js",
+    "README.md"
+  ],
+  "author": "M. Emre Yalcin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mavi-server/mavi/issues"
+  },
+  "homepage": "https://github.com/mavi-server/mavi#readme",
+  "devDependencies": {}
+}
