@@ -1,3 +1,5 @@
+// This filename can be `mavi.config.js` as well.
+
 module.exports = {
   base: '/api',
   poweredBy: 'mavi',

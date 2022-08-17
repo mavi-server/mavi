@@ -18,6 +18,7 @@
     "types",
     "config",
     "public",
+    "packages",
     "dist",
     "LICENSE",
     "README.md",
