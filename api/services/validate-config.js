@@ -1,7 +1,6 @@
 // Validate and shape configs
 
 /**
- *
  * @param {import('../../types').MaviConfig} config
  * @returns {Promise<import('../../types').MaviConfig>}
  */
@@ -29,7 +28,7 @@ module.exports = function (config) {
       switch (key) {
         case 'base':
           if (config['base']) {
-          // append / from the beggining
+            // append / from the beggining
             if (!config['base'].startsWith('/'))
               config['base'] = `/${config['base']}`;
 
@@ -40,14 +39,14 @@ module.exports = function (config) {
           break;
         case 'define':
           for (const key in $config.api.define) {
-          // assign missing keys:
+            // assign missing keys:
             if (!(key in config.api.define)) {
               config.api.define[key] = $config.api.define[key];
             }
           }
           break;
         default:
-        // assign default api configs if not provided
+          // assign default api configs if not provided
           if (!config.api[key]) config.api[key] = $config.api[key];
       }
 

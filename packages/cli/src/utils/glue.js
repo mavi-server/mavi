@@ -4,7 +4,7 @@ const { readdirSync } = require('fs');
  */
 module.exports = ({ cwd }) => {
   /**
-   * @type {import('../../../types').Mavi.config}
+   * @type {import('../../../../types').Mavi.config}
    */
   let config = {};
 
@@ -13,12 +13,13 @@ module.exports = ({ cwd }) => {
 
   // config name can be mavi.config or index
   const configName = files.find(file =>
-    ['mavi.config.js', 'mavi.config.json', 'index.js', 'index.json'].find(
+    ['mavi.config.ts', 'mavi.config.js', 'mavi.config.json', 'index.js', 'index.json'].find(
       f => f == file
     )
   );
 
   // find mavi.config
+  // Todo: Simplify them in a single for loop later.
   if (files.find(file => file === configName)) {
     config = require(`${cwd}/${configName}`);
     config.api = config.api || {};

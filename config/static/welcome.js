@@ -3,7 +3,7 @@ module.exports = [
     path: '/',
     method: 'get',
     serve: {
-      fullpath: 'S:/Projects (my)/lorinto-api/mavi/public/index.html',
+      // fullpath: 'S:/Projects/app/public/index.html',
       folder: 'public',
       dotfiles: 'ignore',
       etag: false,

@@ -160,7 +160,7 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/',
-    '/interface/',
+    '/packages/admin',
     '/tests/database',
     '/tests/controllers/sub-controllers',
     '/tests/controllers/upload.test.js',

@@ -9,6 +9,6 @@ module.exports = {
   cors: require('./cors'),
   database: require('./database'),
   api: require('./api'),
-  page: isDev ? 'interface' : 'welcome',
+  page: isDev ? 'admin' : 'welcome',
   timer: true,
 };

@@ -3,7 +3,7 @@
 /**
  * @description Hash model files and model columns to detect changes
  * @type {({
- *  model: import('../../../../../types').Model.Properties,
+ *  model: import('../../../../../../types').Model.Properties,
  *  key: string,
  *  workdir: string
  * }) => void}

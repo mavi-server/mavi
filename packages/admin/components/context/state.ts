@@ -1,4 +1,4 @@
-import type { MaviConfig } from '../../../types/index'
+import type { MaviConfig } from '../../../../types/index'
 
 const state: MaviConfig = {
   host: 'localhost',

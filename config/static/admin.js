@@ -2,14 +2,14 @@ module.exports = [
   // {
   //   path: '/save',
   //   method: 'post',
-  //   controller: 'interface/save',
-  //   model: 'interface,
+  //   controller: 'admin/save',
+  //   model: 'admin,
   // },
   {
     path: '/',
     method: 'get',
     serve: {
-      folder: 'interface/.next/server/pages/',
+      folder: 'packages/admin/.next/server/pages/',
       dotfiles: 'ignore',
       etag: false,
       extensions: [
@@ -36,7 +36,7 @@ module.exports = [
     path: '/_next',
     method: 'get',
     serve: {
-      folder: 'interface/.next/',
+      folder: 'packages/admin/.next/',
       dotfiles: 'ignore',
       etag: false,
       extensions: [

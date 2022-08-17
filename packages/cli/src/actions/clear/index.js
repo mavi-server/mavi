@@ -1,6 +1,6 @@
 module.exports = async config => {
   // Database connection
-  const knex = require('../../../../database')(config.database);
+  const knex = require('knex')(config.database[config.mode]);
 
   // Utils
   const updateModelSeedStatus = (model, status) => {

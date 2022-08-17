@@ -1,4 +1,4 @@
-import { MaviConfig } from "../../../types"
+import { MaviConfig } from "../../../../types"
 
 export type State = MaviConfig
 export type Dispatch = {

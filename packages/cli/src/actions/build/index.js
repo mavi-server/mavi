@@ -1,10 +1,13 @@
 /**
  * @description Check if models are already built and build them if not.
- * @param {import('../../../../types').Mavi.config} config
+ * @param {import('../../../../../types').Mavi.config} config
  */
 module.exports = async config => {
   const { existsSync } = require('fs');
   const { join } = require('path');
+
+  // Database connection
+  const knex = require('knex')(config.database[config.mode]);
 
   // Check env variables are set:
   require('../../utils/checkEnv');
@@ -32,9 +35,6 @@ module.exports = async config => {
       BEFORE UPDATE ON ${table} FOR EACH ROW
       EXECUTE PROCEDURE on_update_timestamp();
     `;
-
-  // Database connection
-  const knex = require('../../../../database')(config.database);
 
   // Compare models with database state
   await knex.schema.hasTable(process.env.DB_STATE).then(async exists => {
@@ -290,12 +290,11 @@ module.exports = async config => {
                   ) {
                     if (db_model_json_column.references) {
                       // drop foreign key
-                      const CONSTRAINT_NAME = `${model}_${
-                        db_model_json_column.name
-                      }__${db_model_json_column.references.replace(
-                        '.',
-                        '_'
-                      )}_foreign`;
+                      const CONSTRAINT_NAME = `${model}_${db_model_json_column.name
+                        }__${db_model_json_column.references.replace(
+                          '.',
+                          '_'
+                        )}_foreign`;
                       await knex.raw(
                         `ALTER TABLE ${model} DROP CONSTRAINT IF EXISTS ${CONSTRAINT_NAME}`
                       );
@@ -463,7 +462,7 @@ module.exports = async config => {
                 // create columns
                 eval(
                   generateSchemaSQL({ [model]: models[model] }, { debug })[
-                    model
+                  model
                   ]
                 );
               })
