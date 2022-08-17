@@ -37,7 +37,6 @@ switch (command) {
     default:
         if (command === 'dev') {
             const mavi = require('../index')
-            // const mavi = require('../dist')
             mavi.createServer(config)
         } else {
             const mavi = require('mavi')

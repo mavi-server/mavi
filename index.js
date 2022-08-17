@@ -43,7 +43,6 @@ const createServer = async object => {
   app.use(cookieParser());
   app.use(cors(config.cors));
   app.use(initializer(config)); // Set req.app properties
-  let adminRouter, primaryRouter
 
   // Mavi - Admin Router
   if (config.page) {
@@ -64,25 +63,19 @@ const createServer = async object => {
       configAdmin.routes['/'] = [];
     }
 
-    adminRouter = await createRouter(configAdmin, {
+    app.use(await createRouter(configAdmin, {
       root: __dirname, // using root directory
       name: 'UI',
       debug: true,
-    })
-
-    // Use router
-    app.use(adminRouter)
+    }))
   }
 
   // Mavi - Primary router
-  primaryRouter = await createRouter(config.api, {
+  app.use(timer, await createRouter(config.api, {
     root: process.cwd(), // using work directory
     name: 'Mavi',
     debug: true,
-  })
-
-  // Use router
-  app.use(primaryRouter, timer)
+  }))
 
   // Start the server
   const server = app.listen(PORT, HOST, () => {
