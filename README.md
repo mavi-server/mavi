@@ -7,7 +7,7 @@
   />
 </h1>
 
-[Documentation](https://mavi-docs.vercel.app) _(not completed)_
+[Documentation](https://mavi-docs.vercel.app) _(still in progress)_
 
 Create an abstracted and extendible server without coding!
 
